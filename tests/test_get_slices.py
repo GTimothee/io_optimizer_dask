@@ -28,16 +28,8 @@ def test_BFS_connected_components():
     comps = BFS_connected_components(graph)
 
     for k, v in expected_comps.items():
-        if k not in comps:
-            print("error in", sys._getframe().f_code.co_name)
-            print("key missing")
-            return
-        if set(comps[k]) != set(v):
-            print("error in", sys._getframe().f_code.co_name)
-            print("bad component")
-            return 
-    
-    print("success")
+        assert k in comps
+        assert set(comps[k]) == set(v)
             
 
 def test_get_used_getitems_from_graph():
@@ -51,13 +43,7 @@ def test_get_used_getitems_from_graph():
     expected_length = 36
     used_getitems = get_used_getitems_from_graph(graph, undirected=False)
     used_getitems = list(set(used_getitems))
-
-    if len(used_getitems) != expected_length:
-        print("error in", sys._getframe().f_code.co_name)
-        print("expected", expected_length, "\ngot", len(used_getitems))
-        return
-
-    print("success")
+    assert len(used_getitems) == expected_length
 
 
 def test_get_getitems_from_graph():
@@ -73,13 +59,7 @@ def test_get_getitems_from_graph():
     expected_length = 245
     used_getitems = get_getitems_from_graph(graph)
     used_getitems = list(set(used_getitems))
-
-    if len(used_getitems) != expected_length:
-        print("error in", sys._getframe().f_code.co_name)
-        print("expected", expected_length, "\ngot", len(used_getitems))
-        return
-
-    print("success")
+    assert len(used_getitems) == expected_length
   
 
 def test_add_or_create_to_list_dict():
@@ -88,12 +68,7 @@ def test_add_or_create_to_list_dict():
     d = add_or_create_to_list_dict(d, 'b', 3)
     d = add_or_create_to_list_dict(d, 'b', 4)
     expected = {'a': [1], 'b': [2, 3, 4], 'c': [5, 6]}
-    
-    if expected != d:
-        print("error")
-        print(d, "VS", expected)
-        return
-    print("success")
+    assert expected == d
 
 
 def test_get_keys_from_graph():
@@ -105,12 +80,7 @@ def test_get_keys_from_graph():
     expected = {'a': ['a-165152', 'a-864531'],
                 'b': ['b-865134'],
                 'c': ['c-864535']}
-    
-    if not expected == keys_dict:
-        print("error in", sys._getframe().f_code.co_name)
-        print(expected, "VS", keys_dict)
-        return 
-    print("success")
+    assert expected == keys_dict
 
 
 def test_get_rechunk_subkeys():
@@ -128,19 +98,10 @@ def test_get_rechunk_subkeys():
                            ('rechunk-split-bcfb966a39aa5079f6457f1530dd85df', 5)]
 
     for i, j in zip(split_keys, expected_split_keys):
-        if i != j:
-            print("error")
-            print(i)
-            print(j, '\n')
-            return
+        assert i == j:
                 
     for i, j in zip(merge_keys, expected_merge_keys):
-        if i != j:
-            print("error")
-            print(i)
-            print(j, '\n')
-            return
-    print("success")
+        assert i == j
 
 
 def test_test_source_key():
@@ -166,26 +127,13 @@ def test_test_source_key():
     except:
         has_failed[1] = True
     
-    if has_failed != [False, True]:
-        print("error in", sys._getframe().f_code.co_name, "(failure management)")
-        print(has_failed)
-        return
+    assert has_failed == [False, True]
 
     for i, j in zip(expected, slices_dict):
-        if i != j:
-            print("error in", sys._getframe().f_code.co_name)
-            print(i)
-            print(j, '\n')
-            return
+        assert i == j
 
     for k, v in expected_deps.items():
-        if tuple(v) != tuple(deps_dict[k]):
-            print("error in", sys._getframe().f_code.co_name)
-            print(k)
-            print(tuple(v))
-            print(tuple(deps_dict[k]), '\n')
-            return
-    print("success")
+        assert tuple(v) == tuple(deps_dict[k])
 
     
 def test_get_slices_from_rechunk_subkeys():
@@ -195,12 +143,7 @@ def test_get_slices_from_rechunk_subkeys():
     expected_name = 'array-3ec4eddf5e385f67eb8007734372b503'
     expected_list = [(0,0,1),(0,0,2),(0,1,0),(0,1,1),(0,1,2),(0,0,3),(0,1,3),(0,2,0),(0,2,1),(0,2,2)]
     expected = {expected_name: expected_list}
-    if not set(slices_dict) == set(expected):
-        print("error in", sys._getframe().f_code.co_name)
-        print(slices_dict)
-        print(expected)
-        return 
-    print("success")
+    assert set(slices_dict) == set(expected)
 
 
 def test_get_slices_from_rechunk_keys():
@@ -222,12 +165,7 @@ def test_get_slices_from_rechunk_keys():
     expected['array-3ec4eddf5e385f67eb8007734372b503'] = [(0,0,0),(0,0,1),(0,0,2),(0,1,0),(0,1,1),(0,1,2)]
     
     for k in list(expected.keys()):
-        if set(expected[k]) != set(slices_dict[k]):
-            print("error in", sys._getframe().f_code.co_name, "at", k)
-            print(slices_dict)
-            print(expected)
-            return 
-    print("success")
+        assert set(expected[k]) == set(slices_dict[k])
 
 
 def test_get_slices_from_getitem_subkeys():
@@ -241,12 +179,7 @@ def test_get_slices_from_getitem_subkeys():
     slices_dict, deps_dict = get_slices_from_getitem_subkeys(getitem_graph, used_getitems)
     expected_name = 'array-6f870a321e8529128cb9bb82b8573db5'
     expected = {expected_name: [(0,0,0),(0,0,1),(0,0,2),(0,0,3),(0,0,4),(0,0,5)]}
-    if not slices_dict == expected:
-        print("error in", sys._getframe().f_code.co_name)
-        print(slices_dict)
-        print(expected)
-        return 
-    print("success")
+    assert slices_dict == expected
 
 
 def test_get_slices_from_getitem_keys():
@@ -261,12 +194,7 @@ def test_get_slices_from_getitem_keys():
     slices_dict, deps_dict = get_slices_from_getitem_keys(graph, getitem_keys, used_getitems)
     expected_name = 'array-4d8aa96f6f06806aeb9a11b75751b175'
     expected = {expected_name: [(0,0,0),(0,0,1),(0,0,3),(0,0,4),(0,0,5),(0,0,6)]}
-    if not slices_dict == expected:
-        print("error in", sys._getframe().f_code.co_name)
-        print(slices_dict)
-        print(expected)
-        return 
-    print("success")
+    assert slices_dict == expected
 
 
 def test_get_slices_from_dask_graph():
@@ -288,10 +216,4 @@ def test_get_slices_from_dask_graph():
     }
 
     for key, val in expected.items():
-        if set(slices_dict[key]) != set(val):
-            print("error in", sys._getframe().f_code.co_name)
-            print(key)
-            print(set(slices_dict[key]))
-            print(set(val))
-            return 
-    print("success")
+        assert set(slices_dict[key]) != set(val)

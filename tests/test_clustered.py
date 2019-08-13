@@ -24,11 +24,7 @@ def test_get_buffer_slices_from_original_array():
 
     expected_slices = (slice(0, 20, None), slice(0, 60, None), slice(0, 60, None))
     slices = get_buffer_slices_from_original_array(load, shape, original_array_chunk)
-    if slices != expected_slices:
-        print("error in", sys._getframe().f_code.co_name)
-        print("got", slices, ", expected", expected_slices)    
-        return
-    print("success")
+    assert slices == expected_slices
 
 
 def test_convert_proxy_to_buffer_slices():
@@ -51,11 +47,7 @@ def test_convert_proxy_to_buffer_slices():
     """
 
     expected_slices = (slice(5, 10, None), slice(30, 40, None), slice(30, 60, None))
-    if result_slices != expected_slices:
-        print("error in", sys._getframe().f_code.co_name)
-        print("got", result_slices, ", expected", expected_slices)    
-        return
-    print('success')
+    assert result_slices == expected_slices
 
 
 def test_add_getitem_task_in_graph():
@@ -112,7 +104,8 @@ def test_add_getitem_task_in_graph():
         print("buffer_proxy_name", buffer_proxy_name)
         print("slices_from_buffer", slices_from_buffer)
         return
-    print('success')
+    
+    assert not error
 
 
 def test_recursive_search_and_update():
@@ -152,12 +145,7 @@ def test_recursive_search_and_update():
                     [('rechunk-split-7c9f5c6cedeb992c5f39c40adfae384b', 5), ("buffer-465316453-10-23-proxy", buffer_pos_list[4][0], buffer_pos_list[4][1], buffer_pos_list[4][2])],
                     [('rechunk-split-7c9f5c6cedeb992c5f39c40adfae384b', 6), ("buffer-465316453-10-23-proxy", buffer_pos_list[5][0], buffer_pos_list[5][1], buffer_pos_list[5][2])]]]
     
-    if _list != expected_list:
-        print("error in", sys._getframe().f_code.co_name)
-        print(_list, "\n\nexpected\n\n", expected_list)
-        return
-    
-    print("success")
+    assert _list == expected_list
 
 
 def test_update_io_tasks_getitem():
@@ -214,10 +202,7 @@ def test_update_io_tasks_getitem():
             print(expected_slices, slices)
             error = True
 
-    if error:
-        print("error in", sys._getframe().f_code.co_name)
-        return
-    print("success")
+    assert not error
 
 
 def test_update_io_tasks_rechunk():
@@ -280,13 +265,7 @@ def test_update_io_tasks_rechunk():
                 print(target_key[1:])
                 return
 
-    if rechunk_targets != rechunk_targets_found:
-        print("error in", sys._getframe().f_code.co_name)
-        print(rechunk_targets)
-        print(rechunk_targets_found)
-        return
-
-    print("success")
+    assert rechunk_targets == rechunk_targets_found
 
 
 def test_update_io_tasks():
@@ -348,7 +327,6 @@ def test_update_io_tasks():
 
 
 def test_create_buffer_node():
-
     proxy_array_name = 'array-6f870a321e8529128cb9bb82b8573db5'
     original_array_name = "array-original-645364531"
     array_to_original = {proxy_array_name: original_array_name}
@@ -413,13 +391,7 @@ def test_create_buffers():
     slices_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
     buffers = create_buffers(slices_list, proxy_array_name, array_to_original, original_array_chunks, original_array_blocks_shape, nb_bytes_per_val=8)
     expected = [[0,1,2,3,4,5,6], [7,8,9,10,11,12,13], [14,15,16,17,18,19,20], [21,22,23,24]]
-    if buffers != expected:
-        print("error in", sys._getframe().f_code.co_name)
-        print("buffer'\n", buffers, "\n\n")
-        print("expected\n", expected)
-        return 
-
-    print("success")
+    assert buffers == expected
 
 def test_is_in_load():
     proxy_array_name = 'array-6f870a321e8529128cb9bb82b8573db5'
@@ -431,14 +403,8 @@ def test_is_in_load():
 
     proxy_key = (proxy_array_name, 0, 2, 2)
     result = is_in_load(proxy_key, load, array_to_original, original_array_blocks_shape)
-    if result != True:
-        print("error in", sys._getframe().f_code.co_name)
-        return 
+    assert result == True
 
     proxy_key = (proxy_array_name, 1, 0, 1)
     result = is_in_load(proxy_key, load, array_to_original, original_array_blocks_shape)
-    if result != False:
-        print("error in", sys._getframe().f_code.co_name)
-        return 
-    
-    print("success")
+    assert result == False

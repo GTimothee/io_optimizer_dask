@@ -51,23 +51,10 @@ def test_get_arrays_dictionaries():
         'array-original-86453663': (10,5,20),
         'array-original-68453165': (10,5,20)
     }
-    if array_to_original != expected_array_to_original:
-        print("error in", sys._getframe().f_code.co_name)
-        print(array_to_original)
-        return
-    elif expected_array_chunks != original_array_chunks:
-        print("error in", sys._getframe().f_code.co_name)
-        print(original_array_chunks)
-        return
-    elif expected_array_shapes != original_array_shapes:
-        print("error in", sys._getframe().f_code.co_name)
-        print(original_array_shapes)
-        return
-    elif expected_blocks_shape != original_array_blocks_shape:
-        print("error in", sys._getframe().f_code.co_name)
-        print(original_array_blocks_shape)    
-        return
-    print('success')
+    assert array_to_original == expected_array_to_original
+    assert expected_array_chunks == original_array_chunks
+    assert expected_array_shapes == original_array_shapes
+    assert expected_blocks_shape == original_array_blocks_shape
 
 
 def test_get_original_array_from_proxy_array_name():
@@ -80,11 +67,7 @@ def test_get_original_array_from_proxy_array_name():
         }
     }
     name, obj = get_original_array_from_proxy_array_name(graph=d, proxy_array_name='array-685431684531')
-    if name != 'array-original-68453165' or obj != 'original-array-obj':
-        print("error in", sys._getframe().f_code.co_name)
-        print(name, obj)
-        return 
-    print("success")
+    assert name == 'array-original-68453165' and obj == 'original-array-obj'
 
 
 def test_get_array_block_dims():
@@ -92,8 +75,4 @@ def test_get_array_block_dims():
     chunks = (100, 300, 20)
     block_dims = get_array_block_dims(shape, chunks)
     expected = (5, 4, 15)
-    if block_dims != expected:
-        print("error in", sys._getframe().f_code.co_name)
-        print("expected", expected, ", got", block_dims)
-        return 
-    print("success")
+    assert block_dims == expected
