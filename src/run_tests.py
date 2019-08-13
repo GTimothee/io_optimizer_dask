@@ -1,25 +1,14 @@
-import sys
-
-
-sys.path.insert(0,'/home/user/Documents/workspace/projects/samActivities') 
-sys.path.insert(0,'/home/user/Documents/workspace/projects/dask') # custom dask
-sys.path.insert(1,'/home/user/Documents/workspace/projects/samActivities/tests/tests') 
-sys.path.insert(2,'/home/user/Documents/workspace/projects/samActivities/tests/optimize_io')
-
-
-import time, os
-import numpy as np
-import math
-import h5py
 import dask
 import dask.array as da
 
 
-import experience3
-import main
+import sys
+import time, os
+import numpy as np
+import math
+import h5py
 
 
-from utils import *
 from test_get_dicts import *
 from test_get_slices import *
 from test_clustered import *
@@ -68,11 +57,11 @@ def test_main_funcs():
     test_convert_slices_list_to_numeric_slices()
     test_main()
     test_in_custom_dask()
-    
+
 def test_all():
     test_get_slices()
     test_get_dicts()
     test_clustered()
     test_main_funcs()
 
-test_in_custom_dask(visuals=False, non_opti=False)
+test_in_custom_dask(visuals=False, non_opti=True)

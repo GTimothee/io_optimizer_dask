@@ -1,8 +1,28 @@
 import math
-from experience3.utils import create_random_cube, load_array_parts, get_dask_array_from_hdf5
+from dask_utils_perso.utils import create_random_cube, load_array_parts, get_dask_array_from_hdf5
 
 
-def logical_chunks_tests(arr, case):
+ONE_GIG = 100000000
+
+
+chunk_shapes = ['slabs_dask_interpol', 'slabs_previous_exp', 'blocks_dask_interpol', 'blocks_previous_exp']
+
+
+def get_test_array():
+  """ Create data for the test if not created.
+  """
+  data_dir = os.environ.get('DATA_PATH')
+  data_path = os.path.join(data_dir, 'sample_array.hdf5')
+  if not os.path.isfile(data_path):
+      dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
+                                          file_path=data_path,
+                                          shape=(1540,1210,1400),
+                                          chunks_shape=None,
+                                          dtype="float16")
+  return data_path
+
+
+def add_chunks(arr, case, number_of_arrays):
     if case == 'slabs_dask_interpol':
         slab_width = 6
         new_chunks_shape = (slab_width, arr.shape[1], arr.shape[2])
@@ -42,7 +62,7 @@ def logical_chunks_tests(arr, case):
                                                    random=False))
 
     # to del:
-    all_arrays = all_arrays[:2]
+    all_arrays = all_arrays[:number_of_arrays]
     a5 = all_arrays.pop(0)
     for a in all_arrays:
         a5 = a5 + a
@@ -107,11 +127,11 @@ def get_rechunk_dict_without_proxy_array_sample():
     2,
     1), (slice(0, 60, None), slice(0, 404, None), slice(0, 700, None)))
     }
-    
+
 def get_rechunk_dict_from_proxy_array_sample(array_name='array-3ec4eddf5e385f67eb8007734372b503', array_names=None, add_list=[1,2,3]):
     if array_names == None:
         array_names = [array_name, array_name, array_name]
-    
+
     add1 = {('rechunk-split-a168f56ba79513b9ed87b2f22dd07458',
     3): ("<function _operator.getitem(a, b, /)>", (array_names[0],
     0,
