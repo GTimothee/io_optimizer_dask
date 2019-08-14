@@ -1,7 +1,10 @@
+[![Build Status](https://travis-ci.com/GTimothee/io_optimizer_dask.svg?branch=master)](https://travis-ci.com/GTimothee/io_optimizer_dask)
+
 # directories
 
 - optimize_io: python module
-- src: scripts to run tests
+- scripts: scripts to run tests
+- src: utilities 
 - test: tests of the optimize_io module
 
 ## optimize_io
