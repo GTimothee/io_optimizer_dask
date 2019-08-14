@@ -1,4 +1,5 @@
 mkdir data
+mkdir output_imgs
 git clone https://github.com/GTimothee/dask_utils_perso.git
 git clone https://github.com/GTimothee/dask.git
 export PYTHONPATH="$PWD:$PWD/src:$PWD/dask:$PYTHONPATH:"
