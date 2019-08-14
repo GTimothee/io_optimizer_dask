@@ -6,8 +6,7 @@ install:
   - sudo apt-get install graphviz
   - pip install -r requirements.txt
   - "pip install pydot-ng pyparsing"
-  - "pip install graphviz flake8 flake8-black black flake8-comprehensions flake8-blind-except flake8-bugbear flake8-docstrings flake8-rst-docstrings"
-  - flake8 .
+  - "pip install graphviz"
 
 script:
   - bash scripts/install_and_run.sh
