@@ -2,8 +2,8 @@ import optimize_io
 from optimize_io.clustered import *
 
 
-import utils
-from utils import *
+import tests_utils
+from tests_utils import *
 
 import sys
 
