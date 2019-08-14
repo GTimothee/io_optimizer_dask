@@ -1,8 +1,7 @@
 mkdir data
 git clone https://github.com/GTimothee/dask_utils_perso.git
 git clone https://github.com/GTimothee/dask.git
-workspace='./'
-export PYTHONPATH="$PYTHONPATH:${workspace}${optimizer_module}${sources}"
+export PYTHONPATH="$PWD:$PWD/dask:$PYTHONPATH:"
 echo "PYTHONPATH set to $PYTHONPATH"
 export DATA_PATH='data'
 export OUTPUT_DIR='output_imgs'
