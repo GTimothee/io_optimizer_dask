@@ -3,6 +3,11 @@ python:
   - "3.7"
 cache: pip
 install:
+  - sudo apt-get install graphviz
   - pip install -r requirements.txt
+  - "pip install pydot-ng pyparsing"
+  - "pip install graphviz flake8 flake8-black black flake8-comprehensions flake8-blind-except flake8-bugbear flake8-docstrings flake8-rst-docstrings"
+  - flake8 .
+
 script:
-  - bash install_and_run.sh
+  - bash scripts/install_and_run.sh
