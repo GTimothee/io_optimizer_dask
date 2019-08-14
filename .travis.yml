@@ -3,7 +3,7 @@ python:
   - "3.7"
 cache: pip
 install:
-  - pip install --user pipenv
+  - pip install pipenv
 script:
   - pipenv install
   - pipenv shell 
