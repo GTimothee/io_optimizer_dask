@@ -1,5 +1,5 @@
 __all__ = ("get_slices_from_dask_graph", "get_slices_from_rechunk_keys", "get_slices_from_getitem_keys", "get_slices_from_rechunk_subkeys", 
-"get_slices_from_getitem_subkeys", "get_slices_from_getitem_subkeys", "test_source_key", "get_rechunk_subkeys", "get_keys_from_graph",
+"get_slices_from_getitem_subkeys", "get_slices_from_getitem_subkeys", "check_source_key", "get_rechunk_subkeys", "get_keys_from_graph",
 "add_or_create_to_list_dict", "get_getitems_from_graph", "get_used_getitems_from_graph", "BFS_connected_components")
 
 # TODO generalize it to a graph/tree search
@@ -71,7 +71,7 @@ def get_slices_from_rechunk_subkeys(rechunk_merge_graph, split_keys, merge_keys)
         for split_key in split_keys:
             split_value = rechunk_merge_graph[split_key]
             _, source_key, slices = split_value
-            slices_dict, deps_dict = test_source_key(slices_dict, deps_dict, source_key, split_key)
+            slices_dict, deps_dict = check_source_key(slices_dict, deps_dict, source_key, split_key)
         return slices_dict, deps_dict
 
     
@@ -84,7 +84,7 @@ def get_slices_from_rechunk_subkeys(rechunk_merge_graph, split_keys, merge_keys)
             for i in range(len(_list)):
                 target_key = _list[i] 
                 if 'array' in target_key[0] and not 'array-original' in target_key[0]:
-                    slices_dict, deps_dict = test_source_key(slices_dict, deps_dict, target_key, merge_key)
+                    slices_dict, deps_dict = check_source_key(slices_dict, deps_dict, target_key, merge_key)
     
         return slices_dict, deps_dict
 
@@ -107,7 +107,7 @@ def get_slices_from_rechunk_subkeys(rechunk_merge_graph, split_keys, merge_keys)
             for block in concat_list:
                 for source_key in block:
                     if len(source_key) == 4:
-                        slices_dict, deps_dict = test_source_key(slices_dict, deps_dict, source_key, merge_key)
+                        slices_dict, deps_dict = check_source_key(slices_dict, deps_dict, source_key, merge_key)
         return slices_dict, deps_dict"""
 
     slices_dict = dict()
@@ -126,11 +126,11 @@ def get_slices_from_getitem_subkeys(getitem_graph, used_getitems):
         
         f, source_key, s = v 
         if isinstance(k[0], str) and "getitem" in k[0] and k in used_getitems:
-            slices_dict, deps_dict = test_source_key(slices_dict, deps_dict, source_key, k)
+            slices_dict, deps_dict = check_source_key(slices_dict, deps_dict, source_key, k)
     return slices_dict, deps_dict
 
 
-def test_source_key(slices_dict, deps_dict, source_key, dependent_key):
+def check_source_key(slices_dict, deps_dict, source_key, dependent_key):
     """ test if source is an array proxy: if yes, add source key data to slices_dict
     dependent_key: key of the task dependent from array proxy 
     """

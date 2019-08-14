@@ -1,8 +1,8 @@
 import optimize_io
 from optimize_io.get_slices import *
 
-import utils
-from utils import *
+import tests_utils
+from tests_utils import *
 
 import sys
 
@@ -37,7 +37,7 @@ def test_get_used_getitems_from_graph():
     key = "data"
     arr = get_dask_array_from_hdf5(data_path, key)
     case = 'slabs_dask_interpol'
-    dask_array = logical_chunks_tests(arr, case, number_of_arrays=1)
+    dask_array = add_chunks(arr, case, number_of_arrays=1)
     graph = dask_array.dask.dicts
 
     expected_length = 36
@@ -53,7 +53,7 @@ def test_get_getitems_from_graph():
     key = "data"
     arr = get_dask_array_from_hdf5(data_path, key)
     case = 'slabs_dask_interpol'
-    dask_array = logical_chunks_tests(arr, case, number_of_arrays=1)
+    dask_array = add_chunks(arr, case, number_of_arrays=1)
     graph = dask_array.dask.dicts
 
     expected_length = 245
@@ -98,13 +98,13 @@ def test_get_rechunk_subkeys():
                            ('rechunk-split-bcfb966a39aa5079f6457f1530dd85df', 5)]
 
     for i, j in zip(split_keys, expected_split_keys):
-        assert i == j:
+        assert i == j
                 
     for i, j in zip(merge_keys, expected_merge_keys):
         assert i == j
 
 
-def test_test_source_key():
+def test_check_source_key():
     slices_dict = dict()
     deps_dict = dict()
     sample_source_key = ['array-645318645', 
@@ -115,15 +115,15 @@ def test_test_source_key():
     expected = {'array-645318645': [(sample_source_key[1], sample_source_key[2], sample_source_key[3])]}
     dep_key = 'sample_dependent_key'
     expected_deps = {'array-645318645': [dep_key]}
-    slices_dict, deps_dict = test_source_key(slices_dict, deps_dict, tuple(sample_source_key), dep_key)
+    slices_dict, deps_dict = check_source_key(slices_dict, deps_dict, tuple(sample_source_key), dep_key)
     sample_source_key[0] = "tmp"
     try:
-        result, _ = test_source_key(dict(), dict(), tuple(sample_source_key), dep_key)
+        result, _ = check_source_key(dict(), dict(), tuple(sample_source_key), dep_key)
     except:
         has_failed[0] = True
     sample_source_key[0] = (864513, 86513, 4651, 3465)
     try:
-        result, _ = test_source_key(dict(), dict(), tuple(sample_source_key), dep_key)
+        result, _ = check_source_key(dict(), dict(), tuple(sample_source_key), dep_key)
     except:
         has_failed[1] = True
     
@@ -216,4 +216,4 @@ def test_get_slices_from_dask_graph():
     }
 
     for key, val in expected.items():
-        assert set(slices_dict[key]) != set(val)
+        assert set(slices_dict[key]) == set(val)
