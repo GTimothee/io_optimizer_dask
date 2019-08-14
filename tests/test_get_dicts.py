@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import h5py
 import optimize_io
 from optimize_io.get_dicts import *
@@ -10,7 +10,8 @@ def test_get_arrays_dictionaries():
     graph = {'rechunk-merge-bcfb966a39aa5079f6457f1530dd85df': get_rechunk_dict_without_proxy_array_sample(),
              'rechunk-merge-a168f56ba79513b9ed87b2f22dd07458': get_rechunk_dict_from_proxy_array_sample(),
              'getitem-c6555b775be6a9d771866321a0d38252': get_getitem_dict_from_proxy_array_sample()}
-    f = h5py.File('myfile.hdf5','w')
+    sample_file_path = 'tests/myfile.hdf5'
+    f = h5py.File(sample_file_path,'w')
     dset = f.create_dataset("chunked", (100,100,100), chunks=(10,20,5))
     d = {
         'array-3ec4eddf5e385f67eb8007734372b503':{
@@ -33,6 +34,7 @@ def test_get_arrays_dictionaries():
     }
     array_to_original, original_array_chunks, original_array_shapes, original_array_blocks_shape = get_arrays_dictionaries(graph, slices_dict)
     f.close()
+    os.remove(sample_file_path)
     expected_array_to_original = {
         'array-6f870a321e8529128cb9bb82b8573db5': 'array-original-86453663',
         'array-3ec4eddf5e385f67eb8007734372b503': 'array-original-68453165'
