@@ -33,7 +33,7 @@ def test_BFS_connected_components():
             
 
 def test_get_used_getitems_from_graph():
-    data_path = '/home/user/Documents/workspace/projects/samActivities/experience3/tests/data/bbsamplesize.hdf5'
+    data_path = get_test_array()
     key = "data"
     arr = get_dask_array_from_hdf5(data_path, key)
     case = 'slabs_dask_interpol'
@@ -49,7 +49,7 @@ def test_get_used_getitems_from_graph():
 def test_get_getitems_from_graph():
     """ 
     """
-    data_path = '/home/user/Documents/workspace/projects/samActivities/experience3/tests/data/bbsamplesize.hdf5'
+    data_path = get_test_array()
     key = "data"
     arr = get_dask_array_from_hdf5(data_path, key)
     case = 'slabs_dask_interpol'

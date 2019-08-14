@@ -3,7 +3,7 @@ import dask_utils_perso
 from dask_utils_perso.utils import create_random_cube, load_array_parts, get_dask_array_from_hdf5
 
 
-ONE_GIG = 100000000
+ONE_GIG = 1000000000
 
 
 chunk_shapes = ['slabs_dask_interpol', 'slabs_previous_exp', 'blocks_dask_interpol', 'blocks_previous_exp']
