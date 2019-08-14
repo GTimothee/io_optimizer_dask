@@ -1,6 +1,6 @@
-
-from get_slices import *
-from get_dicts import *
+import optimize_io
+from optimize_io.get_slices import *
+from optimize_io.get_dicts import *
 import math
 
 import sys

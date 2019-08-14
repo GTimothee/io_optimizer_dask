@@ -1,12 +1,10 @@
 import sys
-sys.path.insert(2,'/home/user/Documents/workspace/projects/samActivities/tests/')
-import optimize_io
-from optimize_io import get_dicts 
-from get_dicts import *
 import h5py
+import optimize_io
+from optimize_io.get_dicts import *
 
-import utils
-from utils import *
+import tests_utils
+from tests_utils import *
 
 def test_get_arrays_dictionaries():
     graph = {'rechunk-merge-bcfb966a39aa5079f6457f1530dd85df': get_rechunk_dict_without_proxy_array_sample(),
