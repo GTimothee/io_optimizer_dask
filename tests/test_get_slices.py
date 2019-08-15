@@ -11,13 +11,13 @@ import sys
 
 def test_BFS_connected_components():
     graph = {
-        "a":["b", "c"],
-        "b":["a", "d"],
-        "c":["a"],
-        "d":["b"],
-        "e":["f", "g"],
-        "f":["e"],
-        "g":["e"]
+        "a": ["b", "c"],
+        "b": ["a", "d"],
+        "c": ["a"],
+        "d": ["b"],
+        "e": ["f", "g"],
+        "f": ["e"],
+        "g": ["e"]
     }
 
     expected_comps = {
@@ -30,7 +30,7 @@ def test_BFS_connected_components():
     for k, v in expected_comps.items():
         assert k in comps
         assert set(comps[k]) == set(v)
-            
+
 
 def test_get_used_getitems_from_graph():
     data_path = get_test_array()
@@ -47,7 +47,7 @@ def test_get_used_getitems_from_graph():
 
 
 def test_get_getitems_from_graph():
-    """ 
+    """
     """
     data_path = get_test_array()
     key = "data"
@@ -60,7 +60,7 @@ def test_get_getitems_from_graph():
     used_getitems = get_getitems_from_graph(graph)
     used_getitems = list(set(used_getitems))
     assert len(used_getitems) == expected_length
-  
+
 
 def test_add_or_create_to_list_dict():
     d = {'a': [1], 'c': [5, 6]}
@@ -72,7 +72,7 @@ def test_add_or_create_to_list_dict():
 
 
 def test_get_keys_from_graph():
-    d = {'a-165152': 1, 
+    d = {'a-165152': 1,
          'b-865134': 2,
          'a-864531': 3,
          'c-864535': 4}
@@ -87,8 +87,15 @@ def test_get_rechunk_subkeys():
     d = get_rechunk_dict_without_proxy_array_sample()
     split_keys, merge_keys = get_rechunk_subkeys(d)
 
-    expected_merge_keys = [('rechunk-merge-bcfb966a39aa5079f6457f1530dd85df', 0, 0, 0),
-                           ('rechunk-merge-bcfb966a39aa5079f6457f1530dd85df', 0, 0, 1)]
+    expected_merge_keys = [
+        ('rechunk-merge-bcfb966a39aa5079f6457f1530dd85df',
+         0,
+         0,
+         0),
+        ('rechunk-merge-bcfb966a39aa5079f6457f1530dd85df',
+         0,
+         0,
+         1)]
 
     expected_split_keys = [('rechunk-split-bcfb966a39aa5079f6457f1530dd85df', 0),
                            ('rechunk-split-bcfb966a39aa5079f6457f1530dd85df', 1),
@@ -99,7 +106,7 @@ def test_get_rechunk_subkeys():
 
     for i, j in zip(split_keys, expected_split_keys):
         assert i == j
-                
+
     for i, j in zip(merge_keys, expected_merge_keys):
         assert i == j
 
@@ -107,26 +114,32 @@ def test_get_rechunk_subkeys():
 def test_check_source_key():
     slices_dict = dict()
     deps_dict = dict()
-    sample_source_key = ['array-645318645', 
-                         slice(None, None, None), 
-                         slice(None, None, None), 
+    sample_source_key = ['array-645318645',
+                         slice(None, None, None),
+                         slice(None, None, None),
                          slice(None, None, None)]
     has_failed = [False, False]
-    expected = {'array-645318645': [(sample_source_key[1], sample_source_key[2], sample_source_key[3])]}
+    expected = {
+        'array-645318645': [(sample_source_key[1], 
+                             sample_source_key[2], 
+                             sample_source_key[3])]}
     dep_key = 'sample_dependent_key'
     expected_deps = {'array-645318645': [dep_key]}
-    slices_dict, deps_dict = check_source_key(slices_dict, deps_dict, tuple(sample_source_key), dep_key)
+    slices_dict, deps_dict = check_source_key(
+        slices_dict, deps_dict, tuple(sample_source_key), dep_key)
     sample_source_key[0] = "tmp"
     try:
-        result, _ = check_source_key(dict(), dict(), tuple(sample_source_key), dep_key)
-    except:
+        result, _ = check_source_key(
+            dict(), dict(), tuple(sample_source_key), dep_key)
+    except BaseException:
         has_failed[0] = True
     sample_source_key[0] = (864513, 86513, 4651, 3465)
     try:
-        result, _ = check_source_key(dict(), dict(), tuple(sample_source_key), dep_key)
-    except:
+        result, _ = check_source_key(
+            dict(), dict(), tuple(sample_source_key), dep_key)
+    except BaseException:
         has_failed[1] = True
-    
+
     assert has_failed == [False, True]
 
     for i, j in zip(expected, slices_dict):
@@ -135,13 +148,16 @@ def test_check_source_key():
     for k, v in expected_deps.items():
         assert tuple(v) == tuple(deps_dict[k])
 
-    
+
 def test_get_slices_from_rechunk_subkeys():
     rechunk_merge_graph = get_rechunk_dict_from_proxy_array_sample()
     split_keys, merge_keys = get_rechunk_subkeys(rechunk_merge_graph)
-    slices_dict, deps_dict = get_slices_from_rechunk_subkeys(rechunk_merge_graph, split_keys, merge_keys)
+    slices_dict, deps_dict = get_slices_from_rechunk_subkeys(
+        rechunk_merge_graph, split_keys, merge_keys)
     expected_name = 'array-3ec4eddf5e385f67eb8007734372b503'
-    expected_list = [(0,0,1),(0,0,2),(0,1,0),(0,1,1),(0,1,2),(0,0,3),(0,1,3),(0,2,0),(0,2,1),(0,2,2)]
+    expected_list = [(0, 0, 1), (0, 0, 2), (0, 1, 0), (0, 1, 1),
+                     (0, 1, 2), (0, 0, 3), (0, 1, 3), (0, 2, 0), 
+                     (0, 2, 1), (0, 2, 2)]
     expected = {expected_name: expected_list}
     assert set(slices_dict) == set(expected)
 
@@ -151,68 +167,87 @@ def test_get_slices_from_rechunk_keys():
              'array-8645346531',
              'array-6845312645']
 
-    d = {'rechunk-merge-65312653120': get_rechunk_dict_from_proxy_array_sample(array_names=names, add_list=[1]),
-         'rechunk-merge-64531264531': get_rechunk_dict_from_proxy_array_sample(array_names=names, add_list=[2]),
-         'rechunk-merge-86453126543': get_rechunk_dict_from_proxy_array_sample(array_names=names, add_list=[3])}
+    d = {
+        'rechunk-merge-65312653120': get_rechunk_dict_from_proxy_array_sample(
+            array_names=names,
+            add_list=[1]),
+        'rechunk-merge-64531264531': get_rechunk_dict_from_proxy_array_sample(
+            array_names=names,
+            add_list=[2]),
+        'rechunk-merge-86453126543': get_rechunk_dict_from_proxy_array_sample(
+            array_names=names,
+            add_list=[3])}
 
     rechunk_keys = list(d.keys())
 
     slices_dict, deps_dict = get_slices_from_rechunk_keys(d, rechunk_keys)
     expected = dict()
-    expected[names[0]] = [(0,0,3),(0,1,3)]
-    expected[names[1]] = [(0,2,0)]
-    expected[names[2]] = [(0,2,1),(0,2,2)]
-    expected['array-3ec4eddf5e385f67eb8007734372b503'] = [(0,0,0),(0,0,1),(0,0,2),(0,1,0),(0,1,1),(0,1,2)]
-    
+    expected[names[0]] = [(0, 0, 3), (0, 1, 3)]
+    expected[names[1]] = [(0, 2, 0)]
+    expected[names[2]] = [(0, 2, 1), (0, 2, 2)]
+    expected['array-3ec4eddf5e385f67eb8007734372b503'] = [
+        (0, 0, 0), (0, 0, 1), (0, 0, 2), (0, 1, 0), (0, 1, 1), (0, 1, 2)]
+
     for k in list(expected.keys()):
         assert set(expected[k]) == set(slices_dict[k])
 
 
 def test_get_slices_from_getitem_subkeys():
     getitem_graph = get_getitem_dict_from_proxy_array_sample()
-    used_getitems = [('getitem-c6555b775be6a9d771866321a0d38252',0,0,0),
-                     ('getitem-c6555b775be6a9d771866321a0d38252',0,0,1),
-                     ('getitem-c6555b775be6a9d771866321a0d38252',0,0,2),
-                     ('getitem-c6555b775be6a9d771866321a0d38252',0,0,3),
-                     ('getitem-c6555b775be6a9d771866321a0d38252',0,0,4),
-                     ('getitem-c6555b775be6a9d771866321a0d38252',0,0,5)]
-    slices_dict, deps_dict = get_slices_from_getitem_subkeys(getitem_graph, used_getitems)
+    used_getitems = [('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 0),
+                     ('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 1),
+                     ('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 2),
+                     ('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 3),
+                     ('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 4),
+                     ('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 5)]
+    slices_dict, deps_dict = get_slices_from_getitem_subkeys(
+        getitem_graph, used_getitems)
     expected_name = 'array-6f870a321e8529128cb9bb82b8573db5'
-    expected = {expected_name: [(0,0,0),(0,0,1),(0,0,2),(0,0,3),(0,0,4),(0,0,5)]}
+    expected = {
+        expected_name: [
+            (0, 0, 0), (0, 0, 1), (0, 0, 2), (0, 0, 3), (0, 0, 4), (0, 0, 5)]}
     assert slices_dict == expected
 
 
 def test_get_slices_from_getitem_keys():
     graph = get_graph_with_getitem()
     getitem_keys = ['getitem-430f856c4196ad50518e167d79ffd894']
-    used_getitems = [('getitem-430f856c4196ad50518e167d79ffd894',0,0,0),
-                     ('getitem-430f856c4196ad50518e167d79ffd894',0,0,1),
-                     ('getitem-430f856c4196ad50518e167d79ffd894',0,0,3),
-                     ('getitem-430f856c4196ad50518e167d79ffd894',0,0,4),
-                     ('getitem-430f856c4196ad50518e167d79ffd894',0,0,5),
-                     ('getitem-430f856c4196ad50518e167d79ffd894',0,0,6)]
-    slices_dict, deps_dict = get_slices_from_getitem_keys(graph, getitem_keys, used_getitems)
+    used_getitems = [('getitem-430f856c4196ad50518e167d79ffd894', 0, 0, 0),
+                     ('getitem-430f856c4196ad50518e167d79ffd894', 0, 0, 1),
+                     ('getitem-430f856c4196ad50518e167d79ffd894', 0, 0, 3),
+                     ('getitem-430f856c4196ad50518e167d79ffd894', 0, 0, 4),
+                     ('getitem-430f856c4196ad50518e167d79ffd894', 0, 0, 5),
+                     ('getitem-430f856c4196ad50518e167d79ffd894', 0, 0, 6)]
+    slices_dict, deps_dict = get_slices_from_getitem_keys(
+        graph, getitem_keys, used_getitems)
     expected_name = 'array-4d8aa96f6f06806aeb9a11b75751b175'
-    expected = {expected_name: [(0,0,0),(0,0,1),(0,0,3),(0,0,4),(0,0,5),(0,0,6)]}
+    expected = {
+        expected_name: [
+            (0, 0, 0), (0, 0, 1), (0, 0, 3), (0, 0, 4), (0, 0, 5), (0, 0, 6)]}
     assert slices_dict == expected
 
 
 def test_get_slices_from_dask_graph():
-    graph = {'rechunk-merge-bcfb966a39aa5079f6457f1530dd85df': get_rechunk_dict_without_proxy_array_sample(),
-             'rechunk-merge-a168f56ba79513b9ed87b2f22dd07458': get_rechunk_dict_from_proxy_array_sample(),
-             'getitem-c6555b775be6a9d771866321a0d38252': get_getitem_dict_from_proxy_array_sample()}
+    graph = {
+        'rechunk-merge-bcfb966a39aa5079f6457f1530dd85df': get_rechunk_dict_without_proxy_array_sample(),
+        'rechunk-merge-a168f56ba79513b9ed87b2f22dd07458': get_rechunk_dict_from_proxy_array_sample(),
+        'getitem-c6555b775be6a9d771866321a0d38252': get_getitem_dict_from_proxy_array_sample()}
 
-    used_getitems = [('getitem-c6555b775be6a9d771866321a0d38252',0,0,0),
-                     ('getitem-c6555b775be6a9d771866321a0d38252',0,0,1),
-                     ('getitem-c6555b775be6a9d771866321a0d38252',0,0,2),
-                     ('getitem-c6555b775be6a9d771866321a0d38252',0,0,3),
-                     ('getitem-c6555b775be6a9d771866321a0d38252',0,0,5)]
+    used_getitems = [('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 0),
+                     ('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 1),
+                     ('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 2),
+                     ('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 3),
+                     ('getitem-c6555b775be6a9d771866321a0d38252', 0, 0, 5)]
 
     slices_dict, deps_dict = get_slices_from_dask_graph(graph, used_getitems)
 
     expected = {
-        'array-3ec4eddf5e385f67eb8007734372b503': [(0,0,0),(0,0,1),(0,0,2),(0,1,0),(0,1,1),(0,1,2),(0,0,3),(0,1,3),(0,2,0),(0,2,1),(0,2,2)],
-        'array-6f870a321e8529128cb9bb82b8573db5': [(0,0,0),(0,0,1),(0,0,2),(0,0,3),(0,0,5)]
+        'array-3ec4eddf5e385f67eb8007734372b503': [(0, 0, 0), (0, 0, 1), (0, 0, 2), 
+                                                   (0, 1, 0), (0, 1, 1), (0, 1, 2), 
+                                                   (0, 0, 3), (0, 1, 3), (0, 2, 0), 
+                                                   (0, 2, 1), (0, 2, 2)],
+        'array-6f870a321e8529128cb9bb82b8573db5': [(0, 0, 0), (0, 0, 1), (0, 0, 2), 
+                                                   (0, 0, 3), (0, 0, 5)]
     }
 
     for key, val in expected.items():
