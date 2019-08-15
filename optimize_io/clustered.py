@@ -44,8 +44,7 @@ def apply_clustered_strategy(
 
         print("buffers", buffers)
 
-        for load_index in range(len(buffers)):
-            load = buffers[load_index]
+        for load in buffers:
             # if len(load) > 1: TODO: remettre ça, l'enlever sert juste à voir
             # (dans la viz) si le buffering marche
             graph, buffer_node_name = create_buffer_node(
@@ -233,6 +232,18 @@ def update_io_tasks(
     keys_dict = get_keys_from_graph(graph)
     dependent_tasks = deps_dict[proxy_array_name]
 
+    if 'store' in list(keys_dict.keys()):
+        getitem_keys = keys_dict['store']
+        for key in getitem_keys:
+            graph[key] = update_io_tasks_getitem_store(
+                graph[key],
+                load,
+                buffer_node_name,
+                dependent_tasks,
+                array_to_original,
+                original_array_chunks,
+                original_array_blocks_shape)
+
     if 'rechunk-merge' in list(keys_dict.keys()):
         rechunk_keys = keys_dict['rechunk-merge']
         for key in rechunk_keys:
@@ -346,6 +357,38 @@ def is_in_load(
         return True
     else:
         return False
+
+
+def update_io_tasks_getitem_store(
+        getitem_graph,
+        load,
+        buffer_node_name,
+        dependent_tasks,
+        array_to_original,
+        original_array_chunks,
+        original_array_blocks_shape):
+    proxy_getitems = list()
+    for k in list(getitem_graph.keys()):
+        if k in dependent_tasks:
+            v = getitem_graph[k]
+            proxy_getitems.append(v)
+         
+    for k in list(getitem_graph.keys()):
+        if k in proxy_getitems:    
+            val = getitem_graph[k]
+            get_func, proxy_key, slices = val
+
+            if is_in_load(
+                    proxy_key,
+                    load,
+                    array_to_original,
+                    original_array_blocks_shape):
+                pos_in_buffer, slices_from_buffer = convert_proxy_to_buffer_slices(
+                    proxy_key, buffer_node_name, slices, array_to_original, original_array_chunks, original_array_blocks_shape)
+                new_val = (
+                    get_func, (buffer_node_name, 0, 0, 0), slices_from_buffer)
+                getitem_graph[k] = new_val
+    return getitem_graph
 
 
 def update_io_tasks_getitem(

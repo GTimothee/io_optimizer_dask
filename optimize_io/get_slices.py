@@ -19,6 +19,18 @@ def get_slices_from_dask_graph(graph, used_getitems):
     keys_dict = get_keys_from_graph(graph)
     slices_dict = dict()
     deps_dict = dict()
+    
+    if 'store' in list(keys_dict.keys()):
+        hidden_getitems = list()
+        unknown_keys = keys_dict['store']
+        for k in unknown_keys:
+            v = graph[k]
+            for k2, v2 in v.items():
+                if isinstance(k2, tuple) and isinstance(k2[0], str) and ('getitem' in k2[0]):
+                    hidden_getitems.append(k)
+                    continue
+        if len(hidden_getitems) != 0:
+           keys_dict.update({'getitem': hidden_getitems})
 
     if 'rechunk-merge' in list(keys_dict.keys()):
         rechunk_keys = keys_dict['rechunk-merge']
@@ -150,8 +162,16 @@ def get_slices_from_getitem_subkeys(getitem_graph, used_getitems):
     deps_dict = dict()
 
     for k, v in getitem_graph.items():
-
-        f, source_key, s = v
+        """print("key", k)
+        print("value", v)"""
+        if len(v) == 3:
+            f, source_key, s = v
+        # warning code below has only been thought for 'store' graph:
+        elif isinstance(v, tuple) and len(v) == 4:  
+            source_key = v
+        else:
+            continue
+            #raise ValueError("not supported")
         if isinstance(k[0], str) and "getitem" in k[0] and k in used_getitems:
             slices_dict, deps_dict = check_source_key(
                 slices_dict, deps_dict, source_key, k)
@@ -195,7 +215,7 @@ def BFS_connected_components(
         filter_condition_for_root_nodes=true_dumb_function,
         max_iterations=10):
     """
-    thought to work with undirected graphs for the moment
+    thought to work with undirected graphs only for the moment
     returns a dictionary with key = component id (increasing int) and value is a list of the nodes in the component
     """
     def all_nodes_not_visited(nb_nodes_visited, nb_nodes_total):
@@ -252,9 +272,14 @@ def BFS_connected_components(
 
 
 def get_used_getitems_from_graph(graph, undirected):
-    """ search in the graph the use of getitem tasks so that we just take them into account to create the buffers of clustered strategy
+    """ search in the graph the use of getitem tasks so that we just 
+    take them into account to create the buffers of clustered strategy
+    This function searches for connected components in the dask graph 
+    and take the deeper/deepest one/ones.
     """
     def recursive_search(_list, neighbours_list):
+        """ search in depth into a value of k,v pairs
+        """
         if not isinstance(_list[0], tuple):  # if it is not a list of targets
             for i in range(len(_list)):
                 sublist = _list[i]
@@ -266,11 +291,13 @@ def get_used_getitems_from_graph(graph, undirected):
         return neighbours_list
 
     def get_remade_graph(graph, undirected=False):
+        """ Transform dask graph into a real graph in order to use BFS on it.
+        """
         remade_graph = dict()
         for k, v in graph.items():
             if isinstance(k, tuple):
                 k2 = k[0]
-            elif isinstance(k, str):
+            elif isinstance(k, str) or isinstance(k, int):
                 k2 = k
             else:
                 raise ValueError("type of key unsupported", k, type(k))
@@ -396,6 +423,10 @@ def get_keys_from_graph(graph, printer=False):
             k2 = k[0]
         elif isinstance(k, str):
             k2 = k
+        elif isinstance(k, int):
+            key_name = 'store'
+            key_dict = add_or_create_to_list_dict(key_dict, key_name, k)
+            continue 
         else:
             raise ValueError("type of key unsupported", k, type(k))
         split = k2.split('-')

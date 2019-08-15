@@ -26,10 +26,21 @@ def clustered_optimization(graph):
     # collect information
     used_getitems = get_used_getitems_from_graph(graph, undirected=False)
     slices_dict, deps_dict = get_slices_from_dask_graph(graph, used_getitems)
-    array_to_original, original_array_chunks, original_array_shapes, original_array_blocks_shape = get_arrays_dictionaries(
-        graph, slices_dict)
+
+
+    #to be removed by generalizing the functionality
+    keys_dict = get_keys_from_graph(graph)
+    if not 'store' in list(keys_dict.keys()):
+        array_to_original, original_array_chunks, original_array_shapes, original_array_blocks_shape = get_arrays_dictionaries(
+            graph, slices_dict)
+    else:
+        array_to_original, original_array_chunks, original_array_shapes, original_array_blocks_shape = get_arrays_dictionaries_store(
+            graph, slices_dict)
+
+            
     slices_dict = convert_slices_list_to_numeric_slices(
         slices_dict, array_to_original, original_array_blocks_shape)
+    print("****slices:\n", slices_dict)
 
     # apply optimization
     graph = apply_clustered_strategy(
@@ -40,6 +51,10 @@ def clustered_optimization(graph):
         original_array_chunks,
         original_array_shapes,
         original_array_blocks_shape)
+
+    for k, v in graph.items():
+        print("\nkey", k)
+        print(v, "\n")
     return graph
 
 

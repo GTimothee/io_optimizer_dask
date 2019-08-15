@@ -1,8 +1,8 @@
 import math
 import os
 import dask_utils_perso
-from dask_utils_perso.utils import create_random_cube, load_array_parts,
-get_dask_array_from_hdf5
+from dask_utils_perso.utils import (create_random_cube, load_array_parts,
+    get_dask_array_from_hdf5)
 
 
 ONE_GIG = 1000000000
