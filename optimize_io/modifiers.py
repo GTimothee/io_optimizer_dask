@@ -86,27 +86,7 @@ def get_used_proxies(graph, undirected):
     for k, v in remade_graph.items():
         if v in proxies_keys:
             used_proxies.append(v)
-
-    """"
-    def is_target(x):
-        if x in proxies_keys:
-            return True
-        return False
-    
-    connected_comps = BFS_connected_components(remade_graph, 
-                                               filter_condition_for_root_nodes=is_target)
-    max_len = max(map(len, connected_comps.values()))
-    main_components = [
-        _list for comp, _list in connected_comps.items() if len(_list) == max_len]
-
-    # get used proxies from main components
-    used_proxies = list()
-    for main_comp in main_components:
-        for e in main_comp:
-            if is_target(e):
-                used_proxies.append(e)
-    """"
-
+            
     # create dictionaries
     origarr_to_slices_dict = dict()
     origarr_to_used_proxies_dict = dict()
