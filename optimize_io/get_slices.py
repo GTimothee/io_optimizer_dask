@@ -8,7 +8,7 @@ __all__ = (
     "check_source_key",
     "get_rechunk_subkeys",
     "get_keys_from_graph",
-    "add_or_create_to_list_dict",
+    "add_to_dict_of_lists",
     "get_getitems_from_graph",
     "get_used_getitems_from_graph",
     "BFS_connected_components")
@@ -174,10 +174,10 @@ def check_source_key(slices_dict, deps_dict, source_key, dependent_key):
     if not isinstance(source, str):
         raise ValueError("expected a string:", source)
     if 'array' in source and 'array-original' not in source:
-        slices_dict = add_or_create_to_list_dict(
+        slices_dict = add_to_dict_of_lists(
             slices_dict, source, (s1, s2, s3))
             
-        deps_dict = add_or_create_to_list_dict(
+        deps_dict = add_to_dict_of_lists(
             deps_dict, source, dependent_key)
     return slices_dict, deps_dict
 
@@ -192,12 +192,13 @@ def true_dumb_function(x):
     return True
 
 
+#TODO: verify
 def BFS_connected_components(
         graph,
         filter_condition_for_root_nodes=true_dumb_function,
         max_iterations=10):
     """
-    thought to work with undirected graphs only for the moment
+    root node is at filter_condition_for_root_nodes 
     returns a dictionary with key = component id (increasing int) and value is a list of the nodes in the component
     """
     def all_nodes_not_visited(nb_nodes_visited, nb_nodes_total):
@@ -208,8 +209,8 @@ def BFS_connected_components(
     def visit_node(visited, n, nb_nodes_visited, components, node_queue):
         visited[n] = True
         nb_nodes_visited += 1
-        add_or_create_to_list_dict(
-            components, component_id, n, check_unique=True)
+        add_to_dict_of_lists(
+            components, component_id, n, unique=True)
         node_queue.append(n)
         return nb_nodes_visited
 
@@ -227,7 +228,7 @@ def BFS_connected_components(
     nb_its = 0
     while all_nodes_not_visited(nb_nodes_visited, nb_nodes_total):
 
-        # get next unvisited node
+        # get next unvisited node (next start of connected component)
         node_queue = list()
         for n in nodes:
             if not visited[n]:
@@ -291,38 +292,38 @@ def get_used_getitems_from_graph(graph, undirected):
 
             for k2, v2 in v.items():
                 if isinstance(v2, str):
-                    add_or_create_to_list_dict(
-                        remade_graph, k2, v2, check_unique=True)
+                    add_to_dict_of_lists(
+                        remade_graph, k2, v2, unique=True)
                     if undirected:
-                        add_or_create_to_list_dict(
-                            remade_graph, v2, k2, check_unique=True)
+                        add_to_dict_of_lists(
+                            remade_graph, v2, k2, unique=True)
                     else:
-                        add_or_create_to_list_dict(
-                            remade_graph, v2, None, check_unique=True)
+                        add_to_dict_of_lists(
+                            remade_graph, v2, None, unique=True)
                 elif isinstance(v2, tuple):
                     if len(v2) > 1:
                         for arg in v2[1:]:
                             if isinstance(arg, list):
                                 neighbours_list = recursive_search(arg, list())
                                 for n in neighbours_list:
-                                    add_or_create_to_list_dict(
-                                        remade_graph, k2, n, check_unique=True)
+                                    add_to_dict_of_lists(
+                                        remade_graph, k2, n, unique=True)
                                     if undirected:
-                                        add_or_create_to_list_dict(
-                                            remade_graph, n, k2, check_unique=True)
+                                        add_to_dict_of_lists(
+                                            remade_graph, n, k2, unique=True)
                                     else:
-                                        add_or_create_to_list_dict(
-                                            remade_graph, n, None, check_unique=True)
+                                        add_to_dict_of_lists(
+                                            remade_graph, n, None, unique=True)
 
                             elif isinstance(arg, tuple) and isinstance(arg[0], str):
-                                add_or_create_to_list_dict(
-                                    remade_graph, k2, arg, check_unique=True)
+                                add_to_dict_of_lists(
+                                    remade_graph, k2, arg, unique=True)
                                 if undirected:
-                                    add_or_create_to_list_dict(
-                                        remade_graph, arg, k2, check_unique=True)
+                                    add_to_dict_of_lists(
+                                        remade_graph, arg, k2, unique=True)
                                 else:
-                                    add_or_create_to_list_dict(
-                                        remade_graph, arg, None, check_unique=True)
+                                    add_to_dict_of_lists(
+                                        remade_graph, arg, None, unique=True)
 
         """for k, v in remade_graph.items():
             print("\n\n", k)
@@ -412,24 +413,27 @@ def get_keys_from_graph(graph, printer=False):
             k2 = k
         elif isinstance(k, int): # for the moment just store taken into account
             key_name = 'store'
-            key_dict = add_or_create_to_list_dict(key_dict, key_name, k)
+            key_dict = add_to_dict_of_lists(key_dict, key_name, k)
             continue 
         else:
             raise ValueError("type of key unsupported", k, type(k))
         split = k2.split('-')
         key_name = "-".join(split[:-1])
-        key_dict = add_or_create_to_list_dict(key_dict, key_name, k)
+        key_dict = add_to_dict_of_lists(key_dict, key_name, k)
     return key_dict
 
 
 # utility
-def add_or_create_to_list_dict(d, k, v, check_unique=False):
+def add_to_dict_of_lists(d, k, v, unique=False):
+    """ if key does not exist, add a new list [value], else, 
+    append value to existing list corresponding to the key
+    """
     if k not in d:
         if v:
             d[k] = [v]
         else:
             d[k] = []
     else:
-        if v and (check_unique and v not in d[k]) or not check_unique:
+        if v and (unique and v not in d[k]) or not unique:
             d[k].append(v)
     return d
