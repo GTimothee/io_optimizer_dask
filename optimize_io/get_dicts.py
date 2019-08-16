@@ -1,34 +1,7 @@
 __all__ = (
     "get_arrays_dictionaries",
-    "get_arrays_dictionaries_store",
     "get_original_array_from_proxy_array_name",
     "get_array_block_dims")
-
-
-def get_arrays_dictionaries_store(graph, slices_dict):
-    """
-        Fill in three utility dictionnaries that will be useful for the next steps
-    """
-
-    array_to_original = dict()
-    original_array_chunks = dict()
-    original_array_shapes = dict()
-    original_array_blocks_shape = dict()
-
-    for proxy_array_name in list(slices_dict.keys()):
-        original_array_name, original_array_obj = get_original_array_from_proxy_array_name_store(
-            graph, proxy_array_name)
-        array_to_original[proxy_array_name] = original_array_name
-        original_array_shapes[original_array_name] = original_array_obj.shape
-        original_array_chunks[original_array_name] = original_array_obj.chunks
-        original_array_blocks_shape[original_array_name] = get_array_block_dims(
-            original_array_obj.shape, original_array_obj.chunks)
-
-    print("original_array_blocks_shape", original_array_blocks_shape)
-    print("original_array_shapes", original_array_shapes)
-    print("original_array_chunks", original_array_chunks)
-
-    return array_to_original, original_array_chunks, original_array_shapes, original_array_blocks_shape
 
 
 def get_original_array_from_proxy_array_name_store(graph, proxy_array_name):

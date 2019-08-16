@@ -12,15 +12,20 @@ chunk_shapes = ['slabs_dask_interpol', 'slabs_previous_exp',
                 'blocks_dask_interpol', 'blocks_previous_exp']
 
 
-def get_test_array():
+def get_test_array(data_dir=None, shape=(1540, 1210, 1400), file_name='sample_array.hdf5', overwrite=False):
     """ Create data for the test if not created.
     """
-    data_dir = os.environ.get('DATA_PATH')
-    data_path = os.path.join(data_dir, 'sample_array.hdf5')
+    if not data_dir:
+        data_dir = os.environ.get('DATA_PATH')
+    data_path = os.path.join(data_dir, file_name)
+
+    if os.path.isfile(data_path) and overwrite:
+        os.remove(data_path)
+
     if not os.path.isfile(data_path):
         dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
                                                   file_path=data_path,
-                                                  shape=(1540, 1210, 1400),
+                                                  shape=shape,
                                                   chunks_shape=None,
                                                   dtype="float16")
     return data_path

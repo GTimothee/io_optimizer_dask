@@ -370,24 +370,20 @@ def update_io_tasks_getitem_store(
     proxy_getitems = list()
     for k in list(getitem_graph.keys()):
         if k in dependent_tasks:
-            v = getitem_graph[k]
-            proxy_getitems.append(v)
+            proxy_getitems.append(getitem_graph[k])
          
+    print("proxy_getitems", proxy_getitems)
+
     for k in list(getitem_graph.keys()):
         if k in proxy_getitems:    
             val = getitem_graph[k]
             get_func, proxy_key, slices = val
 
-            if is_in_load(
-                    proxy_key,
-                    load,
-                    array_to_original,
-                    original_array_blocks_shape):
-                pos_in_buffer, slices_from_buffer = convert_proxy_to_buffer_slices(
-                    proxy_key, buffer_node_name, slices, array_to_original, original_array_chunks, original_array_blocks_shape)
-                new_val = (
-                    get_func, (buffer_node_name, 0, 0, 0), slices_from_buffer)
-                getitem_graph[k] = new_val
+            pos_in_buffer, slices_from_buffer = convert_proxy_to_buffer_slices(
+                k, buffer_node_name, slices, array_to_original, original_array_chunks, original_array_blocks_shape)
+                
+            new_val = (getitem, (buffer_node_name, 0, 0, 0), slices_from_buffer)
+            getitem_graph[k] = new_val
     return getitem_graph
 
 

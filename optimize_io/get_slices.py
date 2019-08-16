@@ -26,7 +26,7 @@ def get_slices_from_dask_graph(graph, used_getitems):
         for k in unknown_keys:
             v = graph[k]
             for k2, v2 in v.items():
-                if isinstance(k2, tuple) and isinstance(k2[0], str) and ('getitem' in k2[0]):
+                if isinstance(k2, tuple) and isinstance(k2[0], str) and ('array-getitem' in k2[0]):
                     hidden_getitems.append(k)
                     continue
         if len(hidden_getitems) != 0:
@@ -134,19 +134,6 @@ def get_slices_from_rechunk_subkeys(
                 concat_list, merge_key, slices_dict, deps_dict)
         return slices_dict, deps_dict
 
-    # TODO: make better
-    """def get_slices_from_merges(merge_keys, slices_dict, deps_dict):
-        for merge_key in merge_keys:
-            merge_value = rechunk_merge_graph[merge_key]
-            _, concat_list = merge_value
-            while not isinstance(concat_list[0][0], tuple):
-                concat_list = concat_list[0]
-            for block in concat_list:
-                for source_key in block:
-                    if len(source_key) == 4:
-                        slices_dict, deps_dict = check_source_key(slices_dict, deps_dict, source_key, merge_key)
-        return slices_dict, deps_dict"""
-
     slices_dict = dict()
     deps_dict = dict()
     slices_dict, deps_dict = get_slices_from_splits(
@@ -162,16 +149,10 @@ def get_slices_from_getitem_subkeys(getitem_graph, used_getitems):
     deps_dict = dict()
 
     for k, v in getitem_graph.items():
-        """print("key", k)
-        print("value", v)"""
         if len(v) == 3:
             f, source_key, s = v
-        # warning code below has only been thought for 'store' graph:
-        elif isinstance(v, tuple) and len(v) == 4:  
-            source_key = v
         else:
-            continue
-            #raise ValueError("not supported")
+            raise ValueError("not supported")
         if isinstance(k[0], str) and "getitem" in k[0] and k in used_getitems:
             slices_dict, deps_dict = check_source_key(
                 slices_dict, deps_dict, source_key, k)
@@ -195,6 +176,7 @@ def check_source_key(slices_dict, deps_dict, source_key, dependent_key):
     if 'array' in source and 'array-original' not in source:
         slices_dict = add_or_create_to_list_dict(
             slices_dict, source, (s1, s2, s3))
+            
         deps_dict = add_or_create_to_list_dict(
             deps_dict, source, dependent_key)
     return slices_dict, deps_dict
@@ -276,6 +258,11 @@ def get_used_getitems_from_graph(graph, undirected):
     take them into account to create the buffers of clustered strategy
     This function searches for connected components in the dask graph 
     and take the deeper/deepest one/ones.
+
+    • remake graph into undirected graph
+    • BFS on it
+    • extract main components (those with maximum depth)
+    • go through the main components and if node contains “getitem” then add it to list of used getitems 
     """
     def recursive_search(_list, neighbours_list):
         """ search in depth into a value of k,v pairs
@@ -423,7 +410,7 @@ def get_keys_from_graph(graph, printer=False):
             k2 = k[0]
         elif isinstance(k, str):
             k2 = k
-        elif isinstance(k, int):
+        elif isinstance(k, int): # for the moment just store taken into account
             key_name = 'store'
             key_dict = add_or_create_to_list_dict(key_dict, key_name, k)
             continue 
