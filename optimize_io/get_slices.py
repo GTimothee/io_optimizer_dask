@@ -432,7 +432,7 @@ def add_to_dict_of_lists(d, k, v, unique=False):
         if v:
             d[k] = [v]
         else:
-            d[k] = []
+            d[k] = list()
     else:
         if v and (unique and v not in d[k]) or not unique:
             d[k].append(v)

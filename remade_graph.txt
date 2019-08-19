@@ -1,0 +1,743 @@
+key ('getitem-83160559748f5e716d57ca20471a6519', 0, 0, 0)
+value [('array-e219d72d5454d80fb593bddfb520ba89', 0, 0, 0), (slice(None, None, None), slice(None, None, None), slice(None, None, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 0, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(0, 242, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 0, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(0, 242, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 0, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(0, 242, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 0, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(0, 242, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 0, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(0, 242, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 0, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(0, 242, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 0, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(0, 242, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 1, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(242, 484, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 1, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(242, 484, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 1, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(242, 484, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 1, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(242, 484, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 1, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(242, 484, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 1, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(242, 484, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 1, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(242, 484, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 2, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(484, 726, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 2, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(484, 726, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 2, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(484, 726, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 2, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(484, 726, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 2, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(484, 726, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 2, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(484, 726, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 2, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(484, 726, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 3, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(726, 968, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 3, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(726, 968, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 3, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(726, 968, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 3, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(726, 968, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 3, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(726, 968, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 3, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(726, 968, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 3, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(726, 968, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 4, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(968, 1210, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 4, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(968, 1210, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 4, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(968, 1210, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 4, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(968, 1210, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 4, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(968, 1210, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 4, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(968, 1210, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 0, 4, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(0, 220, None), slice(968, 1210, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 0, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(0, 242, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 0, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(0, 242, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 0, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(0, 242, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 0, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(0, 242, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 0, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(0, 242, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 0, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(0, 242, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 0, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(0, 242, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 1, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(242, 484, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 1, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(242, 484, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 1, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(242, 484, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 1, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(242, 484, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 1, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(242, 484, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 1, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(242, 484, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 1, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(242, 484, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 2, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(484, 726, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 2, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(484, 726, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 2, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(484, 726, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 2, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(484, 726, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 2, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(484, 726, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 2, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(484, 726, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 2, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(484, 726, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 3, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(726, 968, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 3, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(726, 968, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 3, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(726, 968, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 3, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(726, 968, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 3, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(726, 968, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 3, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(726, 968, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 3, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(726, 968, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 4, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(968, 1210, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 4, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(968, 1210, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 4, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(968, 1210, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 4, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(968, 1210, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 4, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(968, 1210, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 4, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(968, 1210, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 1, 4, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(220, 440, None), slice(968, 1210, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 0, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(0, 242, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 0, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(0, 242, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 0, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(0, 242, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 0, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(0, 242, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 0, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(0, 242, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 0, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(0, 242, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 0, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(0, 242, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 1, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(242, 484, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 1, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(242, 484, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 1, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(242, 484, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 1, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(242, 484, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 1, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(242, 484, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 1, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(242, 484, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 1, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(242, 484, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 2, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(484, 726, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 2, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(484, 726, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 2, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(484, 726, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 2, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(484, 726, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 2, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(484, 726, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 2, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(484, 726, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 2, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(484, 726, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 3, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(726, 968, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 3, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(726, 968, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 3, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(726, 968, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 3, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(726, 968, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 3, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(726, 968, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 3, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(726, 968, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 3, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(726, 968, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 4, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(968, 1210, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 4, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(968, 1210, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 4, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(968, 1210, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 4, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(968, 1210, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 4, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(968, 1210, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 4, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(968, 1210, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 2, 4, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(440, 660, None), slice(968, 1210, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 0, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(0, 242, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 0, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(0, 242, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 0, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(0, 242, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 0, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(0, 242, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 0, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(0, 242, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 0, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(0, 242, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 0, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(0, 242, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 1, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(242, 484, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 1, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(242, 484, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 1, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(242, 484, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 1, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(242, 484, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 1, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(242, 484, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 1, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(242, 484, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 1, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(242, 484, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 2, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(484, 726, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 2, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(484, 726, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 2, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(484, 726, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 2, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(484, 726, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 2, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(484, 726, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 2, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(484, 726, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 2, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(484, 726, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 3, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(726, 968, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 3, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(726, 968, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 3, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(726, 968, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 3, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(726, 968, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 3, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(726, 968, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 3, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(726, 968, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 3, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(726, 968, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 4, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(968, 1210, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 4, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(968, 1210, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 4, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(968, 1210, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 4, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(968, 1210, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 4, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(968, 1210, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 4, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(968, 1210, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 3, 4, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(660, 880, None), slice(968, 1210, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 0, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(0, 242, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 0, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(0, 242, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 0, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(0, 242, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 0, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(0, 242, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 0, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(0, 242, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 0, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(0, 242, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 0, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(0, 242, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 1, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(242, 484, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 1, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(242, 484, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 1, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(242, 484, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 1, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(242, 484, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 1, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(242, 484, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 1, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(242, 484, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 1, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(242, 484, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 2, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(484, 726, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 2, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(484, 726, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 2, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(484, 726, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 2, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(484, 726, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 2, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(484, 726, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 2, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(484, 726, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 2, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(484, 726, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 3, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(726, 968, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 3, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(726, 968, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 3, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(726, 968, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 3, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(726, 968, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 3, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(726, 968, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 3, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(726, 968, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 3, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(726, 968, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 4, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(968, 1210, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 4, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(968, 1210, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 4, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(968, 1210, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 4, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(968, 1210, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 4, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(968, 1210, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 4, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(968, 1210, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 4, 4, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(880, 1100, None), slice(968, 1210, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 0, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(0, 242, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 0, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(0, 242, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 0, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(0, 242, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 0, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(0, 242, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 0, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(0, 242, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 0, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(0, 242, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 0, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(0, 242, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 1, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(242, 484, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 1, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(242, 484, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 1, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(242, 484, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 1, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(242, 484, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 1, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(242, 484, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 1, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(242, 484, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 1, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(242, 484, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 2, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(484, 726, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 2, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(484, 726, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 2, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(484, 726, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 2, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(484, 726, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 2, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(484, 726, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 2, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(484, 726, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 2, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(484, 726, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 3, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(726, 968, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 3, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(726, 968, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 3, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(726, 968, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 3, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(726, 968, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 3, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(726, 968, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 3, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(726, 968, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 3, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(726, 968, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 4, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(968, 1210, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 4, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(968, 1210, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 4, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(968, 1210, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 4, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(968, 1210, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 4, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(968, 1210, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 4, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(968, 1210, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 5, 4, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1100, 1320, None), slice(968, 1210, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 0, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(0, 242, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 0, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(0, 242, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 0, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(0, 242, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 0, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(0, 242, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 0, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(0, 242, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 0, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(0, 242, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 0, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(0, 242, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 1, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(242, 484, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 1, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(242, 484, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 1, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(242, 484, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 1, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(242, 484, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 1, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(242, 484, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 1, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(242, 484, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 1, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(242, 484, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 2, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(484, 726, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 2, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(484, 726, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 2, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(484, 726, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 2, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(484, 726, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 2, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(484, 726, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 2, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(484, 726, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 2, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(484, 726, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 3, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(726, 968, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 3, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(726, 968, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 3, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(726, 968, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 3, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(726, 968, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 3, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(726, 968, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 3, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(726, 968, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 3, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(726, 968, None), slice(1200, 1400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 4, 0)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(968, 1210, None), slice(0, 200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 4, 1)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(968, 1210, None), slice(200, 400, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 4, 2)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(968, 1210, None), slice(400, 600, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 4, 3)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(968, 1210, None), slice(600, 800, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 4, 4)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(968, 1210, None), slice(800, 1000, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 4, 5)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(968, 1210, None), slice(1000, 1200, None))]
+
+key ('array-e219d72d5454d80fb593bddfb520ba89', 6, 4, 6)
+value ['array-original-e219d72d5454d80fb593bddfb520ba89', (slice(1320, 1540, None), slice(968, 1210, None), slice(1200, 1400, None))]
+
+key array-original-e219d72d5454d80fb593bddfb520ba89
+value [<HDF5 dataset "data": shape (1540, 1210, 1400), type "<f2">]
+
+key ('getitem-3f54a676381a892412597b39f872b024', 0, 0, 0)
+value [('array-e219d72d5454d80fb593bddfb520ba89', 0, 0, 1), (slice(None, None, None), slice(None, None, None), slice(None, None, None))]
