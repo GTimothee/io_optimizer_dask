@@ -4,6 +4,7 @@ import optimize_io
 from optimize_io.clustered import *
 from optimize_io.get_slices import *
 from optimize_io.get_dicts import *
+from optimize_io.modifiers import origarr_to_used_proxies_dict
 
 
 __all__ = ("clustered_optimization",
@@ -24,14 +25,15 @@ def clustered_optimization(graph):
         graph : dask_array.dask.dicts
     """
     # collect information
-    used_getitems = get_used_getitems_from_graph(graph, undirected=False)
-    slices_dict, deps_dict = get_slices_from_dask_graph(graph, used_getitems)
-
-    array_to_original, original_array_chunks, original_array_shapes, original_array_blocks_shape = get_arrays_dictionaries(
-        graph, slices_dict)
+    (origarr_to_slices_dict, 
+        origarr_to_used_proxies_dict,
+        original_array_shapes,
+        original_array_chunks,
+        original_array_blocks_shape) = get_used_proxies(graph, undirected=False)
             
-    slices_dict = convert_slices_list_to_numeric_slices(
-        slices_dict, array_to_original, original_array_blocks_shape)
+    origarr_to_slices_dict = convert_slices_list_to_numeric_slices(
+        origarr_to_slices_dict, array_to_original, original_array_blocks_shape)
+        
     print("****slices:\n", slices_dict)
 
     # apply optimization

@@ -4,32 +4,36 @@ import optimize_io
 from optimize_io.get_slices import *
 from optimize_io.get_dicts import *
 
+import numpy as np
+
+def decompose_iterable(l, plain_list=list()):
+    """ transform iterables and multistage iterables into one list
+    ex of iterable: list
+    ex of multistage iterable: list of lists
+    ex: 
+        >> x = decompose_iterable([a, [b, [c]]], list()) 
+        >> print(x)
+        [a, b, c]
+    """
+    for e in l:
+        print(l)
+        if not isinstance(e, str) and not isinstance(e, np.ndarray):
+            print(type(e))
+            try: # iterable 
+                iterator = iter(e)
+                plain_list = decompose_iterable(e, plain_list)
+            except TypeError: # not iterable
+                plain_list.append(e)
+    return plain_list
+
 
 def get_graph_from_dask(graph, undirected=False):
     """ Transform dask graph into a real graph in order to use graph algorithms on it.
     in the graph, each node is an element (tuple, list, object)
     when directed, each edge is the relation "is the result of a function on"
     {a: b} implies that a is the result of a function a = f(b or more)
+    each key is mapped to a list of values (other keys used by this key as input)
     """
-
-    def decompose_iterable(l, plain_list):
-        """ transform iterables and multistage iterables into one list
-        ex of iterable: list
-        ex of multistage iterable: list of lists
-        ex: 
-            >> x = decompose_iterable([a, [b, [c]]], list()) 
-            >> print(x)
-            [a, b, c]
-        """
-        print("list", l)
-        for e in l:
-            if not isinstance(e, str):
-                try: # iterable 
-                    iterator = iter(e)
-                    plain_list = decompose_iterable(e, plain_list)
-                except TypeError: # not iterable
-                    plain_list.append(e)
-        return plain_list
 
     def is_task(v):
         if isinstance(v, tuple) and callable(v[0]):
@@ -58,7 +62,7 @@ def get_graph_from_dask(graph, undirected=False):
                 if not isinstance(arg, str) and not isinstance(arg, tuple) and not isinstance(arg, int):
                     try: # iterable 
                         iterator = iter(arg)
-                        l = decompose_iterable(arg, list())
+                        l = decompose_iterable(arg)
                         for e in l:
                             add_to_remade_graph(remade_graph, key, e, undirected)
                         continue
@@ -79,33 +83,63 @@ def get_used_proxies(graph, undirected):
     proxy: task that getitem directly from original-array
     """
 
-    remade_graph = get_graph_from_dask(graph, undirected=undirected)
+    def get_unused_keys(remade_graph):
+        """ find keys in the graph that are not used as values by another(other) key(s)
+        """
+        keys = list(remade_graph.keys())
+        vals = list(remade_graph.values())
+        flatten = list()
 
-    # find proxies
-    global proxies_keys 
-    proxies_keys = list()
-    for k, v in remade_graph.items():
-        try:
-            target, slices = v
-            if "array-original" in target and all([isinstance(s, slice) for s in slices]):
-                proxies_keys.append(k)
-        except:
-            pass
+        # flatten the values which is a list of lists 
+        # because get_graph_from_dask which is using add_to_dict_of_lists
+        for l in vals:
+            for e in l:
+                flatten.append(e)
 
-    # find used proxies
-    used_proxies = list()
-    for k, v in remade_graph.items():
-        if v[0] in proxies_keys:
-            used_proxies.append(v[0])
+        # do the actual job
+        unused_keys = list()
+        for key in keys:
+            if key not in flatten:
+                unused_keys.append(key)
 
-    # create dictionaries
+        return unused_keys
+
     origarr_to_slices_dict = dict()
     origarr_to_used_proxies_dict = dict()
-    for k in used_proxies:
-        v = remade_graph[k]
-        target, slices = v
-        add_to_dict_of_lists(origarr_to_slices_dict, target, slices, unique=True)
-        add_to_dict_of_lists(origarr_to_used_proxies_dict, target, k, unique=True)
+    original_array_shapes = dict()
+    original_array_chunks = dict()
+    original_array_blocks_shape = dict()
+
+    remade_graph = get_graph_from_dask(graph, undirected=undirected)
+    unused_keys = get_unused_keys(remade_graph)
+
+    for k, v in remade_graph.items():
+        if k not in unused_keys:
+            try:
+                target, slices = v
+                # search for values that are array-original, meaning that key is proxy 
+                if "array-original" in target and all([isinstance(s, slice) for s in slices]):
+                    v = remade_graph[k]
+                    target, slices = v
+
+                    # fill dictionaries
+                    add_to_dict_of_lists(origarr_to_slices_dict, target, slices, unique=True)
+                    add_to_dict_of_lists(origarr_to_used_proxies_dict, target, k, unique=True)
+            except:
+                pass
+
+            # if it is an array_original, add its data to dictionaries
+            if isinstance(k, str) and "array-original" in k:
+                orig_arr_obj = v.pop(0)
+
+                # fill dictionaries
+                original_array_shapes[k] = orig_arr_obj.shape
+                original_array_chunks[k] = orig_arr_obj.chunks
+                original_array_blocks_shape[k] = get_array_block_dims(
+                orig_arr_obj.shape, orig_arr_obj.chunks)
 
     return (origarr_to_slices_dict, 
-            origarr_to_used_proxies_dict)
+            origarr_to_used_proxies_dict,
+            original_array_shapes,
+            original_array_chunks,
+            original_array_blocks_shape)
