@@ -104,17 +104,23 @@ def get_used_proxies(graph, undirected):
 
         return unused_keys
 
-    origarr_to_slices_dict = dict()
-    origarr_to_used_proxies_dict = dict()
-    original_array_shapes = dict()
-    original_array_chunks = dict()
-    original_array_blocks_shape = dict()
-
     remade_graph = get_graph_from_dask(graph, undirected=undirected)
     unused_keys = get_unused_keys(remade_graph)
 
+    proxy_to_slices = dict()
+    origarr_to_used_proxies = dict()
+    origarr_to_obj = dict()
+    origarr_to_blocks_shape = dict()
+    proxy_to_dict = dict()
     for k, v in remade_graph.items():
         if k not in unused_keys:
+            # if it is an array_original, add its data to dictionaries
+            if isinstance(k, str) and "array-original" in k:
+                obj = v.pop(0)
+                origarr_to_obj[k] = obj
+                origarr_to_blocks_shape[k] = get_array_block_dims(obj.shape, obj.chunks)
+                continue
+
             try:
                 target, slices = v
                 # search for values that are array-original, meaning that key is proxy 
@@ -122,24 +128,17 @@ def get_used_proxies(graph, undirected):
                     v = remade_graph[k]
                     target, slices = v
 
-                    # fill dictionaries
-                    add_to_dict_of_lists(origarr_to_slices_dict, target, slices, unique=True)
-                    add_to_dict_of_lists(origarr_to_used_proxies_dict, target, k, unique=True)
+                    add_to_dict_of_lists(proxy_to_slices, k, slices, unique=True)
+                    add_to_dict_of_lists(origarr_to_used_proxies, target, k, unique=True)
+                    add_to_dict_of_lists(proxy_to_dict, k, remade_graph, unique=True)
+                    continue
             except:
                 pass
 
-            # if it is an array_original, add its data to dictionaries
-            if isinstance(k, str) and "array-original" in k:
-                orig_arr_obj = v.pop(0)
-
-                # fill dictionaries
-                original_array_shapes[k] = orig_arr_obj.shape
-                original_array_chunks[k] = orig_arr_obj.chunks
-                original_array_blocks_shape[k] = get_array_block_dims(
-                orig_arr_obj.shape, orig_arr_obj.chunks)
-
-    return (origarr_to_slices_dict, 
-            origarr_to_used_proxies_dict,
-            original_array_shapes,
-            original_array_chunks,
-            original_array_blocks_shape)
+    return {
+        'proxy_to_slices': proxy_to_slices, 
+        'origarr_to_used_proxies': origarr_to_used_proxies,
+        'origarr_to_obj': origarr_to_obj,
+        'origarr_to_blocks_shape': origarr_to_blocks_shape,
+        'proxy_to_dict': proxy_to_dict
+    }

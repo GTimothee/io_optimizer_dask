@@ -54,10 +54,10 @@ def test_get_used_proxies():
     assert len(list(origarr_to_used_proxies_dict.keys())) == 1
     assert origarr_to_slices_dict[list(origarr_to_slices_dict.keys())[0]] == expected_1['array-original-id']
 
-    result_slices = list()
+    proxy_indexes = list()
     for k, v in origarr_to_used_proxies_dict.items():
         assert 'array-original' in k
         for e in v:
                 assert e[0].split('-')[0] == 'array' 
-                result_slices.append(tuple(e[1:]))
-    assert result_slices == [(0, 0, 0), (0, 0, 1)]
+                proxy_indexes.append(tuple(e[1:]))
+    assert proxy_indexes == [(0, 0, 0), (0, 0, 1)]
