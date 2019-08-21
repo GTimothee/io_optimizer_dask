@@ -2,7 +2,13 @@ import tests_utils
 from tests_utils import *
 
 import optimize_io
-from optimize_io.modifiers import get_graph_from_dask, get_used_proxies
+from optimize_io.modifiers import flatten_iterable, get_graph_from_dask, get_used_proxies
+
+
+def test_decompose_iterable():
+    l = [0, [1, 2, 3], 4, [5], [[6, 7]]]
+    assert flatten_iterable(l) == list(range(8))
+
 
 def test_get_graph_from_dask():
     # load array
@@ -39,25 +45,20 @@ def test_get_used_proxies():
 
     # test function
     dask_graph = dask_array.dask.dicts 
-    r = get_used_proxies(dask_graph, undirected=False)
-    origarr_to_slices_dict = r[0]
-    origarr_to_used_proxies_dict = r[1]
+    dicts = get_used_proxies(dask_graph, undirected=False)
+    
+    slices = list()
+    for s in dicts['proxy_to_slices'].values():
+        slices.append(s)
+    s1 = (slice(0, 220, None), slice(0, 242, None), slice(0, 200, None))
+    s2 = (slice(0, 220, None), slice(0, 242, None), slice(200, 400, None))
 
-    print("\norigarr_to_slices_dict", origarr_to_slices_dict)
-    print("\n")
-    print("origarr_to_used_proxies_dict", origarr_to_used_proxies_dict)
+    print(slices)
 
-    expected_1 = {'array-original-id': [(slice(0, 220, None), slice(0, 242, None), slice(0, 200, None)), 
-                                        (slice(0, 220, None), slice(0, 242, None), slice(200, 400, None))]}   
+    assert slices == [s1, s2]
 
-    assert len(list(origarr_to_slices_dict.keys())) == 1
-    assert len(list(origarr_to_used_proxies_dict.keys())) == 1
-    assert origarr_to_slices_dict[list(origarr_to_slices_dict.keys())[0]] == expected_1['array-original-id']
-
-    proxy_indexes = list()
-    for k, v in origarr_to_used_proxies_dict.items():
-        assert 'array-original' in k
-        for e in v:
-                assert e[0].split('-')[0] == 'array' 
-                proxy_indexes.append(tuple(e[1:]))
-    assert proxy_indexes == [(0, 0, 0), (0, 0, 1)]
+    proxy_indices = list()
+    for l in dicts['origarr_to_used_proxies'].values():
+        for t in l:
+            proxy_indices.append(tuple(t[1:]))
+    assert set(proxy_indices) == set([(0, 0, 0), (0, 0, 1)])

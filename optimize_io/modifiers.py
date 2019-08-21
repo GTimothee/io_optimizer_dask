@@ -1,4 +1,6 @@
+
 import collections
+from collections import Iterable
 
 import optimize_io
 from optimize_io.get_slices import *
@@ -6,24 +8,13 @@ from optimize_io.get_dicts import *
 
 import numpy as np
 
-def decompose_iterable(l, plain_list=list()):
-    """ transform iterables and multistage iterables into one list
-    ex of iterable: list
-    ex of multistage iterable: list of lists
-    ex: 
-        >> x = decompose_iterable([a, [b, [c]]], list()) 
-        >> print(x)
-        [a, b, c]
-    """
+
+def flatten_iterable(l, plain_list=list()):
     for e in l:
-        print(l)
-        if not isinstance(e, str) and not isinstance(e, np.ndarray):
-            print(type(e))
-            try: # iterable 
-                iterator = iter(e)
-                plain_list = decompose_iterable(e, plain_list)
-            except TypeError: # not iterable
-                plain_list.append(e)
+        if isinstance(e, Iterable) and not isinstance(e, (str, bytes)):
+            plain_list = flatten_iterable(e, plain_list)
+        else:
+            plain_list.append(e)
     return plain_list
 
 
@@ -62,7 +53,7 @@ def get_graph_from_dask(graph, undirected=False):
                 if not isinstance(arg, str) and not isinstance(arg, tuple) and not isinstance(arg, int):
                     try: # iterable 
                         iterator = iter(arg)
-                        l = decompose_iterable(arg)
+                        l = flatten_iterable(arg)
                         for e in l:
                             add_to_remade_graph(remade_graph, key, e, undirected)
                         continue
@@ -128,9 +119,9 @@ def get_used_proxies(graph, undirected):
                     v = remade_graph[k]
                     target, slices = v
 
-                    add_to_dict_of_lists(proxy_to_slices, k, slices, unique=True)
                     add_to_dict_of_lists(origarr_to_used_proxies, target, k, unique=True)
-                    add_to_dict_of_lists(proxy_to_dict, k, remade_graph, unique=True)
+                    proxy_to_slices[k] = slices
+                    proxy_to_dict[k] = remade_graph
                     continue
             except:
                 pass
