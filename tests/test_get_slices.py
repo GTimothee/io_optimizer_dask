@@ -62,12 +62,12 @@ def test_get_getitems_from_graph():
     assert len(used_getitems) == expected_length
 
 
-def test_add_or_create_to_list_dict():
+def test_add_to_dict_of_lists():
     d = {'a': [1], 'c': [5, 6]}
-    d = add_or_create_to_list_dict(d, 'b', 2)
-    d = add_or_create_to_list_dict(d, 'b', 3)
-    d = add_or_create_to_list_dict(d, 'b', 4)
-    expected = {'a': [1], 'b': [2, 3, 4], 'c': [5, 6]}
+    d = add_to_dict_of_lists(d, 'b', 2)
+    d = add_to_dict_of_lists(d, 'b', 3)
+    d = add_to_dict_of_lists(d, 'c', 4)
+    expected = {'a': [1], 'b': [2, 3], 'c': [5, 6, 4]}
     assert expected == d
 
 
