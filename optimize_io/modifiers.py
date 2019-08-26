@@ -1,12 +1,34 @@
 
 import collections
 from collections import Iterable
-
-import optimize_io
-from optimize_io.get_slices import *
-from optimize_io.get_dicts import *
-
 import numpy as np
+
+
+def add_to_dict_of_lists(d, k, v, unique=False):
+    """ if key does not exist, add a new list [value], else, 
+    append value to existing list corresponding to the key
+    """
+    if k not in d:
+        if v:
+            d[k] = [v]
+        else:
+            d[k] = list()
+    else:
+        if v and (unique and v not in d[k]) or not unique:
+            d[k].append(v)
+    return d
+
+
+def get_array_block_dims(shape, chunks):
+    """ from shape of image and size of chukns=blocks, return the dimensions of the array in terms of blocks
+    i.e. number of blocks in each dimension
+    """
+    if not len(shape) == len(chunks):
+        raise ValueError(
+            "chunks and shape should have the same dimension",
+            shape,
+            chunks)
+    return tuple([int(s / c) for s, c in zip(shape, chunks)])
 
 
 def flatten_iterable(l, plain_list=list()):
@@ -69,7 +91,7 @@ def get_graph_from_dask(graph, undirected=False):
     return remade_graph
 
 
-def get_used_proxies(graph, undirected):
+def get_used_proxies(graph, undirected=False):
     """ go through graph and find the proxies that are used by other tasks
     proxy: task that getitem directly from original-array
     """

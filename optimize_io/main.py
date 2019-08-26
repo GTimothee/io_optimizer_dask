@@ -8,7 +8,7 @@ from optimize_io.modifiers import get_used_proxies
 def clustered_optimization(graph):
     """ Main function of the library. Applies clustered IO optimization on a Dask graph.
     """
-    dicts = get_used_proxies(graph, undirected=False) 
+    dicts = get_used_proxies(graph) 
     apply_clustered_strategy(graph, dicts)
     neat_print_graph(graph)
     return graph

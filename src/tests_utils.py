@@ -12,6 +12,27 @@ chunk_shapes = ['slabs_dask_interpol', 'slabs_previous_exp',
                 'blocks_dask_interpol', 'blocks_previous_exp']
 
 
+def get_arr_shapes(arr):
+    shape = arr.shape
+    chunks = tuple([c[0] for c in arr.chunks])  # shape of 1 chunk
+    blocks_dims = [len(c) for c in arr.chunks]  # nb blocks in each dimension
+    return shape, chunks, blocks_dims
+
+
+def get_test_arr(case=None, nb_arr=2):
+    # load array
+    data_path = get_test_array()
+    key = 'data'
+    arr = get_dask_array_from_hdf5(data_path, key)
+
+    # create case
+    if case and case == 'sum':
+        chunk_shape = 'blocks_dask_interpol'
+        arr = add_chunks(arr, chunk_shape, number_of_arrays=nb_arr)
+        arr = arr.sum()
+
+    return arr
+
 def get_test_array(data_dir=None, shape=(1540, 1210, 1400), file_name='sample_array.hdf5', overwrite=False):
     """ Create data for the test if not created.
     """

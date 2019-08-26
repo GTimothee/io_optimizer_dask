@@ -1,8 +1,25 @@
 import tests_utils
-from tests_utils import *
+from tests_utils import get_test_arr
 
 import optimize_io
-from optimize_io.modifiers import flatten_iterable, get_graph_from_dask, get_used_proxies
+from optimize_io.modifiers import add_to_dict_of_lists, get_array_block_dims, flatten_iterable, get_graph_from_dask, get_used_proxies
+
+
+def test_add_to_dict_of_lists():
+    d = {'a': [1], 'c': [5, 6]}
+    d = add_to_dict_of_lists(d, 'b', 2)
+    d = add_to_dict_of_lists(d, 'b', 3)
+    d = add_to_dict_of_lists(d, 'c', 4)
+    expected = {'a': [1], 'b': [2, 3], 'c': [5, 6, 4]}
+    assert expected == d
+
+
+def test_get_array_block_dims():
+    shape = (500, 1200, 300)
+    chunks = (100, 300, 20)
+    block_dims = get_array_block_dims(shape, chunks)
+    expected = (5, 4, 15)
+    assert block_dims == expected
 
 
 def test_decompose_iterable():
@@ -11,16 +28,7 @@ def test_decompose_iterable():
 
 
 def test_get_graph_from_dask():
-    # load array
-    data_path = get_test_array()
-    key = 'data'
-    arr = get_dask_array_from_hdf5(data_path, key)
-
-    # create case
-    nb_arr_to_sum = 2
-    chunk_shape = 'blocks_dask_interpol'
-    dask_array = add_chunks(arr, chunk_shape, number_of_arrays=nb_arr_to_sum)
-    result_non_opti = dask_array.sum()
+    dask_array = get_test_arr(case='sum', nb_arr=2)
 
     # test function
     dask_graph = dask_array.dask.dicts 
@@ -32,16 +40,7 @@ def test_get_graph_from_dask():
 
 
 def test_get_used_proxies():
-    # load array
-    data_path = get_test_array()
-    key = 'data'
-    arr = get_dask_array_from_hdf5(data_path, key)
-
-    # create case
-    nb_arr_to_sum = 2
-    chunk_shape = 'blocks_dask_interpol'
-    dask_array = add_chunks(arr, chunk_shape, number_of_arrays=nb_arr_to_sum)
-    result_non_opti = dask_array.sum()
+    dask_array = get_test_arr(case='sum', nb_arr=2)
 
     # test function
     dask_graph = dask_array.dask.dicts 
