@@ -15,7 +15,7 @@ def apply_clustered_strategy(graph, dicts):
     """
     for origarr_name in dicts['origarr_to_obj'].keys():
         buffers = create_buffers(origarr_name, dicts)
-        
+        print("buffers", buffers)
         for buffer in buffers:            
             key = create_buffer_node(graph, origarr_name, dicts, buffer)
             update_io_tasks(graph, dicts, buffer, key)
@@ -228,21 +228,19 @@ def get_buffer_slices_from_original_array(load, shape, original_array_chunk):
 
 
 def origarr_to_buffer_slices(dicts, proxy, buffer_key, slices):
-
     buffer_id, _ = buffer_key[0].split('-')
     origarr_name = 'array-original' + '-' + buffer_id
     origarr_obj = dicts['origarr_to_obj'][origarr_name]
     img_nb_blocks_per_dim = dicts['origarr_to_blocks_shape'][origarr_name]
-    num_start_of_buffer = buffer_key[1]
 
     block_id, start_block, end_block = buffer_key
-    start_pos = numeric_to_3d_pos(start_block, origarr_obj.shape, 'C')
+    start_pos = numeric_to_3d_pos(start_block, img_nb_blocks_per_dim, 'C')
     offset = [x * i for x, i in zip(start_pos, origarr_obj.chunks)]
 
     new_slices = list()
     for i, s in enumerate(slices):
         start = s.start - offset[i]
-        end = s.start - offset[i]
+        end = s.stop - offset[i]
         new_slices.append(slice(start, end, s.step))
     slices = (new_slices[0], new_slices[1], new_slices[2])
 

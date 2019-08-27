@@ -20,7 +20,7 @@ def test_sum():
     output_dir = os.environ.get('OUTPUT_DIR')
     data_path = get_test_array()
     key = 'data'
-    nb_arr_to_sum = 2
+    nb_arr_to_sum = 35
     for chunk_shape in ['blocks_dask_interpol']:# tests_utils.chunk_shapes:
 
         # test results
