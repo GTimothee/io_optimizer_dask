@@ -23,6 +23,30 @@ def apply_clustered_strategy(graph, dicts):
             update_io_tasks(graph, dicts, buffer, key)
 
 
+def get_load_strategy(
+        buffer_mem_size,
+        blocks_shape,
+        original_array_blocks_shape,
+        nb_bytes_per_val=4):
+    """ get clustered writes best load strategy given 
+    the memory available for io optimization
+    """
+    block_mem_size = blocks_shape[0] * \
+        blocks_shape[1] * blocks_shape[2] * nb_bytes_per_val
+    block_row_size = block_mem_size * original_array_blocks_shape[2]
+    block_slice_size = block_row_size * original_array_blocks_shape[1]
+
+    if buffer_mem_size >= block_slice_size:
+        nb_slices = math.floor(buffer_mem_size / block_slice_size)
+        return "slices", nb_slices * \
+            original_array_blocks_shape[2] * original_array_blocks_shape[1]
+    elif buffer_mem_size >= block_row_size:
+        nb_rows = math.floor(buffer_mem_size / block_row_size)
+        return "rows", nb_rows * original_array_blocks_shape[2]
+    else:
+        return "blocks", math.floor(buffer_mem_size / block_mem_size)
+
+
 def create_buffers(origarr_name, dicts):
 
     def get_buffer_size(default_memory=1000000000):
@@ -36,29 +60,6 @@ def create_buffers(origarr_name, dicts):
                 return default_memory
         except BaseException:
             return default_memory
-
-    def get_load_strategy(
-            buffer_mem_size,
-            blocks_shape,
-            original_array_blocks_shape,
-            nb_bytes_per_val=4):
-        """ get clustered writes best load strategy given 
-        the memory available for io optimization
-        """
-        block_mem_size = blocks_shape[0] * \
-            blocks_shape[1] * blocks_shape[2] * nb_bytes_per_val
-        block_row_size = block_mem_size * original_array_blocks_shape[2]
-        block_slice_size = block_row_size * original_array_blocks_shape[1]
-
-        if buffer_mem_size >= block_slice_size:
-            nb_slices = math.floor(buffer_mem_size / block_slice_size)
-            return "slices", nb_slices * \
-                original_array_blocks_shape[2] * original_array_blocks_shape[1]
-        elif buffer_mem_size >= block_row_size:
-            nb_rows = math.floor(buffer_mem_size / block_row_size)
-            return "rows", nb_rows * original_array_blocks_shape[2]
-        else:
-            return "blocks", math.floor(buffer_mem_size / block_mem_size)
 
     def new_list(list_of_lists):
         list_of_lists.append(list())
@@ -95,7 +96,6 @@ def create_buffers(origarr_name, dicts):
         else:
             return list_of_lists, prev_i
 
-    
 
     # just get some information used later
     arr_obj = dicts['origarr_to_obj'][origarr_name]
@@ -106,25 +106,7 @@ def create_buffers(origarr_name, dicts):
     print("strategy:", strategy)
     print("max nb blocks per load:", max_blocks_per_load)
 
-    # extrapolate blocks to load (here talking of logical blocks)
-    blocks_used = list()
-    block_to_proxies =  dict()
-    used_proxies = dicts['origarr_to_used_proxies'][origarr_name]
-
-    blocks_shape = dicts['origarr_to_blocks_shape'][origarr_name]
-    for proxy_key in used_proxies:
-        slice_tuple = dicts['proxy_to_slices'][proxy_key]
-        x_range, y_range, z_range = get_covered_blocks(slice_tuple, arr_obj.shape)
-
-        for x in x_range:
-            for y in y_range:
-                for z in z_range:
-                    if (x, y, z) not in blocks_used:
-                        blocks_used.append((x, y, z))
-                        num_pos = _3d_to_numeric_pos((x, y, z), blocks_shape, 'C')
-                        block_to_proxies = add_to_dict_of_lists(block_to_proxies, num_pos, proxy_key, unique=True)
-
-    print("blocks_used", blocks_used)
+    blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj)
 
     # create buffers
     list_of_lists, prev_i = new_list(list())
@@ -139,6 +121,27 @@ def create_buffers(origarr_name, dicts):
     return list_of_lists
 
 
+def get_blocks_used(dicts, origarr_name, arr_obj):
+    # extrapolate blocks to load (here talking of logical blocks)
+    blocks_seen = list()
+    blocks_used = list()
+    block_to_proxies =  dict()
+    used_proxies = dicts['origarr_to_used_proxies'][origarr_name]
+    blocks_shape = dicts['origarr_to_blocks_shape'][origarr_name]
+    for proxy_key in used_proxies:
+        slice_tuple = dicts['proxy_to_slices'][proxy_key]        
+        x_range, y_range, z_range = get_covered_blocks(slice_tuple, arr_obj.chunks)
+        for x in x_range:
+            for y in y_range:
+                for z in z_range:
+                    if (x, y, z) not in blocks_seen:
+                        blocks_seen.append((x, y, z))
+                        num_pos = _3d_to_numeric_pos((x, y, z), blocks_shape, 'C')
+                        blocks_used.append(num_pos)
+                        block_to_proxies = add_to_dict_of_lists(block_to_proxies, num_pos, proxy_key, unique=True)
+    return blocks_used, block_to_proxies
+
+
 def get_covered_blocks(slice_tuple, chunk_shape):
     """ From list of slices of type (slice, slice, slice) find 
     which blocks of original array are used by this slicing.
@@ -149,6 +152,7 @@ def get_covered_blocks(slice_tuple, chunk_shape):
         a = math.floor(s.start / chunk_shape[i])
         b = math.floor((s.stop - 1) / chunk_shape[i])  # (s.stop - 1) because begins at 0 not 1
         ranges.append(range(a, b + 1))  # b + 1 because we want all from a to b included
+
     return ranges
 
 
