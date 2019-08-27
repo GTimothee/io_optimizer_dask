@@ -84,3 +84,34 @@ def test_create_buffers():
     print("buffers - ", buffers)
     print("expected - ", expected)
     assert buffers == expected
+
+
+def test_create_buffer_node():
+    # preparation
+    arr = get_case_1()
+    graph = arr.dask.dicts
+    dicts = get_used_proxies(graph)
+    origarr_name = list(dicts['origarr_to_obj'].keys())[0]
+    buffers = create_buffers(origarr_name, dicts)
+        
+    # apply function
+    keys = list()
+    for buffer in buffers:            
+        key = create_buffer_node(graph, origarr_name, dicts, buffer)    
+        keys.append(key)
+
+    # test output
+    buffers_key = origarr_name.split('-')[-1] + '-merged'
+
+    indices = set()
+    for buffer_key in graph[buffers_key].keys():
+        _, start, end = buffer_key
+        indices.add((start, end))
+
+    buffers = set([(b[0], b[-1]) for b in buffers])
+
+    assert buffers_key in graph.keys()
+    assert len(indices) == len(buffers)
+    assert buffers == indices
+
+    

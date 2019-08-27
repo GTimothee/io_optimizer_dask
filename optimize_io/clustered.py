@@ -98,16 +98,16 @@ def create_buffers(origarr_name, dicts):
     # just get some information used later
     arr_obj = dicts['origarr_to_obj'][origarr_name]
     blocks_shape = dicts['origarr_to_blocks_shape'][origarr_name]
-    strategy, max_blocks_per_load = get_load_strategy(get_buffer_size(), #TODO: revoir stratégies et résultats des tests en conséquence
+    strategy, max_blocks_per_load = get_load_strategy(get_buffer_size(), 
                                                       arr_obj.chunks, 
                                                       blocks_shape)
-
+    #TODO: revoir stratégies et résultats des tests en conséquence
     print("strategy:", strategy)
     print("max nb blocks per load:", max_blocks_per_load)
     blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj)
-    
+    dicts['block_to_proxies'] = block_to_proxies
+
     # create buffers
-    
     list_of_lists, prev_i = new_list(list())
     while len(blocks_used) > 0:
         next_i = blocks_used.pop(0)
@@ -116,7 +116,6 @@ def create_buffers(origarr_name, dicts):
         list_of_lists[len(list_of_lists) - 1].append(next_i)
         prev_i = next_i
 
-    dicts['block_to_proxies'] = block_to_proxies
     return list_of_lists
 
 
@@ -163,7 +162,7 @@ def create_buffer_node(
 
     # get new key
     buffers_key = origarr_name.split('-')[-1] + '-merged'
-    key = (buffer_key, buffer[0], buffer[-1])
+    key = (buffers_key, buffer[0], buffer[-1])
 
     # get new value
     arr_obj = dicts['origarr_to_obj'][origarr_name]
