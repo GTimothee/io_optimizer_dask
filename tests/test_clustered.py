@@ -7,6 +7,19 @@ from tests_utils import get_test_arr, get_arr_shapes, ONE_GIG
 import sys
 
 
+def get_case_1():
+    # case 1 : continous blocks
+    arr = get_test_arr(case=None)
+    shape, chunks, blocks_dims = get_arr_shapes(arr)
+    _3d_pos = numeric_to_3d_pos(34, blocks_dims, 'C')
+    dims = [(_3d_pos[0]+1) * chunks[0],
+            (_3d_pos[1]+1) * chunks[1],
+            (_3d_pos[2]+1) * chunks[2]]
+    arr = arr[0:dims[0], 0:dims[1], 0:dims[2]]
+    arr = arr + 1
+    return arr
+
+
 def test_get_covered_blocks():
     """
     remainder chunk shape: 220 242 200
@@ -24,14 +37,7 @@ def test_get_covered_blocks():
 
 def test_get_blocks_used():
     # case 1 : continous blocks
-    arr = get_test_arr(case=None)
-    shape, chunks, blocks_dims = get_arr_shapes(arr)
-    _3d_pos = numeric_to_3d_pos(34, blocks_dims, 'C')
-    dims = [(_3d_pos[0]+1) * chunks[0],
-            (_3d_pos[1]+1) * chunks[1],
-            (_3d_pos[2]+1) * chunks[2]]
-    arr = arr[0:dims[0], 0:dims[1], 0:dims[2]]
-    arr = arr + 1
+    arr = get_case_1()
 
     # routine to get the needed data
     # we assume those functions have been tested before get_blocks_used
@@ -49,6 +55,32 @@ def test_get_blocks_used():
     assert blocks_used == expected
 
 
+def test_create_buffers():
+    """
+    row size = 7 blocks
+    slices size = 35 blocks
 
+    default mem = 1 000 000 000
 
+    # (220 * 242 * 200) = 10 648 000 
+    # with 4 bytes per pixel, we have maximum 23 blocks that can be loaded
+    # 21 blocks contiguous and not overlaping then the last 14 blocks
+    => strategy: buffer=row_size max 
+    """
 
+    # case 1 : continous blocks
+    arr = get_case_1()
+
+    dicts = get_used_proxies(arr.dask.dicts)
+    origarr_name = list(dicts['origarr_to_obj'].keys())[0]
+    buffers = create_buffers(origarr_name, dicts)
+    
+    expected = list()
+    prec = 0
+    for i in range(7, 42, 7):
+        expected.append(list(range(prec, i)))
+        prec = i
+    
+    print("buffers - ", buffers)
+    print("expected - ", expected)
+    assert buffers == expected

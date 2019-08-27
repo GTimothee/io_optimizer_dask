@@ -1,6 +1,4 @@
-
 import math
-
 import sys
 
 from dask.base import tokenize
@@ -25,14 +23,14 @@ def apply_clustered_strategy(graph, dicts):
 
 def get_load_strategy(
         buffer_mem_size,
-        blocks_shape,
+        chunk_shape,
         original_array_blocks_shape,
         nb_bytes_per_val=4):
     """ get clustered writes best load strategy given 
     the memory available for io optimization
     """
-    block_mem_size = blocks_shape[0] * \
-        blocks_shape[1] * blocks_shape[2] * nb_bytes_per_val
+    block_mem_size = chunk_shape[0] * \
+        chunk_shape[1] * chunk_shape[2] * nb_bytes_per_val
     block_row_size = block_mem_size * original_array_blocks_shape[2]
     block_slice_size = block_row_size * original_array_blocks_shape[1]
 
@@ -99,16 +97,17 @@ def create_buffers(origarr_name, dicts):
 
     # just get some information used later
     arr_obj = dicts['origarr_to_obj'][origarr_name]
-    strategy, max_blocks_per_load = get_load_strategy(get_buffer_size(), 
-                                                      arr_obj.shape, 
-                                                      arr_obj.chunks)
+    blocks_shape = dicts['origarr_to_blocks_shape'][origarr_name]
+    strategy, max_blocks_per_load = get_load_strategy(get_buffer_size(), #TODO: revoir stratégies et résultats des tests en conséquence
+                                                      arr_obj.chunks, 
+                                                      blocks_shape)
 
     print("strategy:", strategy)
     print("max nb blocks per load:", max_blocks_per_load)
-
     blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj)
-
+    
     # create buffers
+    
     list_of_lists, prev_i = new_list(list())
     while len(blocks_used) > 0:
         next_i = blocks_used.pop(0)
