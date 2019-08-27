@@ -10,29 +10,11 @@ import dask_utils_perso
 
 
 import optimize_io
-from optimize_io.main import *
+from optimize_io.main import clustered_optimization
 
 
 import tests_utils
 from tests_utils import *
-
-
-def test_convert_slices_list_to_numeric_slices():
-    """ Function to test convert_slices_list_to_numeric_slices.
-    """
-    proxy_array_name = 'array-6f8'
-    original_array_name = "array-original-645"
-    array_to_original = {proxy_array_name: original_array_name}
-    original_array_chunks = {original_array_name: (10, 20, 30)}
-    original_array_blocks_shape = {original_array_name: (5, 3, 2)}
-    slices_dict = {'array-6f8': [(0, 0, 0), (0, 0, 1),
-                                 (0, 1, 0), (0, 1, 1), 
-                                 (0, 2, 0), (0, 2, 1), 
-                                 (1, 0, 0)]}
-    slices_dict = convert_slices_list_to_numeric_slices(
-        slices_dict, array_to_original, original_array_blocks_shape)
-    expected = [0, 1, 2, 3, 4, 5, 6]
-    assert sorted(expected) == slices_dict[proxy_array_name]
 
 
 def test_sum():
@@ -44,38 +26,29 @@ def test_sum():
     key = 'data'
     nb_arr_to_sum = 2
     for chunk_shape in tests_utils.chunk_shapes:
-        # non opti
-        arr = get_dask_array_from_hdf5(data_path, key)
-        dask_array = add_chunks(
-            arr, chunk_shape, number_of_arrays=nb_arr_to_sum)
-        result_non_opti = dask_array.sum()
 
-        # viz
-        """
-        output_path = os.path.join(output_dir,
-                                   'test_non_opti' + chunk_shape + '.png')
-        result_non_opti.visualize(filename=output_path, optimize_graph=True)
-        """
+        # test results
+        dask.config.set({'optimizations': []})
+        result_non_opti = get_test_arr(case='sum', nb_arr=2).compute()
 
-        # opti
         dask.config.set({'optimizations': [optimize_func]})
-        arr = get_dask_array_from_hdf5(data_path, key)
-        dask_array = add_chunks(
-            arr, chunk_shape, number_of_arrays=nb_arr_to_sum)
-        result_opti = dask_array.sum()
+        result_opti = get_test_arr(case='sum', nb_arr=2).compute()
+        
+        assert np.array_equal(result_non_opti, result_opti)
 
         # viz
-        """
-        output_path = os.path.join(output_dir,
-                                   'test_opti' + chunk_shape + '.png')
+        dask.config.set({'optimizations': []})
+        result_non_opti = get_test_arr(case='sum', nb_arr=2)
+        output_path = os.path.join(output_dir, 'test_non_opti' + chunk_shape + '.png')
+        result_non_opti.visualize(filename=output_path, optimize_graph=True)
+
+        dask.config.set({'optimizations': [optimize_func]})
+        result_opti = get_test_arr(case='sum', nb_arr=2)
+        output_path = os.path.join(output_dir, 'test_opti' + chunk_shape + '.png')
         result_opti.visualize(filename=output_path, optimize_graph=True)
-        """
-
-        assert np.array_equal(result_opti.compute(),
-                              result_non_opti.compute())
 
 
-def test_adding_chunks(
+"""def test_adding_chunks(
         computation=True,
         visuals=True,
         run_non_optimized=True,
@@ -141,4 +114,4 @@ def test_adding_chunks(
     # if both have been ran, we can compare their results
     if run_non_optimized:
         for result_non_opti, result_opti in zip(results, results_opti):
-            assert np.array_equal(result_non_opti, result_opti)
+            assert np.array_equal(result_non_opti, result_opti)"""

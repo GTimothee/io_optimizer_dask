@@ -10,11 +10,4 @@ def clustered_optimization(graph):
     """
     dicts = get_used_proxies(graph) 
     apply_clustered_strategy(graph, dicts)
-    neat_print_graph(graph)
     return graph
-
-
-def neat_print_graph(graph):
-    for k, v in graph.items():
-        print("\nkey", k)
-        print(v, "\n")

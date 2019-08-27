@@ -14,10 +14,13 @@ def apply_clustered_strategy(graph, dicts):
     """ Main function applying clustered strategy on a dask graph.
     """
     for origarr_name in dicts['origarr_to_obj'].keys():
+        print("\ncreating buffers...")
         buffers = create_buffers(origarr_name, dicts)
         
         for buffer in buffers:            
+            print("\nprocessing buffer", buffer)
             key = create_buffer_node(graph, origarr_name, dicts, buffer)
+            print("updating tasks")
             update_io_tasks(graph, dicts, buffer, key)
 
 
@@ -161,6 +164,7 @@ def create_buffer_node(
         buffer):
 
     # get new key
+    # create name in the form : '53c92348ec58571124ec14b40bc42677-merged'
     buffers_key = origarr_name.split('-')[-1] + '-merged'
     key = (buffers_key, buffer[0], buffer[-1])
 
@@ -178,13 +182,25 @@ def create_buffer_node(
 
 
 def update_io_tasks(graph, dicts, buffer, buffer_key):
-    for block_id in buffer: 
+    for block_id in buffer:
         proxies = dicts['block_to_proxies'][block_id]
         for proxy in proxies:
             source_dict = dicts['proxy_to_dict'][proxy]
-            _, _, slices = source_dict[proxy]
-            origarr_to_buffer_slices(dicts, proxy, buffer_key, slices)
-            source_dict[proxy] = (getitem, buffer_key, slices)
+
+            val = source_dict[proxy]
+
+            if len(val) == 2:
+                _, slices = source_dict[proxy]
+                origarr_to_buffer_slices(dicts, proxy, buffer_key, slices)
+                source_dict[proxy] = (buffer_key, slices)
+
+            elif len(val) == 3:
+                _, _, slices = source_dict[proxy]
+                origarr_to_buffer_slices(dicts, proxy, buffer_key, slices)
+                source_dict[proxy] = (getitem, buffer_key, slices)
+
+            else:
+                print("did nothing", len(val))
 
 
 def get_buffer_slices_from_original_array(load, shape, original_array_chunk):
@@ -217,7 +233,7 @@ def get_buffer_slices_from_original_array(load, shape, original_array_chunk):
 
 def origarr_to_buffer_slices(dicts, proxy, buffer_key, slices):
 
-    _, buffer_id = buffer_key[0].split('-')
+    buffer_id, _ = buffer_key[0].split('-')
     origarr_name = 'array-original' + '-' + buffer_id
     origarr_obj = dicts['origarr_to_obj'][origarr_name]
     img_nb_blocks_per_dim = dicts['origarr_to_blocks_shape'][origarr_name]
@@ -227,10 +243,12 @@ def origarr_to_buffer_slices(dicts, proxy, buffer_key, slices):
     start_pos = numeric_to_3d_pos(start_block, origarr_obj.shape, 'C')
     offset = [x * i for x, i in zip(start_pos, origarr_obj.chunks)]
 
+    new_slices = list()
     for i, s in enumerate(slices):
         start = s.start - offset[i]
         end = s.start - offset[i]
-        s = slice(start, end, s.step)
+        new_slices.append(slice(start, end, s.step))
+    slices = (new_slices[0], new_slices[1], new_slices[2])
 
 
 def numeric_to_3d_pos(numeric_pos, blocks_shape, order):
