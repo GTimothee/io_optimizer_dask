@@ -105,4 +105,7 @@ def add_chunks(arr, case, number_of_arrays):
 def neat_print_graph(graph):
     for k, v in graph.items():
         print("\nkey", k)
-        print(v, "\n")
+        if isinstance(v, dict):
+            for k2, v2 in v.items():
+                print("\nk", k2)
+                print(v2, "\n")

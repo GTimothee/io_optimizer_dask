@@ -91,6 +91,45 @@ def get_graph_from_dask(graph, undirected=False):
     return remade_graph
 
 
+def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys):
+    """ 
+    """
+
+    def is_task(v):
+        if isinstance(v, tuple) and callable(v[0]):
+            return True 
+        return False
+
+    for key, v in graph.items():  
+        # if it is a subgraph, recurse
+        if isinstance(v, dict):
+            search_dask_graph(v, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys)
+
+        elif isinstance(key, str) and "array-original" in key:
+            obj = v
+            origarr_to_obj[key] = obj
+            origarr_to_blocks_shape[key] = get_array_block_dims(obj.shape, obj.chunks)
+            continue
+
+        # if it is a task, add its arguments
+        elif is_task(v) and (key not in unused_keys):  
+            try:
+                f, target, slices = v
+
+                # search for values that are array-original, meaning that key is proxy 
+                if "array-original" in target and all([isinstance(s, slice) for s in slices]):
+                    add_to_dict_of_lists(origarr_to_used_proxies, target, key, unique=True)
+                    proxy_to_slices[key] = slices
+                    proxy_to_dict[key] = graph
+                    continue
+            except:
+                pass
+        else:
+            pass
+
+    return 
+
+
 def get_used_proxies(graph, undirected=False):
     """ go through graph and find the proxies that are used by other tasks
     proxy: task that getitem directly from original-array
@@ -125,28 +164,7 @@ def get_used_proxies(graph, undirected=False):
     origarr_to_obj = dict()
     origarr_to_blocks_shape = dict()
     proxy_to_dict = dict()
-    for k, v in remade_graph.items():
-        if k not in unused_keys:
-            # if it is an array_original, add its data to dictionaries
-            if isinstance(k, str) and "array-original" in k:
-                obj = v.pop(0)
-                origarr_to_obj[k] = obj
-                origarr_to_blocks_shape[k] = get_array_block_dims(obj.shape, obj.chunks)
-                continue
-
-            try:
-                target, slices = v
-                # search for values that are array-original, meaning that key is proxy 
-                if "array-original" in target and all([isinstance(s, slice) for s in slices]):
-                    v = remade_graph[k]
-                    target, slices = v
-
-                    add_to_dict_of_lists(origarr_to_used_proxies, target, k, unique=True)
-                    proxy_to_slices[k] = slices
-                    proxy_to_dict[k] = remade_graph
-                    continue
-            except:
-                pass
+    search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys)
 
     return {
         'proxy_to_slices': proxy_to_slices, 

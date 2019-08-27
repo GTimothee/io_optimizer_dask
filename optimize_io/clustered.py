@@ -5,7 +5,7 @@ from dask.base import tokenize
 import operator
 from operator import getitem
 from tests_utils import get_arr_shapes
-
+from tests_utils import neat_print_graph
 import optimize_io
 from optimize_io.modifiers import add_to_dict_of_lists
 
@@ -14,13 +14,10 @@ def apply_clustered_strategy(graph, dicts):
     """ Main function applying clustered strategy on a dask graph.
     """
     for origarr_name in dicts['origarr_to_obj'].keys():
-        print("\ncreating buffers...")
         buffers = create_buffers(origarr_name, dicts)
         
         for buffer in buffers:            
-            print("\nprocessing buffer", buffer)
             key = create_buffer_node(graph, origarr_name, dicts, buffer)
-            print("updating tasks")
             update_io_tasks(graph, dicts, buffer, key)
 
 
@@ -186,13 +183,12 @@ def update_io_tasks(graph, dicts, buffer, buffer_key):
         proxies = dicts['block_to_proxies'][block_id]
         for proxy in proxies:
             source_dict = dicts['proxy_to_dict'][proxy]
-
             val = source_dict[proxy]
 
             if len(val) == 2:
                 _, slices = source_dict[proxy]
                 origarr_to_buffer_slices(dicts, proxy, buffer_key, slices)
-                source_dict[proxy] = (buffer_key, slices)
+                source_dict[proxy] = (getitem, buffer_key, slices)
 
             elif len(val) == 3:
                 _, _, slices = source_dict[proxy]
