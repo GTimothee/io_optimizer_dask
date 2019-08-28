@@ -21,7 +21,7 @@ def test_sum():
     data_path = get_test_array()
     key = 'data'
     nb_arr_to_sum = 35
-    for chunk_shape in ['blocks_dask_interpol']:# tests_utils.chunk_shapes:
+    for chunk_shape in ['blocks_dask_interpol']:  # tests_utils.chunk_shapes:
 
         # test results
         dask.config.set({'optimizations': []})

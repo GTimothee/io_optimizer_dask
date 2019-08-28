@@ -15,7 +15,6 @@ def apply_clustered_strategy(graph, dicts):
     """
     for origarr_name in dicts['origarr_to_obj'].keys():
         buffers = create_buffers(origarr_name, dicts)
-        print("buffers", buffers)
         for buffer in buffers:            
             key = create_buffer_node(graph, origarr_name, dicts, buffer)
             update_io_tasks(graph, dicts, buffer, key)
@@ -167,8 +166,10 @@ def create_buffer_node(
 
     # get new value
     arr_obj = dicts['origarr_to_obj'][origarr_name]
-    buffer_slices = get_buffer_slices_from_original_array(buffer, arr_obj.shape, arr_obj.chunks)
+    blocks_shape = dicts['origarr_to_blocks_shape'][origarr_name]
+    buffer_slices = get_buffer_slices_from_original_array(buffer, blocks_shape, arr_obj.chunks)
     value = (getitem, origarr_name, buffer_slices)
+    print("buffer_slices", buffer_slices)
 
     # add new key/val pair to the dask graph
     if buffers_key in dask_graph.keys():
@@ -192,13 +193,14 @@ def update_io_tasks(graph, dicts, buffer, buffer_key):
 
             elif len(val) == 3:
                 _, _, slices = source_dict[proxy]
-                origarr_to_buffer_slices(dicts, proxy, buffer_key, slices)
+                slices = origarr_to_buffer_slices(dicts, proxy, buffer_key, slices)
                 source_dict[proxy] = (getitem, buffer_key, slices)
 
             else:
                 print("did nothing", len(val))
 
 
+#TODO: revoir lalgorithme et vérifier véracité mathématique
 def get_buffer_slices_from_original_array(load, shape, original_array_chunk):
     start = min(load)
     end = max(load)
@@ -240,9 +242,10 @@ def origarr_to_buffer_slices(dicts, proxy, buffer_key, slices):
     new_slices = list()
     for i, s in enumerate(slices):
         start = s.start - offset[i]
-        end = s.stop - offset[i]
-        new_slices.append(slice(start, end, s.step))
+        stop = s.stop - offset[i]
+        new_slices.append(slice(start, stop, s.step))
     slices = (new_slices[0], new_slices[1], new_slices[2])
+    return slices
 
 
 def numeric_to_3d_pos(numeric_pos, blocks_shape, order):
