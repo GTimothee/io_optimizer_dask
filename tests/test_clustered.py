@@ -75,11 +75,7 @@ def test_create_buffers():
     origarr_name = list(dicts['origarr_to_obj'].keys())[0]
     buffers = create_buffers(origarr_name, dicts)
     
-    expected = list()
-    prec = 0
-    for i in range(7, 42, 7):
-        expected.append(list(range(prec, i)))
-        prec = i
+    expected = [list(range(21)), list(range(21, 35))]
     
     print("buffers - ", buffers)
     print("expected - ", expected)

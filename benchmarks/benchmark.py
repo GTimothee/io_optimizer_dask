@@ -108,7 +108,7 @@ def sum_scheduler_opti():
                 t = time.time()
                 result_non_opti = result_non_opti.compute()
                 t = time.time() - t
-                visualize([prof, rprof, cacheprof])# , os.path.join(output_dir, 'non_opti_&_schedule_profile_' + str(nb_arr_to_sum) + '.png'))
+                # visualize([prof, rprof, cacheprof])# , os.path.join(output_dir, 'non_opti_&_schedule_profile_' + str(nb_arr_to_sum) + '.png'))
                 unregister_profilers()
 
                 dask.config.set({'optimizations': [optimize_func]})                
@@ -117,7 +117,7 @@ def sum_scheduler_opti():
                 t2 = time.time()
                 result_opti = result_opti.compute()
                 t2 = time.time() - t2
-                visualize([prof, rprof, cacheprof])# , os.path.join(output_dir, 'opti_&_schedule_profile_' + str(nb_arr_to_sum) + '.png'))
+                # visualize([prof, rprof, cacheprof])# , os.path.join(output_dir, 'opti_&_schedule_profile_' + str(nb_arr_to_sum) + '.png'))
                 unregister_profilers()
                 
                 writer = csv.writer(csv_out, delimiter=',')
@@ -128,8 +128,8 @@ def sum_scheduler_opti():
 
 
 def benchmark():
-    _sum()
-    # sum_scheduler_opti()    
+    # _sum()
+    sum_scheduler_opti()    
 
 
 benchmark()

@@ -67,6 +67,7 @@ def create_buffers(origarr_name, dicts):
             strategy,
             original_array_blocks_shape):
         """ to avoid bad configurations in clustered writes
+        > prevent overlaps
         """
 
         if not prev_i:
@@ -106,7 +107,7 @@ def create_buffers(origarr_name, dicts):
     blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj)
     dicts['block_to_proxies'] = block_to_proxies
 
-    # create buffers
+    # create buffers of size len(row) or len(slice) or less
     list_of_lists, prev_i = new_list(list())
     while len(blocks_used) > 0:
         next_i = blocks_used.pop(0)
@@ -115,7 +116,20 @@ def create_buffers(origarr_name, dicts):
         list_of_lists[len(list_of_lists) - 1].append(next_i)
         prev_i = next_i
 
-    return list_of_lists
+    # try concatenate rows/slices with each other if buffer size allows
+    list_of_lists2 = list()
+    curr = list()
+    for l in list_of_lists:
+        if len(curr) + len(l) <= max_blocks_per_load:
+            curr += l
+        else:
+            list_of_lists2.append(curr)
+            curr = l
+
+    if len(curr) > 0:
+        list_of_lists2.append(curr)
+
+    return list_of_lists2
 
 
 def get_blocks_used(dicts, origarr_name, arr_obj):
