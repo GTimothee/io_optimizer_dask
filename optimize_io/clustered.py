@@ -1,6 +1,6 @@
 import math
 import sys
-
+import dask
 from dask.base import tokenize
 import operator
 from operator import getitem
@@ -28,6 +28,9 @@ def get_load_strategy(
     """ get clustered writes best load strategy given 
     the memory available for io optimization
     """
+
+    print("memory available:", buffer_mem_size)
+
     block_mem_size = chunk_shape[0] * \
         chunk_shape[1] * chunk_shape[2] * nb_bytes_per_val
     block_row_size = block_mem_size * original_array_blocks_shape[2]
@@ -48,15 +51,11 @@ def create_buffers(origarr_name, dicts):
 
     def get_buffer_size(default_memory=1000000000):
         try:
-            optimization = config.get("io-optimizer")
-            try:
-                return config.get("io-optimizer.memory_available")
-            except BaseException:
-                print("missing configuration information memory_available")
-                print("using default configuration: 1 gigabytes")
-                return default_memory
+            optimization = dask.config.get("io-optimizer")
+            return dask.config.get("io-optimizer.memory_available")
         except BaseException:
             return default_memory
+        
 
     def new_list(list_of_lists):
         list_of_lists.append(list())

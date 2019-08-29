@@ -38,26 +38,32 @@ def _sum():
     """ Test if the sum of two blocks yields the good
     result usign our optimization function.
     """
+    dask.config.set({'io-optimizer': {'memory_available': 5 * ONE_GIG,
+                                        'scheduler_opti': False}})
     
     output_dir = os.environ.get('OUTPUT_BENCHMARK_DIR')
     data_path = get_test_array()
     key = 'data'
     with open(os.path.join(output_dir, 'speeds.csv'), mode='w+') as csv_out:
-        for nb_arr_to_sum in [35]:
+        writer = csv.writer(csv_out, delimiter=',')
+
+        for nb_arr_to_sum in [245]:
             for chunk_shape in ['blocks_dask_interpol']:  
 
                 # test results
-                os.system('sync; echo 3 > /proc/sys/vm/drop_caches')
+                os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
                 dask.config.set({'optimizations': []})
                 result_non_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
                 register_profilers()
                 t = time.time()
                 result_non_opti = result_non_opti.compute()
                 t = time.time() - t
+                print("processing time", t, "seconds")
                 # visualize([prof, rprof, cacheprof])
                 unregister_profilers()
+                writer.writerow(['non optimized', nb_arr_to_sum, t])
 
-                os.system('sync; echo 3 > /proc/sys/vm/drop_caches')
+                """os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
                 dask.config.set({'optimizations': [optimize_func]})                
                 result_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
                 register_profilers()
@@ -66,9 +72,6 @@ def _sum():
                 t2 = time.time() - t2
                 # visualize([prof, rprof, cacheprof])
                 unregister_profilers()
-
-                writer = csv.writer(csv_out, delimiter=',')
-                writer.writerow(['non optimized', nb_arr_to_sum, t])
                 writer.writerow(['optimized', nb_arr_to_sum, t2])
 
                 assert np.array_equal(result_non_opti, result_opti)
@@ -82,49 +85,49 @@ def _sum():
                 dask.config.set({'optimizations': [optimize_func]})
                 result_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
                 output_path = os.path.join(output_dir, 'test_opti' + chunk_shape + '.png')
-                result_opti.visualize(filename=output_path, optimize_graph=True)
+                result_opti.visualize(filename=output_path, optimize_graph=True)"""
 
 
 def sum_scheduler_opti():
     """ Test if the sum of two blocks yields the good
     result usign our optimization function.
     """
-    os.system('sync; echo 3 > /proc/sys/vm/drop_caches')
-
-    dask.config.set({'io-optimizer': {'memory_available':ONE_GIG,
+    dask.config.set({'io-optimizer': {'memory_available': 3 * ONE_GIG,
                                         'scheduler_opti': True}})
 
     output_dir = os.environ.get('OUTPUT_BENCHMARK_DIR')
     data_path = get_test_array()
     key = 'data'
     with open(os.path.join(output_dir, 'speeds_opti_sched.csv'), mode='w+') as csv_out:
-        for nb_arr_to_sum in [35]:
+        writer = csv.writer(csv_out, delimiter=',')
+
+        for nb_arr_to_sum in [70]:
             for chunk_shape in ['blocks_dask_interpol']:  # tests_utils.chunk_shapes:
 
                 # test results
+                """os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
                 dask.config.set({'optimizations': []})
                 result_non_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
                 register_profilers()
                 t = time.time()
                 result_non_opti = result_non_opti.compute()
                 t = time.time() - t
-                # visualize([prof, rprof, cacheprof])# , os.path.join(output_dir, 'non_opti_&_schedule_profile_' + str(nb_arr_to_sum) + '.png'))
+                visualize([prof, rprof, cacheprof])# , os.path.join(output_dir, 'non_opti_&_schedule_profile_' + str(nb_arr_to_sum) + '.png'))
                 unregister_profilers()
+                writer.writerow(['non optimized', nb_arr_to_sum, t])"""
 
+                os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
                 dask.config.set({'optimizations': [optimize_func]})                
                 result_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
                 register_profilers()
                 t2 = time.time()
                 result_opti = result_opti.compute()
                 t2 = time.time() - t2
-                # visualize([prof, rprof, cacheprof])# , os.path.join(output_dir, 'opti_&_schedule_profile_' + str(nb_arr_to_sum) + '.png'))
+                visualize([prof, rprof, cacheprof])# , os.path.join(output_dir, 'opti_&_schedule_profile_' + str(nb_arr_to_sum) + '.png'))
                 unregister_profilers()
-                
-                writer = csv.writer(csv_out, delimiter=',')
-                writer.writerow(['non optimized', nb_arr_to_sum, t])
                 writer.writerow(['optimized', nb_arr_to_sum, t2])
-
-                assert np.array_equal(result_non_opti, result_opti)
+                
+                # assert np.array_equal(result_non_opti, result_opti)
 
 
 def benchmark():
