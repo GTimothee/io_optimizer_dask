@@ -20,35 +20,13 @@ def test_sum():
     output_dir = os.environ.get('OUTPUT_DIR')
     data_path = get_test_array()
     key = 'data'
-    nb_arr_to_sum = 35
-    for chunk_shape in ['blocks_dask_interpol']:  # tests_utils.chunk_shapes:
+    for nb_arr_to_sum in [2, 35, 70, 95]:
+        for chunk_shape in ['blocks_dask_interpol']:  # tests_utils.chunk_shapes:
+            
+            dask.config.set({'optimizations': []})
+            result_non_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum).compute()
 
-        # test results
-        dask.config.set({'optimizations': []})
-        t = time.time()
-        result_non_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum).compute()
-        t = time.time() - t
+            dask.config.set({'optimizations': [optimize_func]})
+            result_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum).compute()
 
-        dask.config.set({'optimizations': [optimize_func]})
-        t2 = time.time()
-        result_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum).compute()
-        t2 = time.time() - t2
-        
-        import csv
-        with open(os.path.join(output_dir, 'speeds.csv'), mode='w+') as csv_out:
-            writer = csv.writer(csv_out, delimiter=',')
-            writer.writerow(['non optimized', t])
-            writer.writerow(['optimized', t2])
-
-        assert np.array_equal(result_non_opti, result_opti)
-
-        # viz
-        dask.config.set({'optimizations': []})
-        result_non_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
-        output_path = os.path.join(output_dir, 'test_non_opti' + chunk_shape + '.png')
-        result_non_opti.visualize(filename=output_path, optimize_graph=True)
-
-        dask.config.set({'optimizations': [optimize_func]})
-        result_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
-        output_path = os.path.join(output_dir, 'test_opti' + chunk_shape + '.png')
-        result_opti.visualize(filename=output_path, optimize_graph=True)
+            assert np.array_equal(result_non_opti, result_opti)
