@@ -1,1 +1,17 @@
-non optimized,245,159.93439173698425
+non optimized,slabs_dask_interpol,112,55.18829941749573
+optimized,slabs_dask_interpol,112,38.21226143836975
+non optimized,slabs_previous_exp,112,35.12092399597168
+optimized,slabs_previous_exp,112,62.2499520778656
+non optimized,blocks_dask_interpol,112,35.12072229385376
+optimized,blocks_dask_interpol,112,42.12807369232178
+non optimized,blocks_previous_exp,112,34.107582569122314
+optimized,blocks_previous_exp,112,62.255982875823975
+
+non optimized,slabs_dask_interpol,35,12.054691314697266
+optimized,slabs_dask_interpol,35,12.038646221160889
+non optimized,slabs_previous_exp,35,13.029283046722412
+optimized,slabs_previous_exp,35,12.036303043365479
+non optimized,blocks_dask_interpol,35,12.028882503509521
+optimized,blocks_dask_interpol,35,12.045363903045654
+non optimized,blocks_previous_exp,35,11.029935359954834
+optimized,blocks_previous_exp,35,11.038220405578613

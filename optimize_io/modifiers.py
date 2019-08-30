@@ -72,16 +72,20 @@ def get_graph_from_dask(graph, undirected=False):
         # if it is a task, add its arguments
         elif is_task(v):  
             for arg in v[1:]:
-                if not isinstance(arg, str) and not isinstance(arg, tuple) and not isinstance(arg, int):
-                    try: # iterable 
+                if isinstance(arg, list):
+                    try:
                         iterator = iter(arg)
                         l = flatten_iterable(arg)
                         for e in l:
-                            add_to_remade_graph(remade_graph, key, e, undirected)
+                            if isinstance(key, collections.Hashable) and isinstance(e, collections.Hashable):                 
+                                add_to_remade_graph(remade_graph, key, e, undirected)
                         continue
                     except TypeError: # not iterable
-                        pass                        
-                add_to_remade_graph(remade_graph, key, arg, undirected)
+                        continue         
+
+                if isinstance(key, collections.Hashable) and isinstance(arg, collections.Hashable):                 
+                    add_to_remade_graph(remade_graph, key, arg, undirected)
+
         # if it is an argument, add it
         elif isinstance(key, collections.Hashable) and isinstance(v, collections.Hashable):  
             add_to_remade_graph(remade_graph, key, v, undirected)

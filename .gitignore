@@ -1,6 +1,7 @@
 /output_imgs
 /notebooks
 /scripts/scripts_perso
+/data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

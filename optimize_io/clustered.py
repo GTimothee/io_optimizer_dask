@@ -14,9 +14,13 @@ def apply_clustered_strategy(graph, dicts):
     """ Main function applying clustered strategy on a dask graph.
     """
     for origarr_name in dicts['origarr_to_obj'].keys():
+        print("creating buffers")
         buffers = create_buffers(origarr_name, dicts)
+        print('buffers', buffers)
         for buffer in buffers:            
+            print("create buffer node")
             key = create_buffer_node(graph, origarr_name, dicts, buffer)
+            print("update dependent")
             update_io_tasks(graph, dicts, buffer, key)
 
 
@@ -106,7 +110,9 @@ def create_buffers(origarr_name, dicts):
     blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj)
     dicts['block_to_proxies'] = block_to_proxies
 
+
     # create buffers of size len(row) or len(slice) or less
+    blocks_used = sorted(blocks_used)
     list_of_lists, prev_i = new_list(list())
     while len(blocks_used) > 0:
         next_i = blocks_used.pop(0)
@@ -201,7 +207,7 @@ def update_io_tasks(graph, dicts, buffer, buffer_key):
 
             if len(val) == 2:
                 _, slices = source_dict[proxy]
-                origarr_to_buffer_slices(dicts, proxy, buffer_key, slices)
+                slices = origarr_to_buffer_slices(dicts, proxy, buffer_key, slices)
                 source_dict[proxy] = (getitem, buffer_key, slices)
 
             elif len(val) == 3:
@@ -213,7 +219,6 @@ def update_io_tasks(graph, dicts, buffer, buffer_key):
                 print("did nothing", len(val))
 
 
-#TODO: revoir lalgorithme et vérifier véracité mathématique
 def get_buffer_slices_from_original_array(load, shape, original_array_chunk):
     start = min(load)
     end = max(load)

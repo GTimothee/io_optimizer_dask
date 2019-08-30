@@ -22,6 +22,9 @@ def get_arr_shapes(arr):
 
 
 def get_test_arr(case=None, nb_arr=2):
+    """ Use this function to get array for tests
+    if no parameters are given, function returns the default dask array
+    """
     # load array
     data_path = get_test_array()
     key = 'data'
