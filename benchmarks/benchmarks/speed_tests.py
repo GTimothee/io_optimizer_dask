@@ -19,32 +19,11 @@ from dask.diagnostics import ResourceProfiler, Profiler, CacheProfiler, visualiz
 from cachey import nbytes
 
 
-rprof = ResourceProfiler()
-prof = Profiler()
-cacheprof = CacheProfiler()
-
-
 def flush_cache():
-    os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
+    os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')   
 
 
-def register_profilers():
-    rprof = ResourceProfiler()
-    prof = Profiler()
-    cacheprof = CacheProfiler()
-
-    rprof.register()
-    prof.register()
-    cacheprof.register()
-
-
-def unregister_profilers():
-    rprof.unregister()
-    prof.unregister()
-    cacheprof.unregister()    
-
-
-def run(is_scheduler, optimize, arr, buffer_size):
+def run(is_scheduler, optimize, arr, buffer_size, out_file_path, prof, rprof, cprof):
     """ Execute a dask array with or without optimization.
     
     Arguments:
@@ -53,24 +32,23 @@ def run(is_scheduler, optimize, arr, buffer_size):
         buffer_size: size of the buffer for clustered strategy
         is_scheduler: activate scheduler optimization
     """
+
     flush_cache()
 
     # configuration
     if optimize:
-        dask.config.set({'optimizations': optimize_func})
+        dask.config.set({'optimizations': [optimize_func]})
         dask.config.set({'io-optimizer': {
                             'memory_available': buffer_size,
                             'scheduler_opti': is_scheduler}
                             })
     else:
-        dask.config.set({'optimizations': list()})
+        dask.config.set({'optimizations': []})
 
     # evaluation
-    register_profilers()
     t = time.time()
     res = arr.compute()
     t = time.time() - t
-    unregister_profilers()
     
     return res, t
 
@@ -86,6 +64,12 @@ def _sum(non_opti, opti, buffer_size, shapes_to_test, chunks_to_test):
         chunks_to_test: number of chunks to sum for each shapes
     """
 
+    def add_dir(workspace, new_dir):
+        path = os.path.join(workspace, new_dir)
+        if not os.path.exists(path):
+            os.mkdir(path) 
+        return path
+
     output_dir = os.environ.get('OUTPUT_BENCHMARK_DIR')
     data_path = get_test_array()
     with open(os.path.join(output_dir, 'sum_speeds.csv'), mode='a+') as csv_out:
@@ -95,33 +79,28 @@ def _sum(non_opti, opti, buffer_size, shapes_to_test, chunks_to_test):
 
         for is_scheduler in [False, True]:
             scheduler_status = 'scheduler_on' if is_scheduler else 'scheduler_off'
-            sched_out_path = os.path.join(output_dir, scheduler_status)
-            os.mkdir(sched_out_path, '0755') if not os.exists(sched_out_path)
+            sched_out_path = add_dir(output_dir, scheduler_status)
 
             for chunk_shape in shapes_to_test: 
-                chunk_path = os.path.join(sched_out_path, chunk_shape)
-                os.mkdir(chunk_path, '0755') if not os.exists(sched_out_path)
-
+                chunk_path = add_dir(sched_out_path, chunk_shape)
+                
                 for nb_chunks in chunks_to_test[chunk_shape][scheduler_status]:
-                    nb_chunk_path = os.path.join(chunk_path, str(nb_chunks) + '_chunks')
-                    os.mkdir(nb_chunk_path, '0755') if not os.exists(sched_out_path)
+                    out_path = add_dir(chunk_path, str(nb_chunks) + '_chunks')
 
                     if non_opti:
                         arr = get_test_arr(case='sum', nb_arr=nb_chunks)
-                        res_dask, t = run(is_scheduler, False, nb_chunks, arr, buffer_size)
-                        
-                        out_file_path = os.path.join(nb_chunk_path, 'non_opti')
-                        visualize([prof, rprof, cacheprof], out_file_path)
-
+                        out_file_path = os.path.join(out_path, 'non_opti.html')
+                        with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:
+                            res_dask, t = run(is_scheduler, False, arr, buffer_size, out_file_path, prof, rprof, cprof)
+                        visualize([prof, rprof, cprof], out_file_path)
                         writer.writerow([False, is_scheduler, chunk_shape, nb_chunks, buffer_size, t])
 
                     if opti:
                         arr = get_test_arr(case='sum', nb_arr=nb_chunks)
-                        res_opti, t = run(is_scheduler, True, nb_chunks, arr, buffer_size)
-
-                        out_file_path = os.path.join(nb_chunk_path, 'non_opti')
-                        visualize([prof, rprof, cacheprof], out_file_path)
-
+                        out_file_path = os.path.join(out_path, 'opti.html')
+                        with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:
+                            res_opti, t = run(is_scheduler, True, arr, buffer_size, out_file_path, prof, rprof, cprof)
+                        visualize([prof, rprof, cprof], out_file_path)
                         writer.writerow([True, is_scheduler, chunk_shape, nb_chunks, buffer_size, t])
 
                     if opti and non_opti:
@@ -156,7 +135,7 @@ def _store(non_opti, opti):
             a2 = arr[:440,:,:]
             f, dset1, dset2 = get_datasets("file1.hdf5", a1, a2)
             arr = da.store([a1, a2], [dset1, dset2], compute=False)
-            _, t = run(True, is_scheduler, arr, buffer_size)
+            _, t = run(is_scheduler, True, arr, buffer_size)
             f.close()
 
 
@@ -164,23 +143,27 @@ def benchmark():
     
     chunks_to_test = {
         'slabs_dask_interpol': {
-            True: [105, 210],
-            False: [105]},
+            'scheduler_on': [105, 210],
+            'scheduler_off': [105]},
+
         'slabs_previous_exp': {
-            True: [105, 210],
-            False: [105]},
+            'scheduler_on': [105, 210],
+            'scheduler_off': [105]},
+
         'blocks_dask_interpol':{
-            True: [105, 210],
-            False: [105]}, 
+            'scheduler_on': [105, 210],
+            'scheduler_off': [105]}, 
+
         'blocks_previous_exp': {
-            True: [105, 210],
-            False: [105]}
+            'scheduler_on': [105, 210],
+            'scheduler_off': [105]}
     }
 
-    non_opti, opti = (True, False)
+    non_opti, opti = (True, True)
     buffer_size = 5 * ONE_GIG
-    shapes_to_test = ["blocks_dask_interpol", "slabs_dask_interpol"]
-    sum_scheduler_opti(non_opti, opti, buffer_size, shapes_to_test, chunks_to_test)   
+    shapes_to_test = ["blocks_dask_interpol", "slabs_dask_interpol"] #, "slabs_dask_interpol"]
+    _sum(non_opti, opti, buffer_size, shapes_to_test, chunks_to_test)   
 
-benchmark()
+if __name__ == '__main__':
+    benchmark()
 # _store()
