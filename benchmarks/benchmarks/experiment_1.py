@@ -37,14 +37,14 @@ def load_json(file_path):
 
 def create_cube(data_path, ref, exp_id, chunked):
     file_path = os.path.join(data_path, str(ref) + '.hdf5')
-    if os.path.isfile(file_path):
-        return 
-    auto_chunk = True if chunked else None 
-    create_random_cube(storage_type="hdf5",
-                   file_path=file_path,
-                   shape=cube_shapes[exp_id],
-                   chunks_shape=auto_chunk,
-                   dtype="float16")
+    if not os.path.isfile(file_path):
+        auto_chunk = True if chunked else None 
+        create_random_cube(storage_type="hdf5",
+                    file_path=file_path,
+                    shape=cube_shapes[exp_id],
+                    chunks_shape=auto_chunk,
+                    dtype="float16")
+    return file_path
 
 
 def split():
@@ -69,7 +69,7 @@ def main():
             for chunked in [False, True]:
                 # create cube if does not exist
                 ref = cube_refs[exp_id][chunked]
-                create_cube(data_path, ref, exp_id, chunked)
+                file_path = create_cube(data_path, ref, exp_id, chunked)
 
                 # do tests on cube for exp of type 'exp_id'
                 for chunk_type in ['blocks', 'slabs']:

@@ -24,7 +24,15 @@ prof = Profiler()
 cacheprof = CacheProfiler()
 
 
+def flush_cache():
+    os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
+
+
 def register_profilers():
+    rprof = ResourceProfiler()
+    prof = Profiler()
+    cacheprof = CacheProfiler()
+
     rprof.register()
     prof.register()
     cacheprof.register()
@@ -36,96 +44,74 @@ def unregister_profilers():
     cacheprof.unregister()    
 
 
-def _sum(non_opti, opti, buffer_size):
-    """ Test if the sum of two blocks yields the good
-    result usign our optimization function.
-    """
-    dask.config.set({'io-optimizer': {'memory_available': buffer_size,
-                                        'scheduler_opti': False}})
+def run(is_scheduler, optimize, arr, buffer_size):
+    """ Execute a dask array with or without optimization.
     
-    output_dir = os.environ.get('OUTPUT_BENCHMARK_DIR')
-    data_path = get_test_array()
-    key = 'data'
-    with open(os.path.join(output_dir, 'speeds.csv'), mode='a+') as csv_out:
-        writer = csv.writer(csv_out, delimiter=',')
-
-        for nb_arr_to_sum in [35]:
-            for chunk_shape in tests_utils.chunk_shapes:  
-
-                if non_opti:
-                    # test results
-                    os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
-                    dask.config.set({'optimizations': []})
-                    result_non_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
-                    register_profilers()
-                    t = time.time()
-                    result_non_opti = result_non_opti.compute()
-                    t = time.time() - t
-                    print("processing time", t, "seconds")
-                    # visualize([prof, rprof, cacheprof])
-                    unregister_profilers()
-                    writer.writerow(['non optimized', chunk_shape, nb_arr_to_sum, t])
-
-                if opti:
-                    os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
-                    dask.config.set({'optimizations': [optimize_func]})                
-                    result_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
-                    register_profilers()
-                    t2 = time.time()
-                    result_opti = result_opti.compute()
-                    t2 = time.time() - t2
-                    # visualize([prof, rprof, cacheprof])
-                    unregister_profilers()
-                    writer.writerow(['optimized', chunk_shape, nb_arr_to_sum, t2])
-
-                if opti and non_opti:
-                    assert np.array_equal(result_non_opti, result_opti)
-
-
-def sum_scheduler_opti(non_opti, opti, buffer_size):
-    """ Test if the sum of two blocks yields the good
-    result usign our optimization function.
+    Arguments:
+        arr: dask_array
+        optimize: should the optimization be activated
+        buffer_size: size of the buffer for clustered strategy
+        is_scheduler: activate scheduler optimization
     """
-    dask.config.set({'io-optimizer': {'memory_available': buffer_size,
-                                        'scheduler_opti': True}})
+    flush_cache()
+
+    # configuration
+    if optimize:
+        dask.config.set({'optimizations': optimize_func})
+        dask.config.set({'io-optimizer': {
+                            'memory_available': buffer_size,
+                            'scheduler_opti': is_scheduler}
+                            })
+    else:
+        dask.config.set({'optimizations': list()})
+
+    # evaluation
+    register_profilers()
+    t = time.time()
+    res = arr.compute()
+    t = time.time() - t
+    visualize([prof, rprof, cacheprof])
+    unregister_profilers()
+    
+    return res, t
+
+
+def _sum(non_opti, opti, buffer_size, shapes_to_test, chunks_to_test):
+    """ Test if the sum of n blocks yields the good result.
+
+    Arguments:
+        non_opti: test without optimization
+        opti: test with optimization
+        buffer_size: size of the buffer for optimization
+        shapes_to_test: shapes that must be tested
+        chunks_to_test: number of chunks to sum for each shapes
+    """
 
     output_dir = os.environ.get('OUTPUT_BENCHMARK_DIR')
     data_path = get_test_array()
-    key = 'data'
-    with open(os.path.join(output_dir, 'speeds_opti_sched.csv'), mode='a+') as csv_out:
+    with open(os.path.join(output_dir, 'sum_speeds.csv'), mode='a+') as csv_out:
         writer = csv.writer(csv_out, delimiter=',')
+        writer.writerow(['optimized', 'is_scheduler', 'chunk_shape', 
+                         'nb_chunks_to_sum', 'buffer_size', 'processing_time'])
 
-        for nb_arr_to_sum in [35]:
-            for chunk_shape in tests_utils.chunk_shapes: 
+        for is_scheduler in [False, True]:
+            scheduler_status = 'scheduler_on' if is_scheduler else 'scheduler_off'
 
-                if non_opti:
-
-                    # test results
-                    os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
-                    dask.config.set({'optimizations': []})
-                    result_non_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
-                    register_profilers()
-                    t = time.time()
-                    result_non_opti = result_non_opti.compute()
-                    t = time.time() - t
-                    # visualize([prof, rprof, cacheprof])# , os.path.join(output_dir, 'non_opti_&_schedule_profile_' + str(nb_arr_to_sum) + '.png'))
-                    unregister_profilers()
-                    writer.writerow(['non optimized', chunk_shape, nb_arr_to_sum, t])
-                
-                if opti:
-                    os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
-                    dask.config.set({'optimizations': [optimize_func]})                
-                    result_opti = get_test_arr(case='sum', nb_arr=nb_arr_to_sum)
-                    register_profilers()
-                    t2 = time.time()
-                    result_opti = result_opti.compute()
-                    t2 = time.time() - t2
-                    # visualize([prof, rprof, cacheprof])# , os.path.join(output_dir, 'opti_&_schedule_profile_' + str(nb_arr_to_sum) + '.png'))
-                    unregister_profilers()
-                    writer.writerow(['optimized', chunk_shape, nb_arr_to_sum, t2])
+            for nb_chunks in chunks_to_test[scheduler_status]:
+                for chunk_shape in shapes_to_test: # tests_utils.chunk_shapes:  
                     
-                if opti and non_opti:
-                    assert np.array_equal(result_non_opti, result_opti)
+                    if non_opti:
+                        arr = get_test_arr(case='sum', nb_arr=nb_chunks)
+                        res_dask, t = run(is_scheduler, False, nb_chunks, arr, buffer_size)
+                        writer.writerow([False, is_scheduler, chunk_shape, nb_chunks, buffer_size, t])
+
+                    if opti:
+                        arr = get_test_arr(case='sum', nb_arr=nb_chunks)
+                        res_opti, t = run(is_scheduler, True, nb_chunks, arr, buffer_size)
+                        writer.writerow([True, is_scheduler, chunk_shape, nb_chunks, buffer_size, t])
+
+                    if opti and non_opti:
+                        assert np.array_equal(res_dask, res_opti)
 
 
 def _store():
@@ -138,56 +124,35 @@ def _store():
         dset2 = f.create_dataset('/data2', shape=a2.shape)
         return f, dset1, dset2
 
-    # non optimized
-    os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
-    print("non optimized")
-    arr = get_test_arr()
-    a1 = arr[:440,:,:]
-    a2 = arr[:440,:,:]
-
-    f, dset1, dset2 = get_datasets("file1.hdf5", a1, a2)
-    s = da.store([a1, a2], [dset1, dset2], compute=False)
-    register_profilers()
-    t = time.time()
-    s.compute()
-    t = time.time() - t
-    visualize([prof, rprof, cacheprof])
-    unregister_profilers()
-    print("processing time", t)
-    f.close()
-
-    # optimized
-    os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')
-    print("optimized")
-    buffer_size = 5 * ONE_GIG
-    dask.config.set({'optimizations': [optimize_func]})
-    dask.config.set({'io-optimizer': {'memory_available': buffer_size,
-                                        'scheduler_opti': True}})
-
-    arr = get_test_arr()
-    a1 = arr[:440,:,:]
-    a2 = arr[:440,:,:]
-
-    f, dset1, dset2 = get_datasets("file2.hdf5", a1, a2)
-    s = da.store([a1, a2], [dset1, dset2], compute=False)
-    register_profilers()
-    t = time.time()
-    s.compute()
-    t = time.time() - t
-    visualize([prof, rprof, cacheprof])
-    unregister_profilers()
-    print("processing time", t)
-    f.close()
+    
+    if non_opti:
+        arr = get_test_arr()
+        a1 = arr[:440,:,:]
+        a2 = arr[:440,:,:]
+        f, dset1, dset2 = get_datasets("file1.hdf5", a1, a2)
+        arr = da.store([a1, a2], [dset1, dset2], compute=False)
+        _, t = run(None, False, arr, buffer_size)
+        f.close()
+    
+    
+    if opti:
+        for is_scheduler in [False, True]:
+            arr = get_test_arr()
+            a1 = arr[:440,:,:]
+            a2 = arr[:440,:,:]
+            f, dset1, dset2 = get_datasets("file1.hdf5", a1, a2)
+            arr = da.store([a1, a2], [dset1, dset2], compute=False)
+            _, t = run(True, is_scheduler, arr, buffer_size)
+            f.close()
 
 
 def benchmark():
-    buffer_size = 5 * ONE_GIG
-    non_opti, opti = (True, True)
-    _sum(non_opti, opti, buffer_size)
+    shapes_to_test = ["blocks_dask_interpol", "slabs_dask_interpol"]
+    chunks_to_test = {
+        True: [105, 210],
+        False: [105],
+    }
+    sum_scheduler_opti(True, False, 5 * ONE_GIG, shapes_to_test, chunks_to_test)   
 
-    buffer_size = 5 * ONE_GIG
-    non_opti, opti = (True, True)
-    sum_scheduler_opti(non_opti, opti, buffer_size)    
-
-
-_store()
+benchmark()
+# _store()
