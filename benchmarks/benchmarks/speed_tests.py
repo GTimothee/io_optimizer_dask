@@ -147,21 +147,21 @@ def benchmark():
             'scheduler_off': [105]},
 
         'slabs_previous_exp': {
-            'scheduler_on': [],
-            'scheduler_off': []},
+            'scheduler_on': [105, 210],
+            'scheduler_off': [105]},
 
         'blocks_dask_interpol':{
             'scheduler_on': [105, 210],
             'scheduler_off': [105]}, 
 
         'blocks_previous_exp': {
-            'scheduler_on': [],
-            'scheduler_off': []}
+            'scheduler_on': [105, 210],
+            'scheduler_off': [105]}
     }
 
-    non_opti, opti = (False, True)
+    non_opti, opti = (True, True)
     buffer_size = 5 * ONE_GIG
-    shapes_to_test = ["slabs_dask_interpol"]
+    shapes_to_test = ["blocks_dask_interpol", "slabs_dask_interpol"] #, "slabs_dask_interpol"]
     _sum(non_opti, opti, buffer_size, shapes_to_test, chunks_to_test)   
 
 if __name__ == '__main__':
