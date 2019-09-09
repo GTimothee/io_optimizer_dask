@@ -59,28 +59,16 @@ def get_test_array(data_dir=None, shape=(1540, 1210, 1400), file_name='sample_ar
 
 def add_chunks(arr, case, number_of_arrays):
     if case == 'slabs_dask_interpol':
-        slab_width = 6
-        new_chunks_shape = (slab_width, arr.shape[1], arr.shape[2])
-        nb_chunks = [math.floor(arr.shape[0] / slab_width), 1, 1]
-        arr = arr[:slab_width * nb_chunks[0], :, :]
-        arr = arr.rechunk((tuple([slab_width] * nb_chunks[0]), (1210), (1400)))
+        return arr.rechunk(('auto', (1210), (1400)))
     elif case == 'slabs_previous_exp':
-        slab_width = 192
-        new_chunks_shape = (slab_width, arr.shape[1], arr.shape[2])
-        nb_chunks = [math.floor(arr.shape[0] / slab_width), 1, 1]
-        arr = arr[:slab_width * nb_chunks[0], :, :]
-        arr = arr.rechunk((tuple([slab_width] * nb_chunks[0]), (1210), (1400)))
+        return arr.rechunk((7, (1210), (1400)))
     elif case == 'blocks_dask_interpol':
-        new_chunks_shape = tuple([c[0] for c in arr.chunks])
-        nb_chunks = [len(c) for c in arr.chunks]
+        return arr
     elif case == 'blocks_previous_exp':
-        new_chunks_shape = (770, 605, 700)
-        nb_chunks = [int(arr.shape[i] / new_chunks_shape[i]) for i in range(3)]
-        arr = arr.rechunk((tuple([new_chunks_shape[0]] * nb_chunks[0]),
-                           tuple([new_chunks_shape[1]] * nb_chunks[1]),
-                           tuple([new_chunks_shape[2]] * nb_chunks[2])))
+        return arr.rechunk((770, 605, 700))
     else:
         raise ValueError("error")
+    
     print("new chunks", arr.shape, arr.chunks)
     print("new_chunks_shape", new_chunks_shape)
 
