@@ -9,7 +9,8 @@ from dask_utils_perso.utils import (create_random_cube, load_array_parts,
 
 ONE_GIG = 1000000000
 
-__all__ = ['flush_cache',
+__all__ = ['ONE_GIG',
+           'flush_cache',
            'get_arr_shapes',
            'get_test_arr',
            'neat_print_graph']
@@ -41,7 +42,7 @@ def sum_chunks(arr, nb_chunks):
         arr: array from which blocks will be sum
         nb_chunks: number of chunks to sum
     """
-    ncs, dims = get_arr_shapes(arr)
+    _, ncs, dims = get_arr_shapes(arr)
     arr_list = list()
     for i in range(dims[0]):
         for j in range(dims[1]):
@@ -80,23 +81,23 @@ def get_test_arr(file_path, chunk_shape=None, shape=None, test_case=None, nb_chu
     def get_or_create_array():
         arr = None 
     
-        if overwrite and shape and os.path.isfile(data_path):
-            os.remove(data_path)
+        if overwrite and shape and os.path.isfile(file_path):
+            os.remove(file_path)
 
-        if not os.path.isfile(data_path):
+        if not os.path.isfile(file_path):
             if not shape: 
                 raise ValueError("No shape to create the array")
 
             if file_path.split('.')[-1] == 'hdf5':
                 dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
-                                                        file_path=data_path,
+                                                        file_path=file_path,
                                                         shape=shape,
                                                         chunks_shape=None,
                                                         dtype="float16")
             else:
                 raise ValueError("File format not supported yet.")
         try:
-            arr = get_dask_array_from_hdf5(data_path, key='data')
+            arr = get_dask_array_from_hdf5(file_path, key='data')
         except: 
             raise IOError("failed to load file")
         
