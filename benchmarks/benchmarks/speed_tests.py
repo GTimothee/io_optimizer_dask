@@ -19,8 +19,11 @@ from dask.diagnostics import ResourceProfiler, Profiler, CacheProfiler, visualiz
 from cachey import nbytes
 
 
-def flush_cache():
-    os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')   
+# shapes used for the first experiment (assessing need for dask array optimization)
+first_exp_shapes = {'slabs_dask_interpol': ('auto', (1210), (1400)), 
+                    'slabs_previous_exp': (7, (1210), (1400)),
+                    'blocks_dask_interpol': (220, 242, 200), 
+                    'blocks_previous_exp': (770, 605, 700)}
 
 
 def run(is_scheduler, optimize, arr, buffer_size):
@@ -32,8 +35,8 @@ def run(is_scheduler, optimize, arr, buffer_size):
         buffer_size: size of the buffer for clustered strategy
         is_scheduler: activate scheduler optimization
     """
-
     flush_cache()
+
     if optimize:
         dask.config.set({'optimizations': [optimize_func]})
         dask.config.set({'io-optimizer': {
