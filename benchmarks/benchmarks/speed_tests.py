@@ -73,6 +73,8 @@ class Test_config():
         self.input_file_path = input_file_path
         self.chunk_shape = None
 
+        self.split_file = None
+
         # default to not recreate file
         self.chunk_shape = None 
         self.shape = None
@@ -87,10 +89,11 @@ class Test_config():
         self.shape = shape
         self.overwrite = overwrite
 
-    def split_case(self, hardware, ref, chunk_type, chunk_shape):
+    def split_case(self, hardware, ref, chunk_type, chunk_shape, split_file):
         self.cube_ref = ref
         self.test_case = 'split'
         self.hardware = hardware
+        self.split_file = split_file
         if not self.chunk_shape:
             self.chunk_shape = chunk_shape
         self.chunk_type = chunk_type
@@ -131,7 +134,8 @@ def run_test(writer, config):
                            shape=config.shape, 
                            test_case=config.test_case, 
                            nb_chunks=config.nb_chunks, 
-                           overwrite=config.overwrite)
+                           overwrite=config.overwrite,
+                           split_file=config.split_file)
 
         # run test
         with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:
@@ -293,16 +297,21 @@ def experiment_1():
                             scheduler_status = 'scheduler_on' if is_scheduler else 'scheduler_off'
                             sched_path = add_dir(out_path, scheduler_status)
 
+                            split_file_path = os.path.join(data_path, 'split_file.hdf5')
+                            if os.path.isfile(split_file_path):
+                                os.remove(split_file_path)
+                            split_file = h5py.File(split_file_path, 'w') 
+
                             if non_opti:
                                 new_config = Test_config(False, False, sched_path, buffer_size, input_file_path)
                                 config.create_or_overwrite(auto_chunk, cube_shapes[cube_type], overwrite=False)
-                                new_config.split_case(hardware, ref, chunk_type, chunk_shape)
+                                new_config.split_case(hardware, ref, chunk_type, chunk_shape, split_file)
                                 tests.append(new_config)
 
                             if opti:
                                 new_config = Test_config(True, is_scheduler, sched_path, buffer_size, input_file_path)
                                 config.create_or_overwrite(auto_chunk, cube_shapes[cube_type], overwrite=False)
-                                new_config.split_case(hardware, ref, chunk_type, chunk_shape)
+                                new_config.split_case(hardware, ref, chunk_type, chunk_shape, split_file)
                                 tests.append(new_config)
 
     # run the tests
@@ -322,4 +331,4 @@ def experiment_1():
         for config in tests:
             run_test(config)
 
-_sum()
+experiment_1()
