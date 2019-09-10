@@ -36,31 +36,27 @@ def run(arr, config):
     
     Arguments:
         arr: dask_array
-        optimize: should the optimization be activated
-        buffer_size: size of the buffer for clustered strategy
-        is_scheduler: activate scheduler optimization
+        config: contains the test configuration
     """
     flush_cache()
 
-    if optimize:
-        dask.config.set({'optimizations': [optimize_func]})
-        dask.config.set({'io-optimizer': {
-                            'memory_available': config.buffer_size,
-                            'scheduler_opti': config.scheduler_opti}
-                            })
+    if config.opti:
+        opti_funcs = [optimize_func]
+        scheduler_opti = config.scheduler_opti
+        
     else:
-        dask.config.set({'optimizations': []})
-        dask.config.set({'io-optimizer': {
-                            'memory_available': config.buffer_size,
-                            'scheduler_opti': False}
-                            })
+        opti_funcs = list()
+        scheduler_opti = False
+
+    dask.config.set({'optimizations': opti_funcs})
+    dask.config.set({'io-optimizer': {
+                        'memory_available': config.buffer_size,
+                        'scheduler_opti': scheduler_opti}
+                        })
 
     # evaluation
     t = time.time()
-    if config.test_case == 'sum':
-        res = arr.compute()
-    elif config.test_case == 'split':
-        # res.store(config.in_arrays)
+    res = arr.compute()
     t = time.time() - t
     return res, t
 
@@ -68,12 +64,14 @@ def run(arr, config):
 class Test_config():
     """ Contains the configuration for a test.
     """
-    def __init__(self, opti, scheduler_opti, out_path, buffer_size):
+    def __init__(self, opti, scheduler_opti, out_path, buffer_size, input_file_path):
         self.test_case = None
         self.opti = opti 
         self.scheduler_opti = scheduler_opti
         self.out_path = out_path
         self.buffer_size = buffer_size
+        self.input_file_path = input_file_path
+        self.chunk_shape = None
 
         # default to not recreate file
         self.chunk_shape = None 
@@ -89,22 +87,49 @@ class Test_config():
         self.shape = shape
         self.overwrite = overwrite
 
-    def split_case(self):
+    def split_case(self, hardware, ref, chunk_type, chunk_shape):
+        self.cube_ref = ref
         self.test_case = 'split'
+        self.hardware = hardware
+        if not self.chunk_shape:
+            self.chunk_shape = chunk_shape
+        self.chunk_type = chunk_type
+
+    def write_output(self, writer, out_file_path, t):
+        if self.test_case == 'sum':
+            data = [
+                self.opti, 
+                self.scheduler_opti, 
+                self.chunk_shape, 
+                self.nb_chunks, 
+                self.buffer_size, 
+                t,
+                out_file_path
+            ]
+        elif self.test_case == 'split':
+            data = [
+                self.hardware, 
+                self.cube_ref,
+                self.chunk_type,
+                self.chunk_shape,
+                self.opti, 
+                self.scheduler_opti, 
+                self.buffer_size, 
+                t,
+                out_file_path
+            ]
+        else:
+            raise ValueError("Unsupported test case.")
+        writer.writerow(data)
 
 
-def run_test(config):
-        """ Run a test given a specific configuration.
+def run_test(writer, config):
+        """ Get a test array, run the test and write the output.
         """
-        if config.test_case != 'sum':
-            raise ValueError("Configuration not prepared for sum test case.")
-
-        # get array
-        file_path = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-        arr = get_test_arr(file_path, 
+        arr = get_test_arr(config.input_file_path, 
                            chunk_shape=config.chunk_shape, 
                            shape=config.shape, 
-                           test_case='sum', 
+                           test_case=config.test_case, 
                            nb_chunks=config.nb_chunks, 
                            overwrite=config.overwrite)
 
@@ -113,15 +138,10 @@ def run_test(config):
             res_dask, t = run(arr, config)
 
         # write output
-        out_file_path = os.path.join(config.out_path, 'non_opti.html')
+        opti_info = 'opti' if config.opti else 'non_opti'
+        out_file_path = os.path.join(config.out_path, opti_info + '.html')
         visualize([prof, rprof, cprof], out_file_path)
-        writer.writerow([config.opti, 
-                         config.scheduler_opti, 
-                         config.chunk_shape, 
-                         config.nb_chunks, 
-                         config.buffer_size, 
-                         t,
-                         out_file_path])
+        config.write_output(writer, out_file_path, t)
 
 
 def add_dir(workspace, new_dir):
@@ -144,7 +164,7 @@ def _sum():
 
     chunks_to_test = {
         'slabs_dask_interpol': {
-            'scheduler_on': [105, 210],
+            'scheduler_on': [105],
             'scheduler_off': [105]},
 
         'slabs_previous_exp': {
@@ -152,7 +172,7 @@ def _sum():
             'scheduler_off': [105]},
 
         'blocks_dask_interpol':{
-            'scheduler_on': [105, 210],
+            'scheduler_on': [105],
             'scheduler_off': [105]}, 
 
         'blocks_previous_exp': {
@@ -167,6 +187,7 @@ def _sum():
     # create the tests to be run
     # create the output directories
     output_dir = os.environ.get('OUTPUT_BENCHMARK_DIR')  
+    input_file_path = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
     tests = list()
     sum_dir = add_dir(output_dir, 'sum')
     for is_scheduler in [True, False]:
@@ -180,12 +201,12 @@ def _sum():
                 out_path = add_dir(chunk_path, str(nb_chunks) + '_chunks')
 
                 if non_opti:
-                    new_config = Test_config(False, False, out_path, buffer_size)
+                    new_config = Test_config(False, False, out_path, buffer_size, input_file_path)
                     new_config.sum_case(nb_chunks)
                     tests.append(new_config)
 
                 if opti:
-                    new_config = Test_config(True, is_scheduler, out_path, buffer_size)
+                    new_config = Test_config(True, is_scheduler, out_path, buffer_size, input_file_path)
                     new_config.sum_case(nb_chunks)
                     tests.append(new_config)
 
@@ -201,7 +222,7 @@ def _sum():
                          'output_file_path'])
         shuffle(tests)
         for config in tests:
-            run_test(config)
+            run_test(writer, config)
 
 
 def load_json(file_path):
@@ -219,25 +240,6 @@ def experiment_1():
     """ Applying the split and merge algorithms using Dask arrays.
     """
 
-    def create_cube(data_path, ref, exp_id, chunked):
-        if not os.path.isfile(file_path):
-            auto_chunk = True if chunked else None 
-            create_random_cube(storage_type="hdf5",
-                        file_path=file_path,
-                        shape=cube_shapes[exp_id],
-                        chunks_shape=auto_chunk,
-                        dtype="float16")
-        return file_path
-
-
-    def split():
-        return
-
-
-    def merge():
-        return
-
-
     cube_shapes = {
         "small": (1400, 1400, 1400), 
         "big": (3500, 3500, 3500),
@@ -254,52 +256,70 @@ def experiment_1():
         }
     }
 
-    ssd_path = os.getenv('SSD_PATH')  # input and output dir
-    hdd_path = os.getenv('HDD_PATH')  # input and output dir
-    output_dir = os.getenv('OUTPUT_BENCHMARK_DIR')
-    chunk_shapes = load_json(os.path.join(workspace, 'chunk_shapes.json'))  # for the output csv file only
+    hardware_paths = {
+        'ssd': os.getenv('SSD_PATH'),  # input and output dir
+        'hdd': os.getenv('HDD_PATH')  # input and output dir
+    }
+    
+    workspace = os.getenv('BENCHMARK_DIR')
+    chunk_shapes = load_json(os.path.join(workspace, 'chunk_shapes.json'))
+
+    non_opti, opti = (True, True)
+    buffer_size = 5 * ONE_GIG
 
     # create tests
     tests = list()
-    for output_dir in [ssd_path, hdd_path]:
-        split_dir = add_dir(output_dir, 'split')
+    for hardware in ["hdd"]: # [ssd_path, hdd_path]:
+        data_path = hardware_paths[hardware]
+        split_dir = add_dir(data_path, 'split')
 
-        for cube_id in ['small', 'big']:
+        for cube_type in ['small']: # ['small', 'big']:
+            cube_dir = add_dir(split_dir, cube_type)
 
-            for chunked in [False, True]:
-                # create cube if does not exist
-                ref = cube_refs[cube_id][chunked]
-                file_path = create_cube(data_path, ref, cube_id, chunked)
+            for chunked in [False]: # [False, True]:
+                chunk_status = 'chunked' if chunked else 'not_chunked'
+                auto_chunk = True if chunked else None 
+                ref_dir = add_dir(cube_dir, chunk_status)
+                ref = cube_refs[cube_type][chunked]
+                input_file_path = os.path.join(data_path, str(ref) + '.hdf5')
 
                 for chunk_type in ['blocks', 'slabs']:
-                    chunk_type_path = add_dir(sched_out_path, chunk_type)
+                    chunk_type_path = add_dir(ref_dir, chunk_type)
 
-                    for shape in chunk_shapes[cube_id][chunk_type]:
-                        out_path = add_dir(chunk_type_path, str(shape))
+                    for chunk_shape in chunk_shapes[cube_type][chunk_type]:
+                        out_path = add_dir(chunk_type_path, str(chunk_shape))
 
                         for is_scheduler in [True, False]:
                             scheduler_status = 'scheduler_on' if is_scheduler else 'scheduler_off'
-                            sched_out_path = add_dir(split_dir, scheduler_status)
-                        
+                            sched_path = add_dir(out_path, scheduler_status)
+
                             if non_opti:
-                                new_config = Test_config(False, False, out_path, buffer_size)
-                                new_config.split_case()
+                                new_config = Test_config(False, False, sched_path, buffer_size, input_file_path)
+                                config.create_or_overwrite(auto_chunk, cube_shapes[cube_type], overwrite=False)
+                                new_config.split_case(hardware, ref, chunk_type, chunk_shape)
                                 tests.append(new_config)
 
                             if opti:
-                                new_config = Test_config(True, is_scheduler, out_path, buffer_size)
-                                new_config.split_case()
+                                new_config = Test_config(True, is_scheduler, sched_path, buffer_size, input_file_path)
+                                config.create_or_overwrite(auto_chunk, cube_shapes[cube_type], overwrite=False)
+                                new_config.split_case(hardware, ref, chunk_type, chunk_shape)
                                 tests.append(new_config)
 
     # run the tests
+    output_dir = os.getenv('OUTPUT_BENCHMARK_DIR')
     with open(os.path.join(output_dir, 'split_speeds.csv'), mode='w+') as csv_out:
         writer = csv.writer(csv_out, delimiter=',')
-        writer.writerow(['optimized', 
-                         'is_scheduler', 
-                         'chunk_shape', 
+        writer.writerow(['hardware',
+                         'ref',
+                         'chunk_type',
+                         'chunk_shape',
+                         'opti',
+                         'scheduler_opti',
                          'buffer_size', 
                          'processing_time',
                          'output_file_path'])
         shuffle(tests)
         for config in tests:
             run_test(config)
+
+_sum()
