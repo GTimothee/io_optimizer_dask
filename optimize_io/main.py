@@ -9,6 +9,7 @@ from tests_utils import neat_print_graph
 
 def clustered_optimization(graph):
     """ Main function of the library. Applies clustered IO optimization on a Dask graph.
+    graph : dark_array.dask.dicts
     """
     print("getting proxies")
     dicts = get_used_proxies(graph)
