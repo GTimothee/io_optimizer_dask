@@ -1,15 +1,24 @@
+import os 
 
 from optimize_io.clustered import *
 from optimize_io.modifiers import get_used_proxies
 
-from tests_utils import get_test_arr, get_arr_shapes, ONE_GIG
+from tests_utils import get_test_arr, CaseConfig, ONE_GIG, neat_print_graph, get_arr_shapes
 
 import sys
 
 
 def get_case_1():
     # case 1 : continous blocks
-    arr = get_test_arr(case=None)
+    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+    config = CaseConfig(opti=None, 
+                             scheduler_opti=None, 
+                             out_path=None, 
+                             buffer_size=ONE_GIG, 
+                             input_file_path=data, 
+                             chunk_shape=None)
+    arr = get_test_arr(config)
+
     shape, chunks, blocks_dims = get_arr_shapes(arr)
     _3d_pos = numeric_to_3d_pos(34, blocks_dims, 'C')
     dims = [(_3d_pos[0]+1) * chunks[0],
