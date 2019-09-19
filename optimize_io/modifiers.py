@@ -1,4 +1,4 @@
-
+import os
 import collections
 from collections import Iterable
 import numpy as np
@@ -83,7 +83,9 @@ def BFS_connected_components(
     components = dict()
     component_id = 0
     nb_its = 0
-    f = open('tests/BFS_out.txt', 'w+')
+    if not os.path.isdir('tests/outputs'):
+        os.makedirs('tests/outputs')
+    f = open('tests/outputs/BFS_out.txt', 'w+')
     while all_nodes_not_visited(nb_nodes_visited, nb_nodes_total):
 
         # get next unvisited node (next start of connected component)

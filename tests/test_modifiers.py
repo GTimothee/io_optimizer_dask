@@ -45,7 +45,7 @@ def test_get_graph_from_dask():
     dask_graph = dask_array.dask.dicts 
     graph = get_graph_from_dask(dask_graph, undirected=False)
 
-    with open('tests/remade_graph.txt', "w+") as f:
+    with open('tests/outputs/remade_graph.txt', "w+") as f:
         for k, v in graph.items():
             f.write("\n\n" + str(k))
             f.write("\n" + str(v))
@@ -108,7 +108,7 @@ def test_get_used_proxies():
     dask_graph = dask_array.dask.dicts 
     dicts = get_used_proxies(dask_graph, undirected=False, use_BFS=True)
     slices = list(dicts['proxy_to_slices'].values())
-    with open('tests/output.txt', "w+") as f:
+    with open('tests/outputs/slices_found.txt', "w+") as f:
         for s in slices:
             f.write(str(s) + "\n")"""
 
@@ -128,7 +128,7 @@ def test_BFS():
 
     # get remade graph 
     graph = get_graph_from_dask(dask_graph, undirected=True)
-    with open('tests/remade_graph.txt', "w+") as f:
+    with open('tests/outputs/remade_graph.txt', "w+") as f:
         for k, v in graph.items():
             f.write("\n\n" + str(k))
             f.write("\n" + str(v))
