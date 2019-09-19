@@ -76,7 +76,6 @@ def BFS_connected_components(
     # initialize component variables
     components = dict()
     component_id = 0
-
     nb_its = 0
     while all_nodes_not_visited(nb_nodes_visited, nb_nodes_total):
 
@@ -85,17 +84,19 @@ def BFS_connected_components(
         for n in nodes:
             if not visited[n]:
                 if filter_condition_for_root_nodes(n):
-                    nb_nodes_visited = visit_node(
-                        visited, n, nb_nodes_visited, components, node_queue)
+                    nb_nodes_visited = visit_node(visited, n, nb_nodes_visited, components, node_queue)
                     break
 
         # run BFS
         while len(node_queue) > 0:
             curr_node = node_queue.pop(0)
             for n in graph[curr_node]:
-                if not visited[n]:
-                    nb_nodes_visited = visit_node(
-                        visited, n, nb_nodes_visited, components, node_queue)
+                try:
+                    if not visited[n]:
+                        nb_nodes_visited = visit_node(visited, n, nb_nodes_visited, components, node_queue)
+                except:
+                    pass 
+
         component_id += 1
 
         # print("it", nb_its)
@@ -106,6 +107,12 @@ def BFS_connected_components(
     return components
 
 
+def is_task(v):
+    if isinstance(v, tuple) and callable(v[0]):
+        return True 
+    return False
+
+
 def get_graph_from_dask(graph, undirected=False):
     """ Transform dask graph into a real graph in order to use graph algorithms on it.
     in the graph, each node is an element (tuple, list, object)
@@ -113,11 +120,6 @@ def get_graph_from_dask(graph, undirected=False):
     {a: b} implies that a is the result of a function a = f(b or more)
     each key is mapped to a list of values (other keys used by this key as input)
     """
-
-    def is_task(v):
-        if isinstance(v, tuple) and callable(v[0]):
-            return True 
-        return False
 
     def add_to_remade_graph(d, key, value, undir):
         """
@@ -142,13 +144,13 @@ def get_graph_from_dask(graph, undirected=False):
         elif is_task(v):  
             for arg in v[1:]:
                 if isinstance(arg, tuple):
-                    pass#print(arg)
+                    pass
 
                 if isinstance(arg, list):
                     l = flatten_iterable(arg)
                     for e in l:
                         if isinstance(e, tuple):
-                            pass#print(e)  
+                            pass 
                         if isinstance(key, collections.Hashable) and isinstance(e, collections.Hashable):                 
                             add_to_remade_graph(remade_graph, key, e, undirected)
                     continue
@@ -159,22 +161,17 @@ def get_graph_from_dask(graph, undirected=False):
         # if it is an argument, add it
         elif isinstance(key, collections.Hashable) and isinstance(v, collections.Hashable):  
             if isinstance(v, tuple):
-                pass# print(v)
+                pass
             add_to_remade_graph(remade_graph, key, v, undirected)
         else:
             pass
-
+    
     return remade_graph
 
 
-def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys):
+def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys, main_component=None):
     """ Search proxies in the remade graph and fill in dictionaries to store information.
     """
-
-    def is_task(v):
-        if isinstance(v, tuple) and callable(v[0]):
-            return True 
-        return False
 
     for key, v in graph.items():  
         # if it is a subgraph, recurse
@@ -189,6 +186,9 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
 
         # if it is a task, add its arguments
         elif is_task(v) and (key not in unused_keys):  
+            if main_component and key not in main_component:
+                continue 
+            
             try:
                 f, target, slices = v
 
@@ -206,31 +206,7 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
     return 
 
 
-def get_unused_keys_v2(remade_graph):
-    """ Using BFS
-    """
-    def func(n):
-        if isinstance(n, tuple) and 'getitem' in n[0]:
-            return True
-        return False
-
-    connected_comps = BFS_connected_components(
-        remade_graph, filter_condition_for_root_nodes=func)
-
-    # get connected component of maximum depth
-    max_len = max(map(len, connected_comps.values()))
-    main_components = [
-        _list for comp,
-        _list in connected_comps.items() if len(_list) == max_len]
-
-    used_getitems = list()
-    for main_comp in main_components:
-        for e in main_comp:
-            if isinstance(e, tuple) and 'getitem' in e[0] and e not in used_getitems:
-                used_getitems.append(e)
-
-
-def get_used_proxies(graph, undirected=False):
+def get_used_proxies(graph, undirected=False, use_BFS=False):
     """ go through graph and find the proxies that are used by other tasks
     proxy: task that getitem directly from original-array
     """
@@ -257,14 +233,27 @@ def get_used_proxies(graph, undirected=False):
         return unused_keys
 
     remade_graph = get_graph_from_dask(graph, undirected=undirected)
-    unused_keys = get_unused_keys(remade_graph)
+
+    if not use_BFS:
+        unused_keys = get_unused_keys(remade_graph)
+        main_component = None
+    else:
+        unused_keys = list()
+        connected_comps = BFS_connected_components(graph,
+                                          filter_condition_for_root_nodes=true_dumb_function,
+                                          max_iterations=10)
+        max_len = max(map(len, connected_comps.values()))
+        main_components = [
+            _list for comp,
+            _list in connected_comps.items() if len(_list) == max_len]
+        main_component = main_components[0]
 
     proxy_to_slices = dict()
     origarr_to_used_proxies = dict()
     origarr_to_obj = dict()
     origarr_to_blocks_shape = dict()
     proxy_to_dict = dict()
-    search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys)
+    search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys, main_component)
 
     return {
         'proxy_to_slices': proxy_to_slices, 
