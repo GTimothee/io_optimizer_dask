@@ -132,8 +132,11 @@ def get_graph_from_dask(graph, undirected=False):
     for key, v in graph.items():  
         # if it is a subgraph, recurse
         if isinstance(v, dict):
-            subgraph = get_graph_from_dask(v, undirected=undirected)
-            remade_graph.update(subgraph)
+            if not "array-original" in key:
+                subgraph = get_graph_from_dask(v, undirected=undirected)
+                remade_graph.update(subgraph)
+            else:
+                add_to_remade_graph(remade_graph, key, v, undirected)
 
         # if it is a task, add its arguments
         elif is_task(v):  
@@ -179,7 +182,7 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
             search_dask_graph(v, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys)
 
         elif isinstance(key, str) and "array-original" in key:
-            obj = v[0]
+            obj = v
             origarr_to_obj[key] = obj
             origarr_to_blocks_shape[key] = get_array_block_dims(obj.shape, obj.chunks)
             continue
@@ -254,7 +257,7 @@ def get_used_proxies(graph, undirected=False):
         return unused_keys
 
     remade_graph = get_graph_from_dask(graph, undirected=undirected)
-    unused_keys = get_unused_keys_v2(remade_graph)
+    unused_keys = get_unused_keys(remade_graph)
 
     proxy_to_slices = dict()
     origarr_to_used_proxies = dict()

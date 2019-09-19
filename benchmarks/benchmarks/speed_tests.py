@@ -138,12 +138,12 @@ def _sum():
                 out_path = add_dir(chunk_path, str(nb_chunks) + '_chunks')
 
                 if non_opti:
-                    new_config = Test_config(False, False, out_path, buffer_size, input_file_path, first_exp_shapes[chunk_shape])
+                    new_config = CaseConfig(False, False, out_path, buffer_size, input_file_path, first_exp_shapes[chunk_shape])
                     new_config.sum_case(nb_chunks)
                     tests.append(new_config)
 
                 if opti:
-                    new_config = Test_config(True, is_scheduler, out_path, buffer_size, input_file_path, first_exp_shapes[chunk_shape])
+                    new_config = CaseConfig(True, is_scheduler, out_path, buffer_size, input_file_path, first_exp_shapes[chunk_shape])
                     new_config.sum_case(nb_chunks)
                     tests.append(new_config)
 
@@ -236,13 +236,13 @@ def experiment_1():
                             split_file = h5py.File(split_file_path, 'w') 
 
                             if non_opti:
-                                new_config = Test_config(False, False, sched_path, buffer_size, input_file_path)
+                                new_config = CaseConfig(False, False, sched_path, buffer_size, input_file_path)
                                 config.create_or_overwrite(auto_chunk, cube_shapes[cube_type], overwrite=False)
                                 new_config.split_case(hardware, ref, chunk_type, chunk_shape, split_file)
                                 tests.append(new_config)
 
                             if opti:
-                                new_config = Test_config(True, is_scheduler, sched_path, buffer_size, input_file_path)
+                                new_config = CaseConfig(True, is_scheduler, sched_path, buffer_size, input_file_path)
                                 config.create_or_overwrite(auto_chunk, cube_shapes[cube_type], overwrite=False)
                                 new_config.split_case(hardware, ref, chunk_type, chunk_shape, split_file)
                                 tests.append(new_config)

@@ -9,7 +9,7 @@ from dask_utils_perso.utils import (create_random_cube, load_array_parts,
 
 ONE_GIG = 1000000000
 
-__all__ = ['Test_config',
+__all__ = ['CaseConfig',
            'ONE_GIG',
            'flush_cache',
            'get_arr_shapes',
@@ -17,7 +17,7 @@ __all__ = ['Test_config',
            'neat_print_graph']
 
 
-class Test_config():
+class CaseConfig():
     """ Contains the configuration for a test.
     """
     def __init__(self, opti, scheduler_opti, out_path, buffer_size, input_file_path, chunk_shape):
@@ -147,9 +147,9 @@ def get_test_arr(config):
     If file does not exist it will be created using "shape" parameter.
     If file does exist and chunk_shape different than 
 
-    Arguments:
+    Arguments (from config object):
         file_path: File containing the array, will be created if does not exist.
-        chunk_shape: Shape of the array to load.
+        chunk_shape: 
         shape: Shape of the array to create if does not exist.
         test_case: Test case. If None, returns the test array.
         nb_chunks: Number of chunks to treat in the test case.
@@ -158,25 +158,25 @@ def get_test_arr(config):
     """
 
     def get_or_create_array(config):
+        file_path = config.input_file_path
         arr = None 
-        if config.overwrite and config.shape and os.path.isfile(config.file_path):
-            os.remove(config.file_path)
+        if config.overwrite and config.shape and os.path.isfile(file_path):
+            os.remove(file_path)
 
-        if not os.path.isfile(config.file_path):
-            print("File not found, attempting to create the array...")
-            if not shape: 
-                raise ValueError("No shape to create the array")
+        if not os.path.isfile(file_path):
+            if not config.shape: 
+                raise ValueError("File not found, attempting to create the array... No shape to create the array")
 
-            if config.file_path.split('.')[-1] == 'hdf5':
+            if file_path.split('.')[-1] == 'hdf5':
                 dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
-                                                        file_path=config.file_path,
+                                                        file_path=file_path,
                                                         shape=config.shape,
                                                         chunks_shape=None,  # this chunk shape is for physical chunks
                                                         dtype="float16")
             else:
                 raise ValueError("File format not supported yet.")
         try:
-            arr = get_dask_array_from_hdf5(config.file_path, key='data')
+            arr = get_dask_array_from_hdf5(file_path, key='data')
         except: 
             raise IOError("failed to load file")
         
@@ -190,10 +190,10 @@ def get_test_arr(config):
     if config.chunk_shape:
         arr = arr.rechunk(config.chunk_shape)
 
-    if test_case:
-        if test_case == 'sum':
+    if config.test_case:
+        if config.test_case == 'sum':
             arr = sum_chunks(arr, nb_chunks=config.nb_chunks)
-        elif test_case == 'split':
+        elif config.test_case == 'split':
             arr = split_array(arr, config.split_file)
     return arr
 
