@@ -33,11 +33,73 @@ def get_array_block_dims(shape, chunks):
 
 def flatten_iterable(l, plain_list=list()):
     for e in l:
-        if isinstance(e, Iterable) and not isinstance(e, (str, bytes)):
+        if isinstance(e, list) and not isinstance(e, (str, bytes)):
             plain_list = flatten_iterable(e, plain_list)
         else:
             plain_list.append(e)
     return plain_list
+
+
+#TODO: verify
+def BFS_connected_components(
+        graph,
+        filter_condition_for_root_nodes=true_dumb_function,
+        max_iterations=10):
+    """
+    root node is at filter_condition_for_root_nodes 
+    returns a dictionary with key = component id (increasing int) and value is a list of the nodes in the component
+    """
+    def all_nodes_not_visited(nb_nodes_visited, nb_nodes_total):
+        if nb_nodes_visited != nb_nodes_total:
+            return True
+        return False
+
+    def visit_node(visited, n, nb_nodes_visited, components, node_queue):
+        visited[n] = True
+        nb_nodes_visited += 1
+        add_to_dict_of_lists(
+            components, component_id, n, unique=True)
+        node_queue.append(n)
+        return nb_nodes_visited
+
+    # initialize visitation dict
+    nodes = list(graph.keys())
+    nb_nodes_total = len(nodes)
+    visited = dict(zip(nodes, nb_nodes_total * [False]))
+    nb_nodes_visited = 0
+
+    # initialize component variables
+    components = dict()
+    component_id = 0
+
+    max_iterations = 10
+    nb_its = 0
+    while all_nodes_not_visited(nb_nodes_visited, nb_nodes_total):
+
+        # get next unvisited node (next start of connected component)
+        node_queue = list()
+        for n in nodes:
+            if not visited[n]:
+                if filter_condition_for_root_nodes(n):
+                    nb_nodes_visited = visit_node(
+                        visited, n, nb_nodes_visited, components, node_queue)
+                    break
+
+        # run BFS
+        while len(node_queue) > 0:
+            curr_node = node_queue.pop(0)
+            for n in graph[curr_node]:
+                if not visited[n]:
+                    nb_nodes_visited = visit_node(
+                        visited, n, nb_nodes_visited, components, node_queue)
+        component_id += 1
+
+        # print("it", nb_its)
+        nb_its += 1
+        if max_iterations == nb_its:
+            break
+
+    return components
 
 
 def get_graph_from_dask(graph, undirected=False):
@@ -72,22 +134,25 @@ def get_graph_from_dask(graph, undirected=False):
         # if it is a task, add its arguments
         elif is_task(v):  
             for arg in v[1:]:
+                if isinstance(arg, tuple):
+                    pass#print(arg)
+
                 if isinstance(arg, list):
-                    try:
-                        iterator = iter(arg)
-                        l = flatten_iterable(arg)
-                        for e in l:
-                            if isinstance(key, collections.Hashable) and isinstance(e, collections.Hashable):                 
-                                add_to_remade_graph(remade_graph, key, e, undirected)
-                        continue
-                    except TypeError: # not iterable
-                        continue         
+                    l = flatten_iterable(arg)
+                    for e in l:
+                        if isinstance(e, tuple):
+                            pass#print(e)  
+                        if isinstance(key, collections.Hashable) and isinstance(e, collections.Hashable):                 
+                            add_to_remade_graph(remade_graph, key, e, undirected)
+                    continue
 
                 if isinstance(key, collections.Hashable) and isinstance(arg, collections.Hashable):                 
                     add_to_remade_graph(remade_graph, key, arg, undirected)
 
         # if it is an argument, add it
         elif isinstance(key, collections.Hashable) and isinstance(v, collections.Hashable):  
+            if isinstance(v, tuple):
+                pass# print(v)
             add_to_remade_graph(remade_graph, key, v, undirected)
         else:
             pass
@@ -96,7 +161,7 @@ def get_graph_from_dask(graph, undirected=False):
 
 
 def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys):
-    """ 
+    """ Search proxies in the remade graph and fill in dictionaries to store information.
     """
 
     def is_task(v):
@@ -110,7 +175,7 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
             search_dask_graph(v, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys)
 
         elif isinstance(key, str) and "array-original" in key:
-            obj = v
+            obj = v[0]
             origarr_to_obj[key] = obj
             origarr_to_blocks_shape[key] = get_array_block_dims(obj.shape, obj.chunks)
             continue

@@ -35,22 +35,25 @@ def get_arr_shapes(arr):
     return shape, chunks, chunk_dims
 
 
-
-def get_arr_list():
-    """ Return a list of dask array. Each dask array being a block of the input array.
+def get_arr_list(arr, nb_chunks=None):
+    """ Return a list of dask arrays. Each dask array being a block of the input array.
+    Arguments:
+        arr: original array of type dask array
+        nb_chunks: if None then function returns all arrays, else function returns n=nb_chunks arrays
     """
-    _, ncs, dims = get_arr_shapes(arr)
+    _, chunk_shape, dims = get_arr_shapes(arr)
     arr_list = list()
     for i in range(dims[0]):
         for j in range(dims[1]):
             for k in range(dims[2]):
-                if len(arr_list) < nb_chunks:
+                if (nb_chunks and len(arr_list) < nb_chunks) or not nb_chunks:
+                    upper_corner = (i * chunk_shape[0],
+                                    j * chunk_shape[1],
+                                    k * chunk_shape[2])
                     arr_list.append(load_array_parts(arr=arr,
                                                      geometry="right_cuboid",
-                                                     shape=ncs,
-                                                     upper_corner=(i * ncs[0],
-                                                                   j * ncs[1],
-                                                                   k * ncs[2]),
+                                                     shape=chunk_shape,
+                                                     upper_corner=upper_corner,
                                                      random=False))
     return arr_list
 
@@ -62,7 +65,9 @@ def sum_chunks(arr, nb_chunks):
         arr: array from which blocks will be sum
         nb_chunks: number of chunks to sum
     """
-    arr_list = get_arr_list(arr)
+    
+    arr_list = get_arr_list(arr, nb_chunks)
+    print("arr_list size", len(arr_list))
     sum_arr = arr_list.pop(0)
     for a in arr_list:
         sum_arr = sum_arr + a
@@ -94,6 +99,7 @@ def get_test_arr(file_path, chunk_shape=None, shape=None, test_case=None, nb_chu
             os.remove(file_path)
 
         if not os.path.isfile(file_path):
+            print("File not found, attempting to create the array...")
             if not shape: 
                 raise ValueError("No shape to create the array")
 
@@ -113,6 +119,9 @@ def get_test_arr(file_path, chunk_shape=None, shape=None, test_case=None, nb_chu
         return arr
 
     arr = get_or_create_array()
+
+    print("oririnal array shape", arr.shape)
+    print("desired chunk_shape", chunk_shape)
 
     if chunk_shape:
         arr = arr.rechunk(chunk_shape)

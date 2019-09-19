@@ -54,6 +54,8 @@ def run(arr, config):
                         'scheduler_opti': scheduler_opti}
                         })
 
+    print("at runtime: ", arr.shape, arr.chunks)
+
     # evaluation
     t = time.time()
     res = arr.compute()
@@ -64,19 +66,17 @@ def run(arr, config):
 class Test_config():
     """ Contains the configuration for a test.
     """
-    def __init__(self, opti, scheduler_opti, out_path, buffer_size, input_file_path):
+    def __init__(self, opti, scheduler_opti, out_path, buffer_size, input_file_path, chunk_shape):
         self.test_case = None
         self.opti = opti 
         self.scheduler_opti = scheduler_opti
         self.out_path = out_path
         self.buffer_size = buffer_size
         self.input_file_path = input_file_path
-        self.chunk_shape = None
-
+        self.chunk_shape = chunk_shape
         self.split_file = None
 
         # default to not recreate file
-        self.chunk_shape = None 
         self.shape = None
         self.overwrite = None
 
@@ -129,6 +129,8 @@ class Test_config():
 def run_test(writer, config):
         """ Get a test array, run the test and write the output.
         """
+        print("chunk shape in config", config.chunk_shape)
+
         arr = get_test_arr(config.input_file_path, 
                            chunk_shape=config.chunk_shape, 
                            shape=config.shape, 
@@ -172,8 +174,8 @@ def _sum():
             'scheduler_off': [105]},
 
         'slabs_previous_exp': {
-            'scheduler_on': [105],
-            'scheduler_off': [105]},
+            'scheduler_on': [94],
+            'scheduler_off': [94]},
 
         'blocks_dask_interpol':{
             'scheduler_on': [105],
@@ -184,9 +186,9 @@ def _sum():
             'scheduler_off': [105]}
     }
 
-    non_opti, opti = (True, True)
+    non_opti, opti = (False, True)
     buffer_size = 5 * ONE_GIG
-    shapes_to_test = ["blocks_dask_interpol", "slabs_dask_interpol"] 
+    shapes_to_test = ["slabs_previous_exp"] 
 
     # create the tests to be run
     # create the output directories
@@ -205,12 +207,12 @@ def _sum():
                 out_path = add_dir(chunk_path, str(nb_chunks) + '_chunks')
 
                 if non_opti:
-                    new_config = Test_config(False, False, out_path, buffer_size, input_file_path)
+                    new_config = Test_config(False, False, out_path, buffer_size, input_file_path, first_exp_shapes[chunk_shape])
                     new_config.sum_case(nb_chunks)
                     tests.append(new_config)
 
                 if opti:
-                    new_config = Test_config(True, is_scheduler, out_path, buffer_size, input_file_path)
+                    new_config = Test_config(True, is_scheduler, out_path, buffer_size, input_file_path, first_exp_shapes[chunk_shape])
                     new_config.sum_case(nb_chunks)
                     tests.append(new_config)
 
@@ -284,7 +286,7 @@ def experiment_1():
                 chunk_status = 'chunked' if chunked else 'not_chunked'
                 auto_chunk = True if chunked else None 
                 ref_dir = add_dir(cube_dir, chunk_status)
-                ref = cube_refs[cube_type][chunked]
+                ref = cube_refs[cube_type][chunk_status]
                 input_file_path = os.path.join(data_path, str(ref) + '.hdf5')
 
                 for chunk_type in ['blocks', 'slabs']:
@@ -331,4 +333,5 @@ def experiment_1():
         for config in tests:
             run_test(config)
 
-experiment_1()
+_sum()
+# experiment_1()

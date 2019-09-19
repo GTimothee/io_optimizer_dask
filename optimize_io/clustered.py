@@ -32,13 +32,14 @@ def get_load_strategy(
     """ get clustered writes best load strategy given 
     the memory available for io optimization
     """
-
-    print("memory available:", buffer_mem_size)
-
     block_mem_size = chunk_shape[0] * \
         chunk_shape[1] * chunk_shape[2] * nb_bytes_per_val
     block_row_size = block_mem_size * original_array_blocks_shape[2]
     block_slice_size = block_row_size * original_array_blocks_shape[1]
+
+    print("memory available:", buffer_mem_size)
+    print("chunk_shape", chunk_shape)
+    print("block_mem_size", block_mem_size)
 
     if buffer_mem_size >= block_slice_size:
         nb_slices = math.floor(buffer_mem_size / block_slice_size)
@@ -110,9 +111,11 @@ def create_buffers(origarr_name, dicts):
     blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj)
     dicts['block_to_proxies'] = block_to_proxies
 
-
     # create buffers of size len(row) or len(slice) or less
     blocks_used = sorted(blocks_used)
+
+    print("\nbefore buffering", blocks_used)
+
     list_of_lists, prev_i = new_list(list())
     while len(blocks_used) > 0:
         next_i = blocks_used.pop(0)
@@ -120,6 +123,8 @@ def create_buffers(origarr_name, dicts):
             list_of_lists, prev_i, strategy, blocks_shape)
         list_of_lists[len(list_of_lists) - 1].append(next_i)
         prev_i = next_i
+
+    print("\nbefore concat", list_of_lists)
 
     # try concatenate rows/slices with each other if buffer size allows
     list_of_lists2 = list()
@@ -145,7 +150,8 @@ def get_blocks_used(dicts, origarr_name, arr_obj):
     used_proxies = dicts['origarr_to_used_proxies'][origarr_name]
     blocks_shape = dicts['origarr_to_blocks_shape'][origarr_name]
     for proxy_key in used_proxies:
-        slice_tuple = dicts['proxy_to_slices'][proxy_key]        
+        slice_tuple = dicts['proxy_to_slices'][proxy_key]
+        print("slice_tuple", slice_tuple)        
         x_range, y_range, z_range = get_covered_blocks(slice_tuple, arr_obj.chunks)
         for x in x_range:
             for y in y_range:
