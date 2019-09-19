@@ -63,81 +63,12 @@ def run(arr, config):
     return res, t
 
 
-class Test_config():
-    """ Contains the configuration for a test.
-    """
-    def __init__(self, opti, scheduler_opti, out_path, buffer_size, input_file_path, chunk_shape):
-        self.test_case = None
-        self.opti = opti 
-        self.scheduler_opti = scheduler_opti
-        self.out_path = out_path
-        self.buffer_size = buffer_size
-        self.input_file_path = input_file_path
-        self.chunk_shape = chunk_shape
-        self.split_file = None
-
-        # default to not recreate file
-        self.shape = None
-        self.overwrite = None
-
-    def sum_case(self, nb_chunks):
-        self.test_case = 'sum'
-        self.nb_chunks = nb_chunks
-
-    def create_or_overwrite(self, chunk_shape, shape, overwrite):
-        self.chunk_shape = chunk_shape
-        self.shape = shape
-        self.overwrite = overwrite
-
-    def split_case(self, hardware, ref, chunk_type, chunk_shape, split_file):
-        self.cube_ref = ref
-        self.test_case = 'split'
-        self.hardware = hardware
-        self.split_file = split_file
-        if not self.chunk_shape:
-            self.chunk_shape = chunk_shape
-        self.chunk_type = chunk_type
-
-    def write_output(self, writer, out_file_path, t):
-        if self.test_case == 'sum':
-            data = [
-                self.opti, 
-                self.scheduler_opti, 
-                self.chunk_shape, 
-                self.nb_chunks, 
-                self.buffer_size, 
-                t,
-                out_file_path
-            ]
-        elif self.test_case == 'split':
-            data = [
-                self.hardware, 
-                self.cube_ref,
-                self.chunk_type,
-                self.chunk_shape,
-                self.opti, 
-                self.scheduler_opti, 
-                self.buffer_size, 
-                t,
-                out_file_path
-            ]
-        else:
-            raise ValueError("Unsupported test case.")
-        writer.writerow(data)
-
-
 def run_test(writer, config):
         """ Get a test array, run the test and write the output.
         """
         print("chunk shape in config", config.chunk_shape)
 
-        arr = get_test_arr(config.input_file_path, 
-                           chunk_shape=config.chunk_shape, 
-                           shape=config.shape, 
-                           test_case=config.test_case, 
-                           nb_chunks=config.nb_chunks, 
-                           overwrite=config.overwrite,
-                           split_file=config.split_file)
+        arr = get_test_arr(config)
 
         # run test
         with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:

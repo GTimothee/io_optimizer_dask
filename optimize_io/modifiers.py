@@ -40,6 +40,11 @@ def flatten_iterable(l, plain_list=list()):
     return plain_list
 
 
+# to delete
+def true_dumb_function(x):
+    return True
+
+
 #TODO: verify
 def BFS_connected_components(
         graph,
@@ -72,7 +77,6 @@ def BFS_connected_components(
     components = dict()
     component_id = 0
 
-    max_iterations = 10
     nb_its = 0
     while all_nodes_not_visited(nb_nodes_visited, nb_nodes_total):
 
@@ -199,6 +203,30 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
     return 
 
 
+def get_unused_keys_v2(remade_graph):
+    """ Using BFS
+    """
+    def func(n):
+        if isinstance(n, tuple) and 'getitem' in n[0]:
+            return True
+        return False
+
+    connected_comps = BFS_connected_components(
+        remade_graph, filter_condition_for_root_nodes=func)
+
+    # get connected component of maximum depth
+    max_len = max(map(len, connected_comps.values()))
+    main_components = [
+        _list for comp,
+        _list in connected_comps.items() if len(_list) == max_len]
+
+    used_getitems = list()
+    for main_comp in main_components:
+        for e in main_comp:
+            if isinstance(e, tuple) and 'getitem' in e[0] and e not in used_getitems:
+                used_getitems.append(e)
+
+
 def get_used_proxies(graph, undirected=False):
     """ go through graph and find the proxies that are used by other tasks
     proxy: task that getitem directly from original-array
@@ -226,7 +254,7 @@ def get_used_proxies(graph, undirected=False):
         return unused_keys
 
     remade_graph = get_graph_from_dask(graph, undirected=undirected)
-    unused_keys = get_unused_keys(remade_graph)
+    unused_keys = get_unused_keys_v2(remade_graph)
 
     proxy_to_slices = dict()
     origarr_to_used_proxies = dict()

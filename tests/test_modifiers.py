@@ -28,6 +28,15 @@ def test_decompose_iterable():
 
 
 def test_get_graph_from_dask():
+    # create config for the test
+    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+    new_config = Test_config(opti=None, 
+                             scheduler_opti=None, 
+                             out_path=None, 
+                             buffer_size=ONE_GIG, 
+                             input_file_path=data, 
+                             chunk_shape=(770, 605, 700))
+    
     dask_array = get_test_arr(case='sum', nb_arr=2)
 
     # test function

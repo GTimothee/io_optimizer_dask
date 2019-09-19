@@ -9,11 +9,76 @@ from dask_utils_perso.utils import (create_random_cube, load_array_parts,
 
 ONE_GIG = 1000000000
 
-__all__ = ['ONE_GIG',
+__all__ = ['Test_config',
+           'ONE_GIG',
            'flush_cache',
            'get_arr_shapes',
            'get_test_arr',
            'neat_print_graph']
+
+
+class Test_config():
+    """ Contains the configuration for a test.
+    """
+    def __init__(self, opti, scheduler_opti, out_path, buffer_size, input_file_path, chunk_shape):
+        self.test_case = None
+        self.opti = opti 
+        self.scheduler_opti = scheduler_opti
+        self.out_path = out_path
+        self.buffer_size = buffer_size
+        self.input_file_path = input_file_path
+        self.chunk_shape = chunk_shape
+        self.split_file = None
+
+        # default to not recreate file
+        self.shape = None
+        self.overwrite = None
+
+    def sum_case(self, nb_chunks):
+        self.test_case = 'sum'
+        self.nb_chunks = nb_chunks
+
+    def create_or_overwrite(self, chunk_shape, shape, overwrite):
+        self.chunk_shape = chunk_shape
+        self.shape = shape
+        self.overwrite = overwrite
+
+    def split_case(self, hardware, ref, chunk_type, chunk_shape, split_file):
+        self.cube_ref = ref
+        self.test_case = 'split'
+        self.hardware = hardware
+        self.split_file = split_file
+        if not self.chunk_shape:
+            self.chunk_shape = chunk_shape
+        self.chunk_type = chunk_type
+
+    def write_output(self, writer, out_file_path, t):
+        if self.test_case == 'sum':
+            data = [
+                self.opti, 
+                self.scheduler_opti, 
+                self.chunk_shape, 
+                self.nb_chunks, 
+                self.buffer_size, 
+                t,
+                out_file_path
+            ]
+        elif self.test_case == 'split':
+            data = [
+                self.hardware, 
+                self.cube_ref,
+                self.chunk_type,
+                self.chunk_shape,
+                self.opti, 
+                self.scheduler_opti, 
+                self.buffer_size, 
+                t,
+                out_file_path
+            ]
+        else:
+            raise ValueError("Unsupported test case.")
+        writer.writerow(data)
+
 
 def flush_cache():
     os.system('sync; echo 3 | sudo tee /proc/sys/vm/drop_caches')   
@@ -74,7 +139,7 @@ def sum_chunks(arr, nb_chunks):
     return sum_arr
     
 
-def get_test_arr(file_path, chunk_shape=None, shape=None, test_case=None, nb_chunks=2, overwrite=False, split_file=None):
+def get_test_arr(config):
     """ Load or create Dask Array for tests. You can specify a test case too.
 
     If file exists the function returns the array.
@@ -92,45 +157,44 @@ def get_test_arr(file_path, chunk_shape=None, shape=None, test_case=None, nb_chu
         split_file: for the test case 'split'
     """
 
-    def get_or_create_array():
+    def get_or_create_array(config):
         arr = None 
-    
-        if overwrite and shape and os.path.isfile(file_path):
-            os.remove(file_path)
+        if config.overwrite and config.shape and os.path.isfile(config.file_path):
+            os.remove(config.file_path)
 
-        if not os.path.isfile(file_path):
+        if not os.path.isfile(config.file_path):
             print("File not found, attempting to create the array...")
             if not shape: 
                 raise ValueError("No shape to create the array")
 
-            if file_path.split('.')[-1] == 'hdf5':
+            if config.file_path.split('.')[-1] == 'hdf5':
                 dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
-                                                        file_path=file_path,
-                                                        shape=shape,
-                                                        chunks_shape=None,
+                                                        file_path=config.file_path,
+                                                        shape=config.shape,
+                                                        chunks_shape=None,  # this chunk shape is for physical chunks
                                                         dtype="float16")
             else:
                 raise ValueError("File format not supported yet.")
         try:
-            arr = get_dask_array_from_hdf5(file_path, key='data')
+            arr = get_dask_array_from_hdf5(config.file_path, key='data')
         except: 
             raise IOError("failed to load file")
         
         return arr
 
-    arr = get_or_create_array()
+    arr = get_or_create_array(config)
 
     print("oririnal array shape", arr.shape)
-    print("desired chunk_shape", chunk_shape)
+    print("desired chunk_shape", config.chunk_shape)
 
-    if chunk_shape:
-        arr = arr.rechunk(chunk_shape)
+    if config.chunk_shape:
+        arr = arr.rechunk(config.chunk_shape)
 
     if test_case:
         if test_case == 'sum':
-            arr = sum_chunks(arr, nb_chunks=nb_chunks)
+            arr = sum_chunks(arr, nb_chunks=config.nb_chunks)
         elif test_case == 'split':
-            arr = split_array(arr, split_file)
+            arr = split_array(arr, config.split_file)
     return arr
 
 
