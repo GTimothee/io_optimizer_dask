@@ -101,11 +101,13 @@ def test_BFS():
         'e': [],
         'f': ['e']
     }
-    values = standard_BFS('a', graph)
+    values, depth = standard_BFS('a', graph)
     assert values == ['a', 'b', 'c', 'd', 'e']
+    assert depth == 2
 
-    values = standard_BFS('f', graph)
+    values, depth = standard_BFS('f', graph)
     assert values == ['f', 'e']
+    assert depth == 1
 
 
 def test_get_unused_keys():
@@ -134,13 +136,16 @@ def test_BFS_2():
     root_nodes = get_unused_keys(graph)
 
     max_components = list()
+    max_depth = 0
     for root in root_nodes:
-        node_list = standard_BFS(root, graph)
-        if len(max_components) == 0 or len(node_list) > len(max_components[0]):
+        node_list, depth = standard_BFS(root, graph)
+        if len(max_components) == 0 or depth > max_depth:
             max_components = [node_list]
-        elif len(node_list) == len(max_components[0]):
+            max_depth = depth
+        elif depth == max_depth:
             max_components.append(node_list)
 
+    assert max_depth == 2
     assert len(max_components) == 1
     assert max_components[0] == ['a', 'b', 'c', 'd', 'e']
 
@@ -156,7 +161,7 @@ def test_BFS_3():
                              out_path=None, 
                              buffer_size=ONE_GIG, 
                              input_file_path=data, 
-                             chunk_shape=(770, 605, 700)) # (660, 726, 600))
+                             chunk_shape=(770, 605, 700))  # (660, 726, 600))
     new_config.sum_case(nb_chunks=2)
     dask_array = get_test_arr(new_config)
     dask_array.visualize(filename='tests/outputs/img.png', optimize_graph=False)
