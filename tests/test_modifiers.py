@@ -92,28 +92,64 @@ def test_get_used_proxies():
         assert set(proxy_indices) == set([(0, 0, 0), (0, 0, 1)])
 
 
-# not finished
-"""def get_used_proxies_rechunk_case():
-    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-    new_config = CaseConfig(opti=None, 
-                             scheduler_opti=None, 
-                             out_path=None, 
-                             buffer_size=ONE_GIG, 
-                             input_file_path=data, 
-                             chunk_shape=(770, 605, 700))
-    new_config.sum_case(nb_chunks=2)
-    dask_array = get_test_arr(new_config)
+def test_BFS():
+    graph = {
+        'a': ['b', 'c'],
+        'b': [],
+        'c': ['d', 'e'],
+        'd': [],
+        'e': [],
+        'f': ['e']
+    }
+    values = standard_BFS('a', graph)
+    assert values == ['a', 'b', 'c', 'd', 'e']
 
-    # test function
-    dask_graph = dask_array.dask.dicts 
-    dicts = get_used_proxies(dask_graph, undirected=False, use_BFS=True)
-    slices = list(dicts['proxy_to_slices'].values())
-    with open('tests/outputs/slices_found.txt', "w+") as f:
-        for s in slices:
-            f.write(str(s) + "\n")"""
+    values = standard_BFS('f', graph)
+    assert values == ['f', 'e']
 
 
-"""def test_BFS_connected_comp():
+def test_get_unused_keys():
+    graph = {
+        'a': ['b', 'c'],
+        'b': [],
+        'c': ['d', 'e'],
+        'd': [],
+        'e': [],
+        'f': ['e']
+    }
+    root_nodes = get_unused_keys(graph)
+    assert root_nodes == ['a', 'f']
+
+def test_BFS_2():
+    """ test to include bfs in the program
+    """
+    graph = {
+        'a': ['b', 'c'],
+        'b': [],
+        'c': ['d', 'e'],
+        'd': [],
+        'e': [],
+        'f': ['e']
+    }
+    root_nodes = get_unused_keys(graph)
+
+    max_components = list()
+    for root in root_nodes:
+        node_list = standard_BFS(root, graph)
+        if len(max_components) == 0 or len(node_list) > len(max_components[0]):
+            max_components = [node_list]
+        elif len(node_list) == len(max_components[0]):
+            max_components.append(node_list)
+
+    assert len(max_components) == 1
+    assert max_components[0] == ['a', 'b', 'c', 'd', 'e']
+
+
+def test_BFS_3():
+    """ test to include bfs in the program and test with rechunk case
+    """
+
+    # get test array with rechunking
     data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
     new_config = CaseConfig(opti=None, 
                              scheduler_opti=None, 
@@ -125,45 +161,46 @@ def test_get_used_proxies():
     dask_array = get_test_arr(new_config)
     dask_array.visualize(filename='tests/outputs/img.png', optimize_graph=False)
 
+    # get formatted graph for processing
     dask_graph = dask_array.dask.dicts 
+    graph = get_graph_from_dask(dask_graph, undirected=False)  # we want a directed graph
 
-    # get remade graph 
-    graph = get_graph_from_dask(dask_graph, undirected=True)
     with open('tests/outputs/remade_graph.txt', "w+") as f:
         for k, v in graph.items():
             f.write("\n\n" + str(k))
             f.write("\n" + str(v))
 
-    # get connected components with BFS
-    connected_comps = BFS_connected_components(graph,
-                        filter_condition_for_root_nodes=true_dumb_function,
-                        max_iterations=10)
+    # test the actual program
+    root_nodes = get_unused_keys(graph)
+    print('\nRoot nodes:')
+    for root in root_nodes:
+        print(root)
 
-    # get main components
-    max_len = max(map(len, connected_comps.values()))
-    main_components = [
-        _list for comp,
-        _list in connected_comps.items() if len(_list) == max_len]
-
-    print("MAIN components")
-    for m in main_components:
-        print("\nlen(m)", len(m))
-        nb_proxies =0
-        for e in m:
-            if isinstance(e, tuple) and isinstance(e[0], str) and "array" in e[0]:
-                print(e)
-                nb_proxies +=1
-        print("found", nb_proxies, "proxies")"""
+    max_components = list()
+    max_depth = 0
+    for root in root_nodes:
+        node_list, depth = standard_BFS(root, graph)
+        if len(max_components) == 0 or depth > max_depth:
+            max_components = [node_list]
+            max_depth = depth
+        elif depth == max_depth:
+            max_components.append(node_list)
 
 
-def test_BFS():
-    graph = {
-        'a': ['b', 'c'],
-        'b': [],
-        'c': ['d', 'e'],
-        'd': [],
-        'e': []
-    }
-    values = standard_BFS('a', graph)
-    assert values == ['a', 'b', 'c', 'd', 'e']
+    print("nb components found:", str(len(max_components)))
 
+    #print("\nContent found:\n")
+    nb_proxies = 0
+    for node in max_components[0]:
+        if isinstance(node, tuple) and isinstance(node[0], str) and 'array' in node[0]:
+            #print(node) 
+            nb_proxies += 1
+
+    print("nb proxies found: " + str(nb_proxies))
+
+    #TODO: assertions
+    return
+
+
+if __name__ == "__main__":
+    test_BFS_3()

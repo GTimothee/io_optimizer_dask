@@ -47,18 +47,35 @@ def true_dumb_function(x):
 
 def standard_BFS(root, graph):
     nodes = list(graph.keys())
-    queue = [root]
+    queue = [(root, 0)]
     visited = [root]
 
-    while len(queue) != 0:
-        node = queue.pop(0)
-        neighbors = graph[node]
-        for n in neighbors:
-            if not n in visited:
-                queue.append(n)
-                visited.append(n)
+    with open('tests/outputs/BFS_out.txt', 'w+') as f:
+        max_depth = 0
+        while len(queue) > 0:
+            node, depth = queue.pop(0)
+            f.write("\n\n\n-------------- current node" + str(node))
+
+            # not related
+            if depth > max_depth:
+                max_depth = depth
+
+            # specific to our problem (because of remade graph)
+            if not node in graph:  
+                continue
+
+            # algorithm
+            neighbors = graph[node]
+            for n in neighbors:
+                f.write("\n\nvisited:")
+                if not n in visited:
+                    queue.append((n, depth + 1))
+                    visited.append(n)
+                    f.write("\n" + str(n))
+                    f.write("\nqueue:" + str(queue))
+            f.write("\nlen queue:" + str(len(queue)))
     
-    return visited
+    return visited, max_depth
 
 
 def BFS_connected_components(
@@ -190,14 +207,14 @@ def get_graph_from_dask(graph, undirected=False):
                     continue
 
                 if isinstance(key, collections.Hashable) and isinstance(arg, collections.Hashable):   
-                              
                     add_to_remade_graph(remade_graph, key, arg, undirected)
 
         # if it is an argument, add it
-        elif isinstance(key, collections.Hashable) and isinstance(v, collections.Hashable):  
-            if isinstance(v, tuple):
-                pass
-            add_to_remade_graph(remade_graph, key, v, undirected)
+        elif isinstance(key, collections.Hashable):
+            if isinstance(v, collections.Hashable):  
+                if isinstance(v, tuple):
+                    pass
+                add_to_remade_graph(remade_graph, key, v, undirected)
         else:
             pass
     
@@ -250,32 +267,32 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
     return 
 
 
+def get_unused_keys(remade_graph):
+    """ find keys in the graph that are not used as values by another(other) key(s)
+    """
+    keys = list(remade_graph.keys())
+    vals = list(remade_graph.values())
+    flatten = list()
+
+    # flatten the values which is a list of lists 
+    # because get_graph_from_dask which is using add_to_dict_of_lists
+    for l in vals:
+        for e in l:
+            flatten.append(e)
+
+    # do the actual job
+    unused_keys = list()
+    for key in keys:
+        if key not in flatten:
+            unused_keys.append(key)
+
+    return unused_keys
+
+
 def get_used_proxies(graph, use_BFS=True):
     """ go through graph and find the proxies that are used by other tasks
     proxy: task that getitem directly from original-array
     """
-
-    def get_unused_keys(remade_graph):
-        """ find keys in the graph that are not used as values by another(other) key(s)
-        """
-        keys = list(remade_graph.keys())
-        vals = list(remade_graph.values())
-        flatten = list()
-
-        # flatten the values which is a list of lists 
-        # because get_graph_from_dask which is using add_to_dict_of_lists
-        for l in vals:
-            for e in l:
-                flatten.append(e)
-
-        # do the actual job
-        unused_keys = list()
-        for key in keys:
-            if key not in flatten:
-                unused_keys.append(key)
-
-        return unused_keys
-
     if not use_BFS:
         remade_graph = get_graph_from_dask(graph, undirected=False)
         unused_keys = get_unused_keys(remade_graph)
