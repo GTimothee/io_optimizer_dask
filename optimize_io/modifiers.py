@@ -45,12 +45,28 @@ def true_dumb_function(x):
     return True
 
 
-#TODO: verify
+def standard_BFS(root, graph):
+    nodes = list(graph.keys())
+    queue = [root]
+    visited = [root]
+
+    while len(queue) != 0:
+        node = queue.pop(0)
+        neighbors = graph[node]
+        for n in neighbors:
+            if not n in visited:
+                queue.append(n)
+                visited.append(n)
+    
+    return visited
+
+
 def BFS_connected_components(
         graph,
         filter_condition_for_root_nodes=true_dumb_function,
         max_iterations=10):
     """
+    graph: undirected
     root node is at filter_condition_for_root_nodes 
     returns a dictionary with key = component id (increasing int) and value is a list of the nodes in the component
     """

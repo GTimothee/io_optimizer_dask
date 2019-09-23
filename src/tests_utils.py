@@ -108,6 +108,7 @@ def get_arr_list(arr, nb_chunks=None):
     """
     _, chunk_shape, dims = get_arr_shapes(arr)
     arr_list = list()
+    arr_list_indices = list()
     for i in range(dims[0]):
         for j in range(dims[1]):
             for k in range(dims[2]):
@@ -120,6 +121,9 @@ def get_arr_list(arr, nb_chunks=None):
                                                      shape=chunk_shape,
                                                      upper_corner=upper_corner,
                                                      random=False))
+                    arr_list_indices.append((i, j, k))
+
+    print("arr_list_indices", arr_list_indices)
     return arr_list
 
 
@@ -184,7 +188,7 @@ def get_test_arr(config):
 
     arr = get_or_create_array(config)
 
-    print("oririnal array shape", arr.shape)
+    print("original array shape", arr.shape)
     print("desired chunk_shape", config.chunk_shape)
 
     if config.chunk_shape:

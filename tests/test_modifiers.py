@@ -4,7 +4,7 @@ import tests_utils
 from tests_utils import get_test_arr, CaseConfig, ONE_GIG, neat_print_graph
 
 import optimize_io
-from optimize_io.modifiers import add_to_dict_of_lists, get_array_block_dims, flatten_iterable, get_graph_from_dask, get_used_proxies, BFS_connected_components, true_dumb_function
+from optimize_io.modifiers import *
 
 
 def test_add_to_dict_of_lists():
@@ -113,17 +113,18 @@ def test_get_used_proxies():
             f.write(str(s) + "\n")"""
 
 
-# not finished
-def test_BFS():
+"""def test_BFS_connected_comp():
     data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
     new_config = CaseConfig(opti=None, 
                              scheduler_opti=None, 
                              out_path=None, 
                              buffer_size=ONE_GIG, 
                              input_file_path=data, 
-                             chunk_shape=None)
+                             chunk_shape=(770, 605, 700)) # (660, 726, 600))
     new_config.sum_case(nb_chunks=2)
     dask_array = get_test_arr(new_config)
+    dask_array.visualize(filename='tests/outputs/img.png', optimize_graph=False)
+
     dask_graph = dask_array.dask.dicts 
 
     # get remade graph 
@@ -144,7 +145,25 @@ def test_BFS():
         _list for comp,
         _list in connected_comps.items() if len(_list) == max_len]
 
-    print(main_components)
+    print("MAIN components")
+    for m in main_components:
+        print("\nlen(m)", len(m))
+        nb_proxies =0
+        for e in m:
+            if isinstance(e, tuple) and isinstance(e[0], str) and "array" in e[0]:
+                print(e)
+                nb_proxies +=1
+        print("found", nb_proxies, "proxies")"""
 
-    """for k, v in connected_comps.items():
-        print("\n", v)"""
+
+def test_BFS():
+    graph = {
+        'a': ['b', 'c'],
+        'b': [],
+        'c': ['d', 'e'],
+        'd': [],
+        'e': []
+    }
+    values = standard_BFS('a', graph)
+    assert values == ['a', 'b', 'c', 'd', 'e']
+
