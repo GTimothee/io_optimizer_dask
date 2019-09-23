@@ -1,7 +1,7 @@
 import os
 
 import tests_utils
-from tests_utils import get_test_arr, CaseConfig, ONE_GIG, neat_print_graph
+from tests_utils import get_test_arr, CaseConfig, ONE_GIG, neat_print_graph, SUB_BIGBRAIN_SHAPE
 
 import optimize_io
 from optimize_io.modifiers import *
@@ -38,6 +38,7 @@ def test_get_graph_from_dask():
                              buffer_size=ONE_GIG, 
                              input_file_path=data, 
                              chunk_shape=None)
+    new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
     new_config.sum_case(nb_chunks=2)
     dask_array = get_test_arr(new_config)
 
@@ -63,6 +64,7 @@ def test_get_used_proxies():
                              buffer_size=ONE_GIG, 
                              input_file_path=data, 
                              chunk_shape=None)
+    new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
     new_config.sum_case(nb_chunks=2)
     
 
@@ -162,6 +164,7 @@ def test_BFS_3():
                              buffer_size=ONE_GIG, 
                              input_file_path=data, 
                              chunk_shape=(770, 605, 700))  # (660, 726, 600))
+    new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
     new_config.sum_case(nb_chunks=2)
     dask_array = get_test_arr(new_config)
     dask_array.visualize(filename='tests/outputs/img.png', optimize_graph=False)
