@@ -298,7 +298,7 @@ def get_used_proxies(graph, use_BFS=True):
         unused_keys = get_unused_keys(remade_graph)
         main_components = None
     else:
-        remade_graph = get_graph_from_dask(graph, undirected=True)
+        """remade_graph = get_graph_from_dask(graph, undirected=True)
         unused_keys = list()
         connected_comps = BFS_connected_components(remade_graph,
                                           filter_condition_for_root_nodes=true_dumb_function,
@@ -306,8 +306,20 @@ def get_used_proxies(graph, use_BFS=True):
         max_len = max(map(len, connected_comps.values()))
         main_components = [
             _list for comp,
-            _list in connected_comps.items() if len(_list) == max_len]
-        print("main_components", main_components)
+            _list in connected_comps.items() if len(_list) == max_len]"""
+
+        remade_graph = get_graph_from_dask(graph, undirected=False)
+        root_nodes = get_unused_keys(remade_graph)
+        main_components = list()
+        max_depth = 0
+        for root in root_nodes:
+            node_list, depth = standard_BFS(root, remade_graph)
+            if len(main_components) == 0 or depth > max_depth:
+                main_components = [node_list]
+                max_depth = depth
+            elif depth == max_depth:
+                main_components.append(node_list)
+        unused_keys = list()
 
 
     proxy_to_slices = dict()
