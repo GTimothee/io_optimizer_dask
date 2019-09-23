@@ -40,11 +40,6 @@ def flatten_iterable(l, plain_list=list()):
     return plain_list
 
 
-# to delete
-def true_dumb_function(x):
-    return True
-
-
 def standard_BFS(root, graph):
     nodes = list(graph.keys())
     queue = [(root, 0)]
@@ -76,80 +71,6 @@ def standard_BFS(root, graph):
             f.write("\nlen queue:" + str(len(queue)))
     
     return visited, max_depth
-
-
-def BFS_connected_components(
-        graph,
-        filter_condition_for_root_nodes=true_dumb_function,
-        max_iterations=10):
-    """
-    graph: undirected
-    root node is at filter_condition_for_root_nodes 
-    returns a dictionary with key = component id (increasing int) and value is a list of the nodes in the component
-    """
-    def all_nodes_not_visited(nb_nodes_visited, nb_nodes_total):
-        if nb_nodes_visited != nb_nodes_total:
-            return True
-        return False
-
-    def visit_node(visited, n, nb_nodes_visited, components, node_queue):
-        visited[n] = True
-        nb_nodes_visited += 1
-        add_to_dict_of_lists(
-            components, component_id, n, unique=True)
-        node_queue.append(n)
-        return nb_nodes_visited
-
-    # initialize visitation dict
-    nodes = list()
-    for k in list(graph.keys()):
-        if isinstance(k, str) and "array-original" in k:
-            continue 
-        nodes.append(k)
-
-    nb_nodes_total = len(nodes)
-    
-    visited = dict(zip(nodes, nb_nodes_total * [False]))
-    nb_nodes_visited = 0
-
-    # initialize component variables
-    components = dict()
-    component_id = 0
-    nb_its = 0
-    if not os.path.isdir('tests/outputs'):
-        os.makedirs('tests/outputs')
-    f = open('tests/outputs/BFS_out.txt', 'w+')
-    while all_nodes_not_visited(nb_nodes_visited, nb_nodes_total):
-
-        # get next unvisited node (next start of connected component)
-        node_queue = list()
-        for n in nodes:
-            if not visited[n]:
-                if filter_condition_for_root_nodes(n):
-                    f.write("\n\nroot node" + str(n))
-                    nb_nodes_visited = visit_node(visited, n, nb_nodes_visited, components, node_queue)
-                    break
-
-        # run BFS
-        while len(node_queue) > 0:
-            curr_node = node_queue.pop(0)
-            for n in graph[curr_node]:
-                try:
-                    if not visited[n]:
-                        f.write("\nvisited" + str(n))
-                        nb_nodes_visited = visit_node(visited, n, nb_nodes_visited, components, node_queue)
-                except:
-                    pass 
-
-        component_id += 1
-
-        # print("it", nb_its)
-        """nb_its += 1
-        if max_iterations == nb_its:
-            break"""
-
-    f.close()
-    return components
 
 
 def is_task(v):
@@ -298,16 +219,6 @@ def get_used_proxies(graph, use_BFS=True):
         unused_keys = get_unused_keys(remade_graph)
         main_components = None
     else:
-        """remade_graph = get_graph_from_dask(graph, undirected=True)
-        unused_keys = list()
-        connected_comps = BFS_connected_components(remade_graph,
-                                          filter_condition_for_root_nodes=true_dumb_function,
-                                          max_iterations=10)
-        max_len = max(map(len, connected_comps.values()))
-        main_components = [
-            _list for comp,
-            _list in connected_comps.items() if len(_list) == max_len]"""
-
         remade_graph = get_graph_from_dask(graph, undirected=False)
         root_nodes = get_unused_keys(remade_graph)
         main_components = list()
