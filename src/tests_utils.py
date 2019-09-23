@@ -17,7 +17,7 @@ __all__ = ['CaseConfig',
            'neat_print_graph']
 
 
-sub_bigbrain_shape = (1540, 1610, 1400)
+SUB_BIGBRAIN_SHAPE = (1540, 1610, 1400)
 
 class CaseConfig():
     """ Contains the configuration for a test.
