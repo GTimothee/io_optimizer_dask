@@ -124,6 +124,7 @@ def test_get_unused_keys():
     root_nodes = get_unused_keys(graph)
     assert root_nodes == ['a', 'f']
 
+
 def test_BFS_2():
     """ test to include bfs in the program
     """
