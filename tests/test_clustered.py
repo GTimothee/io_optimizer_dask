@@ -3,7 +3,7 @@ import os
 from optimize_io.clustered import *
 from optimize_io.modifiers import get_used_proxies
 
-from tests_utils import get_test_arr, CaseConfig, ONE_GIG, neat_print_graph, get_arr_shapes
+from tests_utils import get_test_arr, CaseConfig, ONE_GIG, neat_print_graph, get_arr_shapes, sub_bigbrain_shape
 
 import sys
 
@@ -17,6 +17,8 @@ def get_case_1():
                              buffer_size=ONE_GIG, 
                              input_file_path=data, 
                              chunk_shape=None)
+
+    config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
     arr = get_test_arr(config)
 
     shape, chunks, blocks_dims = get_arr_shapes(arr)
