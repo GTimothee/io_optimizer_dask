@@ -3,7 +3,7 @@ import os
 from optimize_io.clustered import *
 from optimize_io.modifiers import get_used_proxies
 
-from tests_utils import get_test_arr, CaseConfig, ONE_GIG, neat_print_graph, get_arr_shapes, sub_bigbrain_shape
+from tests_utils import get_test_arr, CaseConfig, ONE_GIG, neat_print_graph, get_arr_shapes, SUB_BIGBRAIN_SHAPE
 
 import sys
 
