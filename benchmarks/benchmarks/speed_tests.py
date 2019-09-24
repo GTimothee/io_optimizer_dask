@@ -20,32 +20,32 @@ from dask.diagnostics import ResourceProfiler, Profiler, CacheProfiler, visualiz
 from cachey import nbytes
 
 
-def run(arr, config):
+def run(config):
     """ Execute a dask array with or without optimization.
     
     Arguments:
         arr: dask_array
         config: contains the test configuration
     """
+    
+    def configure_dask(config):
+        if config.opti:
+            opti_funcs = [optimize_func]
+            scheduler_opti = config.scheduler_opti
+        else:
+            opti_funcs = list()
+            scheduler_opti = False
+
+        dask.config.set({'optimizations': opti_funcs})
+        dask.config.set({'io-optimizer': {
+                            'memory_available': config.buffer_size,
+                            'scheduler_opti': scheduler_opti}
+                            })
+
     flush_cache()
+    configure_dask(config)
+    arr = get_test_arr(config)
 
-    if config.opti:
-        opti_funcs = [optimize_func]
-        scheduler_opti = config.scheduler_opti
-        
-    else:
-        opti_funcs = list()
-        scheduler_opti = False
-
-    dask.config.set({'optimizations': opti_funcs})
-    dask.config.set({'io-optimizer': {
-                        'memory_available': config.buffer_size,
-                        'scheduler_opti': scheduler_opti}
-                        })
-
-    print("at runtime: ", arr.shape, arr.chunks)
-
-    # evaluation
     t = time.time()
     res = arr.compute()
     t = time.time() - t
@@ -53,28 +53,27 @@ def run(arr, config):
 
 
 def run_test(writer, config):
-        """ Get a test array, run the test and write the output.
-        """
-        print("chunk shape in config", config.chunk_shape)
+    """ Get a test array from the configuration, run the test and write the output.
+    """
+    with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:
+        res_dask, t = run(config)
 
-        arr = get_test_arr(config)
-
-        # run test
-        with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:
-            res_dask, t = run(arr, config)
-
-        # write output
+        # get diagnostics with dask diagnotics
         opti_info = 'opti' if config.opti else 'non_opti'
         out_file_path = os.path.join(config.out_path, opti_info + '.html')
         visualize([prof, rprof, cprof], out_file_path)
+
+        # write output in csv file
         config.write_output(writer, out_file_path, t)
 
 
 def add_dir(workspace, new_dir):
-        path = os.path.join(workspace, new_dir)
-        if not os.path.exists(path):
-            os.mkdir(path) 
-        return path
+    """ Create a new directory at workspace/new_dir
+    """
+    path = os.path.join(workspace, new_dir)
+    if not os.path.exists(path):
+        os.mkdir(path) 
+    return path
 
 
 def _sum():
@@ -252,6 +251,3 @@ def experiment_1():
         shuffle(tests)
         for config in tests:
             run_test(config)
-
-_sum()
-# experiment_1()
