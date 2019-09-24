@@ -1,6 +1,6 @@
 """ A list of utility functions for the tests
 """
-
+import dask
 import math
 import os
 import dask_utils_perso
@@ -16,6 +16,22 @@ first_exp_shapes = {'slabs_dask_interpol': ('auto', (1210), (1400)),
                     'slabs_previous_exp': (7, (1210), (1400)),
                     'blocks_dask_interpol': (220, 242, 200), 
                     'blocks_previous_exp': (770, 605, 700)}
+
+
+def configure_dask(config, optimize_func):
+    if config.opti:
+        opti_funcs = [optimize_func]
+        scheduler_opti = config.scheduler_opti
+    else:
+        opti_funcs = list()
+        scheduler_opti = False
+
+    dask.config.set({'optimizations': opti_funcs})
+    dask.config.set({'io-optimizer': {
+                        'memory_available': config.buffer_size,
+                        'scheduler_opti': scheduler_opti}
+                    })
+
 
 class CaseConfig():
     """ Contains the configuration for a test.

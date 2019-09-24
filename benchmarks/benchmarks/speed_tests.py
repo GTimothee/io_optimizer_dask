@@ -27,23 +27,9 @@ def run(config):
         arr: dask_array
         config: contains the test configuration
     """
-    
-    def configure_dask(config):
-        if config.opti:
-            opti_funcs = [optimize_func]
-            scheduler_opti = config.scheduler_opti
-        else:
-            opti_funcs = list()
-            scheduler_opti = False
-
-        dask.config.set({'optimizations': opti_funcs})
-        dask.config.set({'io-optimizer': {
-                            'memory_available': config.buffer_size,
-                            'scheduler_opti': scheduler_opti}
-                            })
 
     flush_cache()
-    configure_dask(config)
+    configure_dask(config, optimize_func)
     arr = get_test_arr(config)
 
     t = time.time()

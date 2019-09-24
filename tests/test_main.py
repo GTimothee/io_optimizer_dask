@@ -61,186 +61,65 @@ def test_sum():
             opti_arr.visualize(filename=output_path, optimize_graph=True)
 
 
+#TODO: WARNING: add chunk_shape to config!!!
 def test_store():
-    """ Test if the processing of the store dask graph works. 
-    """
-    def get_datasets(file_name, a1, a2):
-        file_path = os.path.join(file_name)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
-        f = h5py.File(file_path, 'w')
-        dset1 = f.create_dataset('/data1', shape=a1.shape)
-        dset2 = f.create_dataset('/data2', shape=a2.shape)
-        return f, dset1, dset2
-
-    output_dir = os.environ.get('OUTPUT_DIR')
-    file_name = "store" 
-
-    # ------ non optimized
-    # prepare test case
-    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-    new_config = CaseConfig(opti=None, 
-                        scheduler_opti=None, 
-                        out_path=None, 
-                        buffer_size=ONE_GIG, 
-                        input_file_path=data, 
-                        chunk_shape=None)
-    new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
-
-    # ------ optimized
-    arr = get_test_arr(new_config)
-    a1 = arr[:220,:484,:400]
-    a2 = arr[:220,:484,400:800]
-
-    buffer_size = ONE_GIG
-    dask.config.set({'optimizations': [optimize_func]})
-    dask.config.set({'io-optimizer': {'memory_available': buffer_size,
-                                        'scheduler_opti': True}})
-    f, dset1, dset2 = get_datasets("data/file2.hdf5", a1, a2)
-    s = da.store([a1, a2], [dset1, dset2], compute=False)
-    s.visualize(filename='tests/outputs/img.png', optimize_graph=False)
-
-    # step by step of our optimization 
-    dask_graph = s.dask.dicts 
-    graph = get_graph_from_dask(dask_graph, undirected=False)  # we want a directed graph
-
-    with open('tests/outputs/remade_graph.txt', "w+") as f:
-        for k, v in graph.items():
-            f.write("\n\n" + str(k))
-            f.write("\n" + str(v))
-
-    root_nodes = get_unused_keys(graph)
-    print('\nRoot nodes:')
-    for root in root_nodes:
-        print(root)
-
-    f.close()
-
-
-def test_store_non_opti():
     """ Test the storing procedure with optimization.
     """
 
-    def get_datasets(file_name, a1, a2):
+    def store(file_name, array_parts):
+        # remove split file if already exists
         file_path = os.path.join(file_name)
         if os.path.isfile(file_path):
             os.remove(file_path)
-        f = h5py.File(file_path, 'w')
-        dset1 = f.create_dataset('/data1', shape=a1.shape)
-        dset2 = f.create_dataset('/data2', shape=a2.shape)
-        return f, dset1, dset2
 
-    output_dir = os.environ.get('OUTPUT_DIR')
-    viz_file_name = "store" 
+        with h5py.File(file_path, 'w') as f:
+            dsets = list()
+            for i, a in enumerate(array_parts):
+                d = f.create_dataset('/data' + str(i), shape=a.shape)
+                dsets.append(d)
 
-   
-    # prepare test case
-    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-    new_config = CaseConfig(opti=None, 
-                        scheduler_opti=None, 
-                        out_path=None, 
-                        buffer_size=5 * ONE_GIG, 
-                        input_file_path=data, 
-                        chunk_shape=None)
-    new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
-
-    # ------ optimized
-    arr = get_test_arr(new_config)
-    a1 = arr[:220,:484,:400]
-    a2 = arr[:220,:484,400:800]
-
-    buffer_size = 5 * ONE_GIG
-
-    path = os.path.join(os.getenv('DATA_PATH'), "file1.hdf5")
-    f, dset1, dset2 = get_datasets(path, a1, a2)
-    s = da.store([a1, a2], [dset1, dset2], compute=False)
-    s.compute()
-    output_path = os.path.join(output_dir, viz_file_name + '_opti.png')
-    # s.visualize(filename=output_path, optimize_graph=True)
-    f.close()
-
-    # verification
-    a1 = arr[:220,:484,:400]
-    a2 = arr[:220,:484,400:800]
-    with h5py.File(path) as f:
-        file_a1 = da.from_array(f['/data1'])
-        file_a2 = da.from_array(f['/data2'])
-
-        file_a1.rechunk(chunks=(220, 242, 200))
-        file_a2.rechunk(chunks=(220, 242, 200))
-
-        test = da.allclose(file_a1, a1)
-        assert test.compute()
-
-        test = da.allclose(file_a2, a2)
-        assert test.compute()
+            s = da.store(array_parts, dsets, compute=False)
+            s.compute()
 
 
-def test_store_opti():
-    """ Test the storing procedure with optimization.
-    """
+    def verify_result(array_parts, split_file_path):
+        # open the file containing splits
+        with h5py.File(split_file_path) as f:
+            for i, a in enumerate(array_parts):
+                stored_a = da.from_array(f['/data' + str(i)])
+                stored_a.rechunk(chunks=a.chunks)
+                test = da.allclose(stored_a, a)
+                assert test.compute()
 
-    def get_datasets(file_name, a1, a2):
-        file_path = os.path.join(file_name)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
-        f = h5py.File(file_path, 'w')
-        dset1 = f.create_dataset('/data1', shape=a1.shape)
-        dset2 = f.create_dataset('/data2', shape=a2.shape)
-        return f, dset1, dset2
 
-    output_dir = os.environ.get('OUTPUT_DIR')
-    viz_file_name = "store" 
+    def run_store(new_config):
+        """ Main function of this test
+        """
+        # get splits to be stored
+        arr = get_test_arr(new_config)
+        a1 = arr[:220,:484,:400]
+        a2 = arr[:220,:484,400:800]
 
-   
-    # prepare test case
-    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-    new_config = CaseConfig(opti=None, 
-                        scheduler_opti=None, 
-                        out_path=None, 
-                        buffer_size=5 * ONE_GIG, 
-                        input_file_path=data, 
-                        chunk_shape=None)
-    new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
+        # set optimization or not
+        configure_dask(new_config, optimize_func)
 
-    # ------ optimized
-    arr = get_test_arr(new_config)
-    a1 = arr[:220,:484,:400]
-    a2 = arr[:220,:484,400:800]
+        # run test
+        split_file_path = os.path.join(os.getenv('DATA_PATH'), "file1.hdf5")
+        store(split_file_path, [a1, a2])
+        verify_result([a1, a2], split_file_path)
 
-    buffer_size = 5 * ONE_GIG
-    dask.config.set({'optimizations': [optimize_func]})
-    dask.config.set({'io-optimizer': {'memory_available': buffer_size,
-                                        'scheduler_opti': True}})
 
-    path = os.path.join(os.getenv('DATA_PATH'), "file1.hdf5")
-    f, dset1, dset2 = get_datasets(path, a1, a2)
-    s = da.store([a1, a2], [dset1, dset2], compute=False)
-    s.compute()
-    output_path = os.path.join(output_dir, viz_file_name + '_opti.png')
-    # s.visualize(filename=output_path, optimize_graph=True)
-    f.close()
-
-    # verification
-    dask.config.set({'optimizations': list()})
-    dask.config.set({'io-optimizer': {'memory_available': buffer_size,
-                                        'scheduler_opti': False}})
-
-    a1 = arr[:220,:484,:400]
-    a2 = arr[:220,:484,400:800]
-    with h5py.File(path) as f:
-        file_a1 = da.from_array(f['/data1'])
-        file_a2 = da.from_array(f['/data2'])
-
-        file_a1.rechunk(chunks=(220, 242, 200))
-        file_a2.rechunk(chunks=(220, 242, 200))
-
-        test = da.allclose(file_a1, a1)
-        assert test.compute()
-
-        test = da.allclose(file_a2, a2)
-        assert test.compute()
+    for opti in [False, True]:
+        data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+        new_config = CaseConfig(opti=opti,
+                                scheduler_opti=None, 
+                                out_path=None,
+                                buffer_size=5 * ONE_GIG, 
+                                input_file_path=data, 
+                                chunk_shape=None)
+        new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
+        run_store(new_config)
 
 
 if __name__ == "__main__":
-    test_store_non_opti()
+    test_store()

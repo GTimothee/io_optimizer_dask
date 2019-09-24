@@ -1,4 +1,5 @@
 import os
+import dask
 import collections
 import numpy as np
 
@@ -18,10 +19,19 @@ def add_to_dict_of_lists(d, k, v, unique=False):
     return d
 
 
-def get_array_block_dims(shape, chunks):
+def get_array_block_dims(shape):
     """ from shape of image and size of chukns=blocks, return the dimensions of the array in terms of blocks
     i.e. number of blocks in each dimension
     """
+
+    def get_config_chunk_shape():
+        try:
+            optimization = dask.config.get("io-optimizer")
+            return dask.config.get("io-optimizer.chunk_shape")
+        except BaseException:
+            return (220, 242, 200)
+
+    chunks = config.get_config_chunk_shape()
     if not len(shape) == len(chunks):
         raise ValueError(
             "chunks and shape should have the same dimension",
@@ -144,6 +154,7 @@ def get_graph_from_dask(graph, undirected=False):
     return remade_graph
 
 
+#TODO : refactor
 def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys, main_components=None):
     """ Search proxies in the remade graph and fill in dictionaries to store information.
     """
@@ -156,15 +167,16 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
             search_dask_graph(v, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys, main_components)
 
         # if it is an original array, store it
-        elif isinstance(key, str) and "array-original" in key:
+        elif isinstance(key, str) and "array-original" in key: # TODO: support other formats
             obj = v
             origarr_to_obj[key] = obj
-            origarr_to_blocks_shape[key] = get_array_block_dims(obj.shape, obj.chunks)
+            if not obj.shape:
+                raise ValueError("Empty dataset!")
+            origarr_to_blocks_shape[key] = get_array_block_dims(obj.shape)
             continue
 
         # if it is a task, add its arguments
         elif is_task(v) and (key not in unused_keys):  
-            used_key = True
             if main_components:
                 print("tested")
                 used_key = False
@@ -172,6 +184,9 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
                     if key in main_comp:
                         used_key = True 
                         print("found")
+            else:
+                used_key = True
+
             if used_key:
                 try:
                     f, target, slices = v

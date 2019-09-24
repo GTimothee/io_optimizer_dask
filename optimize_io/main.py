@@ -4,7 +4,6 @@ import time
 import optimize_io
 from optimize_io.clustered import apply_clustered_strategy
 from optimize_io.modifiers import get_used_proxies
-from tests_utils import neat_print_graph
 
 
 def clustered_optimization(graph):
