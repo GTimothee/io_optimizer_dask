@@ -234,7 +234,6 @@ def get_used_proxies(graph, use_BFS=True):
                 main_components.append(node_list)
         unused_keys = list()
 
-
     proxy_to_slices = dict()
     origarr_to_used_proxies = dict()
     origarr_to_obj = dict()

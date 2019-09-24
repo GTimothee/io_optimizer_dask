@@ -48,10 +48,12 @@ def test_sum():
 
             # viz
             file_name = chunk_shape + '_' + str(nb_arr_to_sum)
+
+            """
             dask.config.set({'optimizations': []})
             arr = get_test_arr(new_config)
             output_path = os.path.join(output_dir, file_name + '_non_opti.png')
-            arr.visualize(filename=output_path, optimize_graph=True)
+            arr.visualize(filename=output_path, optimize_graph=True)"""
 
             dask.config.set({'optimizations': [optimize_func]})
             opti_arr = get_test_arr(new_config)
@@ -59,7 +61,7 @@ def test_sum():
             opti_arr.visualize(filename=output_path, optimize_graph=True)
 
 
-def store2():
+def test_store():
     def get_datasets(file_name, a1, a2):
         file_path = os.path.join(file_name)
         if os.path.isfile(file_path):
@@ -113,7 +115,7 @@ def store2():
     f.close()
 
 
-def store():
+def test_store_non_opti():
     def get_datasets(file_name, a1, a2):
         file_path = os.path.join(file_name)
         if os.path.isfile(file_path):
@@ -126,26 +128,62 @@ def store():
     output_dir = os.environ.get('OUTPUT_DIR')
     file_name = "store" 
 
-    # ------ non optimized
+   
     # prepare test case
     data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
     new_config = CaseConfig(opti=None, 
                         scheduler_opti=None, 
                         out_path=None, 
-                        buffer_size=ONE_GIG, 
+                        buffer_size=5 * ONE_GIG, 
                         input_file_path=data, 
                         chunk_shape=None)
     new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
+    
+    # ------ non optimized
     arr = get_test_arr(new_config)
     a1 = arr[:220,:484,:]
     a2 = arr[:220,484:968,:]
     
-    f, dset1, dset2 = get_datasets("data/file1.hdf5", a1, a2)
+    path1 = os.path.join(os.getenv('DATA_PATH'), "file1.hdf5")
+    f, dset1, dset2 = get_datasets(path1, a1, a2)
     s = da.store([a1, a2], [dset1, dset2], compute=False)
-    # s.compute()
+    s.compute()
     output_path = os.path.join(output_dir, file_name + '_non_opti.png')
-    s.visualize(filename=output_path, optimize_graph=True)
+    # s.visualize(filename=output_path, optimize_graph=True)
     f.close()
+
+    # verification
+    a1 = arr[:220,:484,:]
+    a2 = arr[:220,484:968,:]
+    with h5py.File(path1) as f:
+        print("f['/data1']", f['/data1'])
+        assert dask.array.allclose(f['/data1'], a1)
+        assert dask.array.allclose(f['/data2'], a2)
+
+
+def test_store():
+    def get_datasets(file_name, a1, a2):
+        file_path = os.path.join(file_name)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+        f = h5py.File(file_path, 'w')
+        dset1 = f.create_dataset('/data1', shape=a1.shape)
+        dset2 = f.create_dataset('/data2', shape=a2.shape)
+        return f, dset1, dset2
+
+    output_dir = os.environ.get('OUTPUT_DIR')
+    viz_file_name = "store" 
+
+   
+    # prepare test case
+    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+    new_config = CaseConfig(opti=None, 
+                        scheduler_opti=None, 
+                        out_path=None, 
+                        buffer_size=5 * ONE_GIG, 
+                        input_file_path=data, 
+                        chunk_shape=None)
+    new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
 
     # ------ optimized
     arr = get_test_arr(new_config)
@@ -156,12 +194,34 @@ def store():
     dask.config.set({'optimizations': [optimize_func]})
     dask.config.set({'io-optimizer': {'memory_available': buffer_size,
                                         'scheduler_opti': True}})
-    f, dset1, dset2 = get_datasets("data/file2.hdf5", a1, a2)
+
+    path = os.path.join(os.getenv('DATA_PATH'), "file1.hdf5")
+    f, dset1, dset2 = get_datasets(path, a1, a2)
     s = da.store([a1, a2], [dset1, dset2], compute=False)
-    # s.compute()
-    output_path = os.path.join(output_dir, file_name + '_opti.png')
-    s.visualize(filename=output_path, optimize_graph=True)
+    s.compute()
+    output_path = os.path.join(output_dir, viz_file_name + '_opti.png')
+    # s.visualize(filename=output_path, optimize_graph=True)
     f.close()
+
+    # verification
+    dask.config.set({'optimizations': list()})
+    dask.config.set({'io-optimizer': {'memory_available': buffer_size,
+                                        'scheduler_opti': False}})
+
+    a1 = arr[:220,:484,:]
+    a2 = arr[:220,484:968,:]
+    with h5py.File(path) as f:
+        file_a1 = da.from_array(f['/data1'])
+        file_a2 = da.from_array(f['/data2'])
+
+        file_a1.rechunk(chunks=(220, 242, 200))
+        file_a2.rechunk(chunks=(220, 242, 200))
+
+        test = da.allclose(file_a1, a1)
+        assert test.compute()
+
+        test = da.allclose(file_a2, a2)
+        assert test.compute()
 
 
 if __name__ == "__main__":
