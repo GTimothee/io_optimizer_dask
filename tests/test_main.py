@@ -83,11 +83,12 @@ def test_store():
 
 
     def verify_result(array_parts, split_file_path):
-        # open the file containing splits
+        new_config.opti = False
+        configure_dask(new_config, optimize_func)
         with h5py.File(split_file_path) as f:
             for i, a in enumerate(array_parts):
                 stored_a = da.from_array(f['/data' + str(i)])
-                stored_a.rechunk(chunks=a.chunks)
+                stored_a.rechunk(chunks=(220, 242, 200))
                 test = da.allclose(stored_a, a)
                 assert test.compute()
 
@@ -106,8 +107,10 @@ def test_store():
         # run test
         split_file_path = os.path.join(os.getenv('DATA_PATH'), "file1.hdf5")
         store(split_file_path, [a1, a2])
-        verify_result([a1, a2], split_file_path)
 
+        a1 = arr[:220,:484,:400]
+        a2 = arr[:220,:484,400:800]
+        verify_result([a1, a2], split_file_path)
 
     for opti in [False, True]:
         data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
@@ -118,7 +121,7 @@ def test_store():
                                 input_file_path=data, 
                                 chunk_shape=None)
         new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
-        run_store(new_config)
+        run_store(new_config)       
 
 
 if __name__ == "__main__":

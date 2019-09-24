@@ -19,6 +19,7 @@ def clustered_optimization(graph):
 
 def optimize_func(dsk, keys):
     t = time.time()
+    #TODO: maybe here i can retrieve the chunk shape from the dask array directly instead of calling get_config_chunk_shape everywhere
     dask_graph = dsk.dicts
     dask_graph = clustered_optimization(dask_graph)
     t = time.time() - t

@@ -7,7 +7,7 @@ from operator import getitem
 from tests_utils import get_arr_shapes
 from tests_utils import neat_print_graph
 import optimize_io
-from optimize_io.modifiers import add_to_dict_of_lists
+from optimize_io.modifiers import add_to_dict_of_lists, get_config_chunk_shape
 
 
 def apply_clustered_strategy(graph, dicts):
@@ -103,7 +103,7 @@ def create_buffers(origarr_name, dicts):
     arr_obj = dicts['origarr_to_obj'][origarr_name]
     blocks_shape = dicts['origarr_to_blocks_shape'][origarr_name]
     strategy, max_blocks_per_load = get_load_strategy(get_buffer_size(), 
-                                                      arr_obj.chunks, 
+                                                      get_config_chunk_shape(), 
                                                       blocks_shape)
     #TODO: revoir stratégies et résultats des tests en conséquence
     print("strategy:", strategy)
@@ -152,7 +152,7 @@ def get_blocks_used(dicts, origarr_name, arr_obj):
     for proxy_key in used_proxies:
         slice_tuple = dicts['proxy_to_slices'][proxy_key]
         print("slice_tuple", slice_tuple)        
-        x_range, y_range, z_range = get_covered_blocks(slice_tuple, arr_obj.chunks)
+        x_range, y_range, z_range = get_covered_blocks(slice_tuple, get_config_chunk_shape())
         for x in x_range:
             for y in y_range:
                 for z in z_range:
@@ -192,7 +192,7 @@ def create_buffer_node(
     # get new value
     arr_obj = dicts['origarr_to_obj'][origarr_name]
     blocks_shape = dicts['origarr_to_blocks_shape'][origarr_name]
-    buffer_slices = get_buffer_slices_from_original_array(buffer, blocks_shape, arr_obj.chunks)
+    buffer_slices = get_buffer_slices_from_original_array(buffer, blocks_shape, get_config_chunk_shape())
     value = (getitem, origarr_name, buffer_slices)
     print("buffer_slices", buffer_slices)
 
@@ -261,7 +261,7 @@ def origarr_to_buffer_slices(dicts, proxy, buffer_key, slices):
 
     block_id, start_block, end_block = buffer_key
     start_pos = numeric_to_3d_pos(start_block, img_nb_blocks_per_dim, 'C')
-    offset = [x * i for x, i in zip(start_pos, origarr_obj.chunks)]
+    offset = [x * i for x, i in zip(start_pos, get_config_chunk_shape())]
 
     new_slices = list()
     for i, s in enumerate(slices):

@@ -18,20 +18,19 @@ def add_to_dict_of_lists(d, k, v, unique=False):
             d[k].append(v)
     return d
 
+def get_config_chunk_shape():
+    try:
+        optimization = dask.config.get("io-optimizer")
+        return dask.config.get("io-optimizer.chunk_shape")
+    except BaseException:
+        return (220, 242, 200)
+        
 
 def get_array_block_dims(shape):
     """ from shape of image and size of chukns=blocks, return the dimensions of the array in terms of blocks
     i.e. number of blocks in each dimension
     """
-
-    def get_config_chunk_shape():
-        try:
-            optimization = dask.config.get("io-optimizer")
-            return dask.config.get("io-optimizer.chunk_shape")
-        except BaseException:
-            return (220, 242, 200)
-
-    chunks = config.get_config_chunk_shape()
+    chunks = get_config_chunk_shape()
     if not len(shape) == len(chunks):
         raise ValueError(
             "chunks and shape should have the same dimension",
