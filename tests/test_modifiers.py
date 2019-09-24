@@ -26,7 +26,7 @@ def test_get_array_block_dims():
 
 def test_decompose_iterable():
     l = [0, [1, 2, 3], 4, [5], [[6, 7]]]
-    assert flatten_iterable(l) == list(range(8))
+    assert flatten_iterable(l, list()) == list(range(8))
 
 
 def test_get_graph_from_dask():
@@ -212,4 +212,4 @@ def test_BFS_3():
 
 
 if __name__ == "__main__":
-    test_BFS_3()
+    test_get_used_proxies()

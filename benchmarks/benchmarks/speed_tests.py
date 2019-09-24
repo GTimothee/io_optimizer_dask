@@ -20,17 +20,6 @@ from dask.diagnostics import ResourceProfiler, Profiler, CacheProfiler, visualiz
 from cachey import nbytes
 
 
-__all__ = ['_sum',
-           'experiment_1']
-
-
-# shapes used for the first experiment (assessing need for dask array optimization)
-first_exp_shapes = {'slabs_dask_interpol': ('auto', (1210), (1400)), 
-                    'slabs_previous_exp': (7, (1210), (1400)),
-                    'blocks_dask_interpol': (220, 242, 200), 
-                    'blocks_previous_exp': (770, 605, 700)}
-
-
 def run(arr, config):
     """ Execute a dask array with or without optimization.
     

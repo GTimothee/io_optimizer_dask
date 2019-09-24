@@ -1,6 +1,5 @@
 import os
 import collections
-from collections import Iterable
 import numpy as np
 
 
@@ -32,11 +31,14 @@ def get_array_block_dims(shape, chunks):
 
 
 def flatten_iterable(l, plain_list=list()):
+    print("start plain list", plain_list)
     for e in l:
+        print("\nbegin processed",e )
         if isinstance(e, list) and not isinstance(e, (str, bytes)):
             plain_list = flatten_iterable(e, plain_list)
         else:
             plain_list.append(e)
+        print("plain_list", plain_list)
     return plain_list
 
 
@@ -56,7 +58,7 @@ def standard_BFS(root, graph):
                 max_depth = depth
 
             # specific to our problem (because of remade graph)
-            if not node in graph:  
+            if not isinstance(node, collections.Hashable) or not node in graph:  
                 continue
 
             # algorithm
@@ -106,11 +108,11 @@ def get_graph_from_dask(graph, undirected=False):
     for key, v in graph.items():  
         # if it is a subgraph, recurse
         if isinstance(v, dict):
-            if not "array-original" in key:
+            if isinstance(key, str) and "array-original" in key:
+                add_to_remade_graph(remade_graph, key, v, undirected)
+            else:
                 subgraph = get_graph_from_dask(v, undirected=undirected)
                 remade_graph.update(subgraph)
-            else:
-                add_to_remade_graph(remade_graph, key, v, undirected)
 
         # if it is a task, add its arguments
         elif is_task(v):  

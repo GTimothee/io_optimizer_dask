@@ -9,15 +9,13 @@ from dask_utils_perso.utils import (create_random_cube, load_array_parts,
 
 ONE_GIG = 1000000000
 
-__all__ = ['CaseConfig',
-           'ONE_GIG',
-           'flush_cache',
-           'get_arr_shapes',
-           'get_test_arr',
-           'neat_print_graph']
-
-
 SUB_BIGBRAIN_SHAPE = (1540, 1610, 1400)
+
+# shapes used for the first experiment (assessing need for dask array optimization)
+first_exp_shapes = {'slabs_dask_interpol': ('auto', (1210), (1400)), 
+                    'slabs_previous_exp': (7, (1210), (1400)),
+                    'blocks_dask_interpol': (220, 242, 200), 
+                    'blocks_previous_exp': (770, 605, 700)}
 
 class CaseConfig():
     """ Contains the configuration for a test.
