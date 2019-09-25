@@ -14,9 +14,6 @@ from optimize_io.main import optimize_func
 import tests_utils
 from tests_utils import *
 
-import test_modifiers
-from test_modifiers import *
-
 
 def test_sum():
     """ Test if the sum of two blocks yields the good
@@ -113,15 +110,16 @@ def test_store():
         verify_result([a1, a2], split_file_path)
 
     for opti in [False, True]:
-        data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-        new_config = CaseConfig(opti=opti,
-                                scheduler_opti=None, 
-                                out_path=None,
-                                buffer_size=5 * ONE_GIG, 
-                                input_file_path=data, 
-                                chunk_shape=None)
-        new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
-        run_store(new_config)       
+        for chunk_shape in first_exp_shapes.keys(): 
+            data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+            new_config = CaseConfig(opti=opti,
+                                    scheduler_opti=None, 
+                                    out_path=None,
+                                    buffer_size=5 * ONE_GIG, 
+                                    input_file_path=data, 
+                                    chunk_shape=first_exp_shapes[chunk_shape])
+            new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
+            run_store(new_config)       
 
 
 if __name__ == "__main__":
