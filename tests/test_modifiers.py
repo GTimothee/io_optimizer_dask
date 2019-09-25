@@ -19,7 +19,12 @@ def test_add_to_dict_of_lists():
 def test_get_array_block_dims():
     shape = (500, 1200, 300)
     chunks = (100, 300, 20)
-    block_dims = get_array_block_dims(shape, chunks)
+    dask.config.set({
+        'io-optimizer': {
+            'chunk_shape': chunks
+        }
+    })
+    block_dims = get_array_block_dims(shape)
     expected = (5, 4, 15)
     assert block_dims == expected
 
