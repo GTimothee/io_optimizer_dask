@@ -50,8 +50,10 @@ class CaseConfig():
 
     def split_case(self, in_filepath, out_filepath):
         self.test_case = 'split'
-        self.in_filepath = in_filepath
-        self.out_filepath = out_filepath
+        self.in_filepath = in_filepath       
+        if os.path.isfile(out_filepath):
+            os.remove(out_filepath)
+        self.out_file = h5py.File(self.out_filepath, 'w') 
 
     def write_output(self, writer, out_file_path, t):
         if self.test_case == 'sum':
@@ -190,7 +192,7 @@ def get_test_arr(config):
         if case == 'sum':
             arr = sum_chunks(arr, config.nb_chunks)
         elif case == 'split':
-            arr = split_array(arr, config.split_file)
+            arr = split_array(arr, config.out_file)
     return arr
 
 

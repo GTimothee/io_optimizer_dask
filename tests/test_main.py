@@ -15,6 +15,14 @@ import tests_utils
 from tests_utils import *
 
 
+def get_dask_array_chunks_shape(dask_array):
+    t = dask_array.chunks
+    cs = list()
+    for tupl in t:
+        cs.append(tupl[0])
+    return tuple(cs)
+
+
 def sum():
     """ Test if the sum of two blocks yields the good
     result usign our optimization function.
@@ -23,28 +31,29 @@ def sum():
     output_dir = os.environ.get('OUTPUT_DIR')
     key = 'data'
     for nb_arr_to_sum in [5]:
-        for chunk_shape in first_exp_shapes.keys(): 
-            
+        for chunk_shape in ['blocks_previous_exp']: 
+            print("chunk shape", chunk_shape)
             # prepare test case
-            new_config = CaseConfig(opti=None, 
-                             scheduler_opti=None, 
-                             out_path=None, 
-                             buffer_size=ONE_GIG, 
-                             input_file_path=data, 
-                             chunk_shape=first_exp_shapes[chunk_shape])
-            new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
+            new_config = CaseConfig(array_filepath=data, chunks_shape=CHUNK_SHAPES_EXP1[chunk_shape])
             new_config.sum_case(nb_chunks=nb_arr_to_sum)
 
             # run in opti and non opti modes
             dask.config.set({'optimizations': []})
-            result_non_opti = get_test_arr(new_config).compute()
+            arr = get_test_arr(new_config)
+            dask.config.set({
+                'io-optimizer': {
+                    'chunk_shape': get_dask_array_chunks_shape(arr)
+                }
+            })
+            result_non_opti = arr.compute()
 
             dask.config.set({'optimizations': [optimize_func]})
             result_opti = get_test_arr(new_config).compute()
             assert np.array_equal(result_non_opti, result_opti)
+            print("passed.")
 
             # viz
-            file_name = chunk_shape + '_' + str(nb_arr_to_sum)
+            """file_name = chunk_shape + '_' + str(nb_arr_to_sum)"""
 
             """
             dask.config.set({'optimizations': []})
@@ -52,10 +61,10 @@ def sum():
             output_path = os.path.join(output_dir, file_name + '_non_opti.png')
             arr.visualize(filename=output_path, optimize_graph=True)"""
 
-            dask.config.set({'optimizations': [optimize_func]})
+            """dask.config.set({'optimizations': [optimize_func]})
             opti_arr = get_test_arr(new_config)
             output_path = os.path.join(output_dir, file_name + '_opti.png')
-            opti_arr.visualize(filename=output_path, optimize_graph=True)
+            opti_arr.visualize(filename=output_path, optimize_graph=True)"""
 
 
 #TODO: WARNING: add chunk_shape to config!!!
@@ -123,4 +132,4 @@ def store():
 
 
 if __name__ == "__main__":
-    store()
+    test_sum()

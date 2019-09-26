@@ -8,6 +8,8 @@ from tests_utils import get_test_arr, CaseConfig, ONE_GIG, neat_print_graph, get
 import sys
 
 
+# TODO: make tests with different chunk shapes
+
 def get_case_1():
     # case 1 : continous blocks
     data = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
@@ -51,7 +53,7 @@ def test_get_blocks_used():
     arr_obj = dicts['origarr_to_obj'][origarr_name]
     strategy, max_blocks_per_load = get_load_strategy(ONE_GIG, 
                                                       arr_obj.shape, 
-                                                      (220, 242, 200))
+                                                      (220, 242, 200))  # TODO: replace this by arr.chunks
 
     # actual test of the function
     blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj)
