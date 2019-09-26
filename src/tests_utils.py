@@ -169,16 +169,16 @@ def get_test_arr(config):
             if file_path.split('.')[-1] == 'hdf5':
                 dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
                                                         file_path=file_path,
-                                                        shape=config.chunks_shape, #TODO: change this to None or add physical rechunk to config
+                                                        shape=config.chunks_shape,  # TODO: change this to None or add physical rechunk to config
                                                         chunks_shape=None,  # this chunk shape is for physical chunks
                                                         dtype="float16")
             else:
                 raise ValueError("File format not supported yet.")
-        try:
-            arr = get_dask_array_from_hdf5(file_path, key='data')
-        except: 
-            raise IOError("failed to load file")
         
+        if config.chunks_shape:
+            arr = get_dask_array_from_hdf5(file_path, logic_chunks_shape=config.chunks_shape)
+        else:
+            arr = get_dask_array_from_hdf5(file_path)
         return arr
 
     arr = get_or_create_array(config)

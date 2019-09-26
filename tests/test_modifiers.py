@@ -36,7 +36,7 @@ def test_decompose_iterable():
 
 def test_get_graph_from_dask():
     # create config for the test
-    array_filepath = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+    array_filepath = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
     config = CaseConfig(array_filepath, None)
     config.sum_case(nb_chunks=2)
     dask_array = get_test_arr(config)
@@ -56,8 +56,8 @@ def test_get_graph_from_dask():
 
 
 def test_get_used_proxies():
-    array_path = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-    new_config = CaseConfig(array_path, None)
+    array_path = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
+    new_config = CaseConfig(array_path, (770, 605, 700))
     new_config.sum_case(nb_chunks=2)
     
     for use_BFS in [True, False]:
@@ -69,12 +69,10 @@ def test_get_used_proxies():
         
         # test slices values
         slices = list(dicts['proxy_to_slices'].values())
-        s1 = (slice(0, 220, None), slice(0, 242, None), slice(0, 200, None))
-        s2 = (slice(0, 220, None), slice(0, 242, None), slice(200, 400, None))
+        s1 = (slice(0, 770, None), slice(0, 605, None), slice(0, 700, None))
+        s2 = (slice(0, 770, None), slice(0, 605, None), slice(700, 1400, None))
 
         #print(dicts['origarr_to_used_proxies'])
-
-        print("slices", slices)
 
         assert slices == [s1, s2]
 
@@ -150,7 +148,7 @@ def test_BFS_3():
     """
 
     # get test array with rechunking
-    array_filepath = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+    array_filepath = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
     config = CaseConfig(array_filepath, chunks_shape=(770, 605, 700))
     config.sum_case(nb_chunks=2)
     dask_array = get_test_arr(config)

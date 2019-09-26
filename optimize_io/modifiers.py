@@ -40,14 +40,11 @@ def get_array_block_dims(shape):
 
 
 def flatten_iterable(l, plain_list=list()):
-    print("start plain list", plain_list)
     for e in l:
-        print("\nbegin processed",e )
         if isinstance(e, list) and not isinstance(e, (str, bytes)):
             plain_list = flatten_iterable(e, plain_list)
         else:
             plain_list.append(e)
-        print("plain_list", plain_list)
     return plain_list
 
 
@@ -78,8 +75,8 @@ def standard_BFS(root, graph):
                     queue.append((n, depth + 1))
                     visited.append(n)
                     f.write("\n" + str(n))
-                    f.write("\nqueue:" + str(queue))
-            f.write("\nlen queue:" + str(len(queue)))
+            """f.write("\nqueue:" + str(queue))
+            f.write("\nlen queue:" + str(len(queue)))"""
     
     return visited, max_depth
 
@@ -159,7 +156,6 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
     """
 
     for key, v in graph.items():  
-        print("\n", key)
 
         # if it is a subgraph, recurse
         if isinstance(v, dict):
@@ -177,12 +173,10 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
         # if it is a task, add its arguments
         elif is_task(v) and (key not in unused_keys):  
             if main_components:
-                print("tested")
                 used_key = False
                 for main_comp in main_components:
                     if key in main_comp:
                         used_key = True 
-                        print("found")
             else:
                 used_key = True
 
@@ -191,7 +185,6 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
                     f, target, slices = v
                     # search for values that are array-original, meaning that key is proxy 
                     if "array-original" in target and all([isinstance(s, slice) for s in slices]):
-                        print("added")
                         add_to_dict_of_lists(origarr_to_used_proxies, target, key, unique=True)
                         proxy_to_slices[key] = slices
                         proxy_to_dict[key] = graph

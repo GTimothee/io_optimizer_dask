@@ -10,8 +10,8 @@ import sys
 
 def get_case_1():
     # case 1 : continous blocks
-    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-    config = CaseConfig(data, None)
+    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
+    config = CaseConfig(data, (220, 242, 200))
     arr = get_test_arr(config)
 
     shape, chunks, blocks_dims = get_arr_shapes(arr)
@@ -51,7 +51,7 @@ def test_get_blocks_used():
     arr_obj = dicts['origarr_to_obj'][origarr_name]
     strategy, max_blocks_per_load = get_load_strategy(ONE_GIG, 
                                                       arr_obj.shape, 
-                                                      arr_obj.chunks)
+                                                      (220, 242, 200))
 
     # actual test of the function
     blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj)
