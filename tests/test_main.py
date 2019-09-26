@@ -15,7 +15,7 @@ import tests_utils
 from tests_utils import *
 
 
-def test_sum():
+def sum():
     """ Test if the sum of two blocks yields the good
     result usign our optimization function.
     """
@@ -59,7 +59,7 @@ def test_sum():
 
 
 #TODO: WARNING: add chunk_shape to config!!!
-def test_store():
+def store():
     """ Test the storing procedure with optimization.
     """
 
@@ -123,4 +123,4 @@ def test_store():
 
 
 if __name__ == "__main__":
-    test_store()
+    store()
