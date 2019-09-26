@@ -36,16 +36,10 @@ def test_decompose_iterable():
 
 def test_get_graph_from_dask():
     # create config for the test
-    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-    new_config = CaseConfig(opti=None, 
-                             scheduler_opti=None, 
-                             out_path=None, 
-                             buffer_size=ONE_GIG, 
-                             input_file_path=data, 
-                             chunk_shape=None)
-    new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
-    new_config.sum_case(nb_chunks=2)
-    dask_array = get_test_arr(new_config)
+    array_filepath = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+    config = CaseConfig(array_filepath, None)
+    config.sum_case(nb_chunks=2)
+    dask_array = get_test_arr(config)
 
     # test function
     dask_graph = dask_array.dask.dicts 
@@ -62,17 +56,10 @@ def test_get_graph_from_dask():
 
 
 def test_get_used_proxies():
-    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-    new_config = CaseConfig(opti=None, 
-                             scheduler_opti=None, 
-                             out_path=None, 
-                             buffer_size=ONE_GIG, 
-                             input_file_path=data, 
-                             chunk_shape=None)
-    new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
+    array_path = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+    new_config = CaseConfig(array_path, None)
     new_config.sum_case(nb_chunks=2)
     
-
     for use_BFS in [True, False]:
         dask_array = get_test_arr(new_config)
 
@@ -163,21 +150,14 @@ def test_BFS_3():
     """
 
     # get test array with rechunking
-    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-    new_config = CaseConfig(opti=None, 
-                             scheduler_opti=None, 
-                             out_path=None, 
-                             buffer_size=ONE_GIG, 
-                             input_file_path=data, 
-                             chunk_shape=(770, 605, 700))  # (660, 726, 600))
-    new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
-    new_config.sum_case(nb_chunks=2)
-    dask_array = get_test_arr(new_config)
+    array_filepath = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+    config = CaseConfig(array_filepath, chunks_shape=(770, 605, 700))
+    config.sum_case(nb_chunks=2)
+    dask_array = get_test_arr(config)
     dask_array.visualize(filename='tests/outputs/img.png', optimize_graph=False)
 
     # get formatted graph for processing
-    dask_graph = dask_array.dask.dicts 
-    graph = get_graph_from_dask(dask_graph, undirected=False)  # we want a directed graph
+    graph = get_graph_from_dask(dask_array.dask.dicts, undirected=False)  # we want a directed graph
 
     with open('tests/outputs/remade_graph.txt', "w+") as f:
         for k, v in graph.items():
@@ -202,18 +182,7 @@ def test_BFS_3():
 
 
     print("nb components found:", str(len(max_components)))
-
-    #print("\nContent found:\n")
-    nb_proxies = 0
-    for node in max_components[0]:
-        if isinstance(node, tuple) and isinstance(node[0], str) and 'array' in node[0]:
-            #print(node) 
-            nb_proxies += 1
-
-    print("nb proxies found: " + str(nb_proxies))
-
     #TODO: assertions
-    return
 
 
 if __name__ == "__main__":

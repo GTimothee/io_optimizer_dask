@@ -11,14 +11,7 @@ import sys
 def get_case_1():
     # case 1 : continous blocks
     data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
-    config = CaseConfig(opti=None, 
-                             scheduler_opti=None, 
-                             out_path=None, 
-                             buffer_size=ONE_GIG, 
-                             input_file_path=data, 
-                             chunk_shape=None)
-
-    config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
+    config = CaseConfig(data, None)
     arr = get_test_arr(config)
 
     shape, chunks, blocks_dims = get_arr_shapes(arr)
