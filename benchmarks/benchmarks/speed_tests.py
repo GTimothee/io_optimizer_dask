@@ -96,28 +96,28 @@ def add_dir(path, new_dir):
         os.mkdir(path) 
     return path
 
+"""
+def _sum():"""
+""" Test if the sum of n blocks yields the good result.
 
-def _sum():
-    """ Test if the sum of n blocks yields the good result.
+Arguments:
+    non_opti: test without optimization
+    opti: test with optimization
+    buffer_size: size of the buffer for optimization
+    shapes_to_test: shapes that must be tested
+    chunks_to_test: number of chunks to sum for each shapes
+"""
 
-    Arguments:
-        non_opti: test without optimization
-        opti: test with optimization
-        buffer_size: size of the buffer for optimization
-        shapes_to_test: shapes that must be tested
-        chunks_to_test: number of chunks to sum for each shapes
-    """
+"""
+'slabs_dask_interpol': {
+        'scheduler_on': [105],
+        'scheduler_off': [105]},
 
-    """
-    'slabs_dask_interpol': {
-            'scheduler_on': [105],
-            'scheduler_off': [105]},
-
-        'slabs_previous_exp': {
-            'scheduler_on': [94],
-            'scheduler_off': [94]},
-    """
-
+    'slabs_previous_exp': {
+        'scheduler_on': [94],
+        'scheduler_off': [94]},
+"""
+"""
     chunks_to_test = {
         'blocks_dask_interpol':{
             'scheduler_on': [210],
@@ -169,7 +169,7 @@ def _sum():
                          'output_file_path'])
         shuffle(tests)
         for config in tests:
-            run_test(writer, config)
+            run_test(writer, config)"""
 
 
 def load_json(file_path):
