@@ -17,6 +17,14 @@ ONE_GIG = 1000000000
 SUB_BIGBRAIN_SHAPE = (1540, 1610, 1400)
 
 
+def get_dask_array_chunks_shape(dask_array):
+    t = dask_array.chunks
+    cs = list()
+    for tupl in t:
+        cs.append(tupl[0])
+    return tuple(cs)
+
+
 def configure_dask(config, optimize_func=None):
     """ Apply configuration to dask to parameterize the optimization function.
     """

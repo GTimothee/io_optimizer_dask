@@ -57,12 +57,7 @@ def test_get_graph_from_dask():
         print("value", v)
 
 
-def get_dask_array_chunks_shape(dask_array):
-    t = dask_array.chunks
-    cs = list()
-    for tupl in t:
-        cs.append(tupl[0])
-    return tuple(cs)
+
 
 
 def test_get_used_proxies():

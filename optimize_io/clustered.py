@@ -5,7 +5,7 @@ from dask.base import tokenize
 import operator
 from operator import getitem
 from tests_utils import get_arr_shapes
-from tests_utils import neat_print_graph
+from tests_utils import neat_print_graph, ONE_GIG
 import optimize_io
 from optimize_io.modifiers import add_to_dict_of_lists, get_config_chunk_shape
 
@@ -26,120 +26,234 @@ def apply_clustered_strategy(graph, dicts):
 
 def get_load_strategy(
         buffer_mem_size,
-        chunk_shape,
+        cs,
         original_array_blocks_shape,
-        nb_bytes_per_val=4):
+        nb=4):
     """ get clustered writes best load strategy given 
     the memory available for io optimization
-    """
-    block_mem_size = chunk_shape[0] * \
-        chunk_shape[1] * chunk_shape[2] * nb_bytes_per_val
+
     block_row_size = block_mem_size * original_array_blocks_shape[2]
     block_slice_size = block_row_size * original_array_blocks_shape[1]
 
+    arguments: 
+        cs = chunk_shape
+        nb = nb_bytes_per_val
+
+    returns:
+        strategy, 
+        max_blocks_per_load
+    """
+    
+    block_mem_size = cs[0] * cs[1] * cs[2] * nb
+    strategy = "blocks" # for the moment, let the strategy be blocks only
+    
+    if (buffer_mem_size < block_mem_size):
+        msg = "Not enough memory to store one block!"
+        print(msg)
+        raise ValueError(msg)
+    max_blocks_per_load = math.floor(buffer_mem_size / block_mem_size)
+
     print("memory available:", buffer_mem_size)
-    print("chunk_shape", chunk_shape)
+    print("chunk_shape", cs)
     print("block_mem_size", block_mem_size)
+    print("strategy:", strategy)
+    print("max nb blocks per load:", max_blocks_per_load)
+    return strategy, max_blocks_per_load
 
-    if buffer_mem_size >= block_slice_size:
-        nb_slices = math.floor(buffer_mem_size / block_slice_size)
-        return "slices", nb_slices * \
-            original_array_blocks_shape[2] * original_array_blocks_shape[1]
-    elif buffer_mem_size >= block_row_size:
-        nb_rows = math.floor(buffer_mem_size / block_row_size)
-        return "rows", nb_rows * original_array_blocks_shape[2]
-    else:
-        return "blocks", math.floor(buffer_mem_size / block_mem_size)
 
+def start_new_buffer(curr_buffer, b, prev_block, strategy, nb_blocks_per_row, max_nb_blocks_per_buffer):
+    """ Utility function for buffering
+    """
+    # test basic stuff
+    print('curr_buffer', curr_buffer)
+    if len(curr_buffer) == max_nb_blocks_per_buffer:
+        return True
+    if prev_block and prev_block != b - 1:
+        return True 
+
+    # test for bad configurations
+    if strategy == "blocks": # for the moment: blocks strategy only 
+
+        # if it is a last element of row
+        if prev_block  != 0 and (prev_block + 1) % nb_blocks_per_row == 0: # because 0 % k = 0
+            # (prev_block + 1) because our block indices start at 0
+            return True
+
+    """if strategy == rows: # for the moment: blocks strategy only 
+        don’t concatenate two rows overlapping slices"""
+
+    # else 
+    return False
+
+
+def overlap_slice(curr_buff, buff, blocks_shape):
+    """ Utility function for buffering 
+
+    curr_buff: current buffer containing 1+ entire rows
+    buff: buffer containing a entire row
+    """
+    end_of_buffer = curr_buff[-1]
+    start_of_row = buff[0]
+    i_1 = numeric_to_3d_pos(end_of_buffer, blocks_shape, order='C')[0]
+    i_2 = numeric_to_3d_pos(start_of_row, blocks_shape, order='C')[0]
+    if i_1 != i_2:
+        return True
+    return False
+
+
+def merge_rows(buffers, blocks_shape, nb_blocks_per_row, max_blocks_per_load):
+    """ Utility function for buffering """
+    merged_buffers = list()
+    curr_buff = list()
+
+    def is_complete_row(buff, nb_blocks_per_row):
+        """we made sure that initial buffers contain only blocks from the same row
+        therefore we can just see if number of blocks in buffer == nb blocks in a row"""
+        return (len(buff) == nb_blocks_per_row)	
+
+    print("\nbefore first concat", buffers)
+    print("max_blocks_per_load", max_blocks_per_load)
+    for buff in buffers:
+        print("treating buff", buff)
+        if not is_complete_row(buff, nb_blocks_per_row):
+            merged_buffers.append(buff) # dont process
+        else:
+            start_new_buffer = False 
+            
+            if len(curr_buff) > 0 and overlap_slice(curr_buff, buff, blocks_shape): # we dont want to overlap slices
+                print("overlaping")
+                start_new_buffer = True 
+
+            if len(curr_buff) + len(buff) > max_blocks_per_load:
+                print("nb max reached")
+                start_new_buffer = True
+            
+            if start_new_buffer:
+                print("starting new buffer")
+                merged_buffers.append(curr_buff)
+                curr_buff = buff
+            else:
+                curr_buff = curr_buff + buff
+    if len(curr_buff) > 0:  # add the last one
+        print("last buffer", curr_buff)
+        merged_buffers.append(curr_buff)
+    
+    print("\nafter first concat", merged_buffers)
+    return merged_buffers
+
+
+def merge_slices(merged_buffers, nb_blocks_per_slice, max_blocks_per_load):
+    prev_slice = (None, None) # index, list of blocks
+    merged_buffers_2 = list()
+    curr_buff = list() # buffer to do the merge
+
+    def is_complete_slice(buff, nb_blocks_per_slice):
+        """
+            we made sure 
+                -that only contiguous blocks are in same buffer
+                -rows overlaping slices have not been merged 
+        """
+        if not (len(buff) == nb_blocks_per_slice):
+            return False, None
+        else:
+            return True, math.floor(buff[-1] / nb_blocks_per_slice)
+
+    print("\nbefore slices concat", merged_buffers)
+    for buff in merged_buffers:
+        print("treating", buff)
+        is_slice, slice_index = is_complete_slice(buff, nb_blocks_per_slice)
+        print("slice_index", slice_index)
+        if not is_slice:
+            merged_buffers_2.append(buff)
+        else:
+            prev_slice_index = prev_slice[0]
+            if not prev_slice_index == None:
+                if slice_index == (prev_slice_index + 1):
+                    if len(curr_buff) + len(buff) <= max_blocks_per_load:
+                        print("len(curr_buff) + len(buff)", len(curr_buff) + len(buff))
+                        print("VS max_blocks_per_load:", max_blocks_per_load)
+                        curr_buff = curr_buff + buff
+                    else:
+                        print("creating new buffer0")
+                        merged_buffers_2.append(curr_buff)
+                        curr_buff = buff
+                else:
+                    print("creating new buffer1")
+                    merged_buffers_2.append(curr_buff)
+                    curr_buff = buff
+            else:
+                print("creating new buffer2")
+                curr_buff = buff
+            prev_slice = (slice_index, buff)
+    if len(curr_buff) > 0:
+        merged_buffers_2.append(curr_buff)
+
+    print("\nafter slices concat", merged_buffers_2)
+    return merged_buffers_2
 
 def create_buffers(origarr_name, dicts):
+    """ Merge used blocks into buffers following the 'clustered reads' strategy.
+    """
 
-    def get_buffer_size(default_memory=1000000000):
+    def get_buffer_size(default_memory=ONE_GIG):
         try:
             optimization = dask.config.get("io-optimizer")
             return dask.config.get("io-optimizer.memory_available")
         except BaseException:
             return default_memory
-        
 
     def new_list(list_of_lists):
         list_of_lists.append(list())
         return list_of_lists, None
 
-    def bad_configuration_incoming(
-            prev_i,
-            strategy,
-            original_array_blocks_shape):
-        """ to avoid bad configurations in clustered writes
-        > prevent overlaps
-        """
-
-        if not prev_i:
-            return False
-        elif strategy == "blocks" and (prev_i % original_array_blocks_shape[2] - 1) == 0:
-            return True
-        elif (strategy == "rows") and (prev_i > 1) and (
-                ((prev_i + 1) % original_array_blocks_shape[2]) == 0):
-            return True
-        else:
-            return False
-
-    def test_if_create_new_load(
-            list_of_lists,
-            prev_i,
-            strategy,
-            original_array_blocks_shape):
-        if len(list_of_lists[-1]) == max_blocks_per_load:
-            return new_list(list_of_lists)
-        elif prev_i and next_i != prev_i + 1:
-            return new_list(list_of_lists)
-        elif bad_configuration_incoming(prev_i, strategy, original_array_blocks_shape):
-            return new_list(list_of_lists)
-        else:
-            return list_of_lists, prev_i
-
-
-    # just get some information used later
-    arr_obj = dicts['origarr_to_obj'][origarr_name]
-    blocks_shape = dicts['origarr_to_blocks_shape'][origarr_name]
-    strategy, max_blocks_per_load = get_load_strategy(get_buffer_size(), 
+    # get strategy to apply
+    blocks_shape = dicts['origarr_to_blocks_shape'][origarr_name] # WARNING: TODO change var name -> blocks_shape is origarr_to_blocks_shape
+    strategy, max_nb_blocks_per_buffer = get_load_strategy(get_buffer_size(), 
                                                       get_config_chunk_shape(), 
                                                       blocks_shape)
-    #TODO: revoir stratégies et résultats des tests en conséquence
-    print("strategy:", strategy)
-    print("max nb blocks per load:", max_blocks_per_load)
+                                                      
+    # get the blocks used list to be bufferized
+    arr_obj = dicts['origarr_to_obj'][origarr_name]
     blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj)
     dicts['block_to_proxies'] = block_to_proxies
-
-    # create buffers of size len(row) or len(slice) or less
     blocks_used = sorted(blocks_used)
 
+    # buffering part
     print("\nbefore buffering", blocks_used)
+    buffers = buffering(blocks_used, strategy, blocks_shape, max_nb_blocks_per_buffer, True, True)
+    return buffers
 
-    list_of_lists, prev_i = new_list(list())
-    while len(blocks_used) > 0:
-        next_i = blocks_used.pop(0)
-        list_of_lists, prev_i = test_if_create_new_load(
-            list_of_lists, prev_i, strategy, blocks_shape)
-        list_of_lists[len(list_of_lists) - 1].append(next_i)
-        prev_i = next_i
 
-    print("\nbefore concat", list_of_lists)
+def buffering(blocks, strategy, blocks_shape, max_nb_blocks_per_buffer, row_concat=True, slices_concat=True):
+    nb_blocks_per_row = blocks_shape[2]
+    nb_blocks_per_slice = blocks_shape[2] * blocks_shape[1]
+    
+    buffers = list()
+    curr_buff = list()
+    prev_block = -1
+    while len(blocks) > 0:
+        b = blocks.pop(0)
+        print("treating", b)
 
-    # try concatenate rows/slices with each other if buffer size allows
-    list_of_lists2 = list()
-    curr = list()
-    for l in list_of_lists:
-        if len(curr) + len(l) <= max_blocks_per_load:
-            curr += l
-        else:
-            list_of_lists2.append(curr)
-            curr = l
+        if prev_block >= 0 and start_new_buffer(curr_buff, b, prev_block, strategy, nb_blocks_per_row, max_nb_blocks_per_buffer):
+            print("start new buffer")
+            buffers.append(curr_buff.copy())
+            curr_buff = list()
+            prev_block = -1
 
-    if len(curr) > 0:
-        list_of_lists2.append(curr)
+        curr_buff.append(b)
+        prev_block = b
+    if len(curr_buff) > 0:
+        buffers.append(curr_buff)
 
-    return list_of_lists2
+    # concatenation part (to be removed): Concat if complete rows/slices 
+    if row_concat:
+        buffers = merge_rows(buffers, blocks_shape, nb_blocks_per_row, max_nb_blocks_per_buffer) # 1) merge complete rows together
+    if slices_concat:
+        buffers = merge_slices(buffers, nb_blocks_per_slice, max_nb_blocks_per_buffer) # 2) merge complete slices together
+    
+    print("out", buffers)
+    return buffers
 
 
 def get_blocks_used(dicts, origarr_name, arr_obj):

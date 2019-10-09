@@ -241,6 +241,11 @@ def get_used_proxies(graph, use_BFS=True):
                 main_components.append(node_list)
         unused_keys = list()
 
+    with open('tests/outputs/remade_graph.txt', "w+") as f:
+        for k, v in remade_graph.items():
+            f.write("\n\n" + str(k))
+            f.write("\n" + str(v))
+
     proxy_to_slices = dict()
     origarr_to_used_proxies = dict()
     origarr_to_obj = dict()

@@ -15,23 +15,15 @@ import tests_utils
 from tests_utils import *
 
 
-def get_dask_array_chunks_shape(dask_array):
-    t = dask_array.chunks
-    cs = list()
-    for tupl in t:
-        cs.append(tupl[0])
-    return tuple(cs)
-
-
-def sum():
+def _sum():
     """ Test if the sum of two blocks yields the good
     result usign our optimization function.
     """
-    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
     output_dir = os.environ.get('OUTPUT_DIR')
     key = 'data'
-    for nb_arr_to_sum in [5]:
-        for chunk_shape in ['blocks_previous_exp']: 
+    for nb_arr_to_sum in [2]:
+        for chunk_shape in ['blocks_previous_exp']: # list(CHUNK_SHAPES_EXP1.keys()): 
             print("chunk shape", chunk_shape)
             # prepare test case
             new_config = CaseConfig(array_filepath=data, chunks_shape=CHUNK_SHAPES_EXP1[chunk_shape])
@@ -42,7 +34,8 @@ def sum():
             arr = get_test_arr(new_config)
             dask.config.set({
                 'io-optimizer': {
-                    'chunk_shape': get_dask_array_chunks_shape(arr)
+                    'chunk_shape': get_dask_array_chunks_shape(arr),
+                    'memory_available': 4 * ONE_GIG
                 }
             })
             result_non_opti = arr.compute()
@@ -109,6 +102,11 @@ def store():
 
         # set optimization or not
         configure_dask(new_config, optimize_func)
+        dask.config.set({
+            'io-optimizer': {
+                'chunk_shape': get_dask_array_chunks_shape(arr)
+            }
+        })
 
         # run test
         split_file_path = os.path.join(os.getenv('DATA_PATH'), "file1.hdf5")
@@ -120,7 +118,7 @@ def store():
 
     for opti in [False, True]:
         for chunk_shape in first_exp_shapes.keys(): 
-            data = os.path.join(os.getenv('DATA_PATH'), 'sample_array.hdf5')
+            data = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
             new_config = CaseConfig(opti=opti,
                                     scheduler_opti=None, 
                                     out_path=None,
@@ -132,4 +130,4 @@ def store():
 
 
 if __name__ == "__main__":
-    test_sum()
+    _sum()
