@@ -61,73 +61,70 @@ def test_sum():
 
 
 #TODO: WARNING: add chunk_shape to config!!!
-def store():
+def test_store():
     """ Test the storing procedure with optimization.
     """
 
-    def store(file_name, array_parts):
-        # remove split file if already exists
-        file_path = os.path.join(file_name)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
+    def verify_result(logical_chunks_shape, array_parts, split_file_path):
+        print("\n------VERIFICATION STEP------")
 
-        with h5py.File(file_path, 'w') as f:
-            dsets = list()
-            for i, a in enumerate(array_parts):
-                d = f.create_dataset('/data' + str(i), shape=a.shape)
-                dsets.append(d)
-
-            s = da.store(array_parts, dsets, compute=False)
-            s.compute()
-
-
-    def verify_result(array_parts, split_file_path):
-        new_config.opti = False
-        configure_dask(new_config, optimize_func)
         with h5py.File(split_file_path) as f:
             for i, a in enumerate(array_parts):
                 stored_a = da.from_array(f['/data' + str(i)])
-                stored_a.rechunk(chunks=(220, 242, 200))
+                stored_a.rechunk(chunks=logical_chunks_shape)
                 test = da.allclose(stored_a, a)
                 assert test.compute()
+            print("passed.")
 
-
-    def run_store(new_config):
+    def run_store(config):
         """ Main function of this test
         """
-        # get splits to be stored
-        arr = get_test_arr(new_config)
-        a1 = arr[:220,:484,:400]
-        a2 = arr[:220,:484,400:800]
+        # compute test case array
+        print("\n------COMPUTATION STEP------")
+        arr = get_test_arr(config)
+        arr.compute()  
+        
+        # case basic array 
+        config.test_case = None
+        arr_no_case = get_test_arr(config)
+        arr_list = get_arr_list(arr_no_case, config.nb_blocks)
+        logical_chunks_shape = get_dask_array_chunks_shape(arr_no_case)
 
-        # set optimization or not
-        configure_dask(new_config, optimize_func)
-        dask.config.set({
-            'io-optimizer': {
-                'chunk_shape': get_dask_array_chunks_shape(arr)
-            }
-        })
+        verify_result(logical_chunks_shape, arr_list, config.out_filepath)
+        return
 
-        # run test
-        split_file_path = os.path.join(os.getenv('DATA_PATH'), "file1.hdf5")
-        store(split_file_path, [a1, a2])
-
-        a1 = arr[:220,:484,:400]
-        a2 = arr[:220,:484,400:800]
-        verify_result([a1, a2], split_file_path)
+    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
+    split_file_path = os.path.join(os.getenv('DATA_PATH'), "split_file.hdf5")
+    nb_blocks = 2
 
     for opti in [False, True]:
-        for chunk_shape in first_exp_shapes.keys(): 
-            data = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
-            new_config = CaseConfig(opti=opti,
-                                    scheduler_opti=None, 
-                                    out_path=None,
-                                    buffer_size=5 * ONE_GIG, 
-                                    input_file_path=data, 
-                                    chunk_shape=first_exp_shapes[chunk_shape])
-            new_config.create_or_overwrite(None, SUB_BIGBRAIN_SHAPE, overwrite=False)
-            run_store(new_config)       
+        for chunk_shape in ['blocks_previous_exp']: 
+            if opti:
+                for scheduler_opti in [False, True]:
+                    print("\n------CONFIGURATION------")
+                    print("chunks shape:", chunk_shape)
+                    print("optimisation enabled:,", opti)
+                    print("scheduler optimisation enabled:", scheduler_opti)
+                    print("------------")
+                    new_config = CaseConfig(array_filepath=data, 
+                                            chunks_shape=CHUNK_SHAPES_EXP1[chunk_shape])
+                    new_config.split_case(in_filepath=None, out_filepath=split_file_path, nb_blocks=nb_blocks)
+                    new_config.optimization(opti=True, scheduler_opti=scheduler_opti, buffer_size=4 * ONE_GIG)
+                    configure_dask(new_config, optimize_func)
+                    run_store(new_config)       
+            else:
+                print("\n------CONFIGURATION------")
+                print("chunks shape:", chunk_shape)
+                print("optimisation disabled")
+                print("scheduler optimisation disabled")
+                print("------------")
+                new_config = CaseConfig(array_filepath=data, 
+                                        chunks_shape=CHUNK_SHAPES_EXP1[chunk_shape])
+                new_config.split_case(in_filepath=None, out_filepath=split_file_path, nb_blocks=nb_blocks)
+                new_config.optimization(opti=False, scheduler_opti=False, buffer_size=4 * ONE_GIG)
+                configure_dask(new_config, optimize_func)
+                run_store(new_config)   
 
 
 if __name__ == "__main__":
-    _sum()
+    test_store()

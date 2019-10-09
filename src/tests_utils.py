@@ -1,8 +1,10 @@
 """ A list of utility functions for the tests
 """
 import dask
+import dask.array as da
 import math
 import os
+import h5py
 import dask_utils_perso
 from dask_utils_perso.utils import (create_random_cube, load_array_parts,
     get_dask_array_from_hdf5)
@@ -56,12 +58,17 @@ class CaseConfig():
         self.test_case = 'sum'
         self.nb_chunks = nb_chunks
 
-    def split_case(self, in_filepath, out_filepath):
+    def split_case(self, in_filepath, out_filepath, nb_blocks=None):
+        """
+        nb_blocks: nb_blocks to extract from the original array
+        """
         self.test_case = 'split'
-        self.in_filepath = in_filepath       
+        self.in_filepath = in_filepath  # TODO: remove this we already have it as array_filepath
+        self.nb_blocks = nb_blocks if nb_blocks else None
         if os.path.isfile(out_filepath):
             os.remove(out_filepath)
-        self.out_file = h5py.File(self.out_filepath, 'w') 
+        self.out_filepath = out_filepath
+        self.out_file = h5py.File(self.out_filepath, 'w')
 
     def write_output(self, writer, out_file_path, t):
         if self.test_case == 'sum':
@@ -149,13 +156,12 @@ def sum_chunks(arr, nb_chunks):
     return sum_arr
     
 
-def get_test_arr(config):
+def get_or_create_array(config):
     """ Load or create Dask Array for tests. You can specify a test case too.
 
     If file exists the function returns the array.
     If chunk_shape given the function rechunk the array before returning it.
     If file does not exist it will be created using "shape" parameter.
-    If file does exist and chunk_shape different than 
 
     Arguments (from config object):
         file_path: File containing the array, will be created if does not exist.
@@ -167,47 +173,53 @@ def get_test_arr(config):
         split_file: for the test case 'split'
     """
 
-    def get_or_create_array(config):
-        file_path = config.array_filepath
-        arr = None 
+    def create_file(file_path): # TODO make it work again
+        """
+        ext = file_path.split('.')[-1]
+        if not config.shape: 
+            raise ValueError("No shape to create the array")
 
-        if not os.path.isfile(file_path):
-            print("File not found, attempting to create the array...")
-            if not config.shape: 
-                raise ValueError("No shape to create the array")
-
-            if file_path.split('.')[-1] == 'hdf5':
-                dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
-                                                        file_path=file_path,
-                                                        shape=config.chunks_shape,  # TODO: change this to None or add physical rechunk to config
-                                                        chunks_shape=None,  # this chunk shape is for physical chunks
-                                                        dtype="float16")
-            else:
-                raise ValueError("File format not supported yet.")
-        
-        if config.chunks_shape:
-            arr = get_dask_array_from_hdf5(file_path, logic_chunks_shape=config.chunks_shape)
+        if ext == 'hdf5':
+            dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
+                                                    file_path=file_path,
+                                                    shape=None,  # TODO: change this to None or add physical rechunk to config
+                                                    chunks_shape=config.chunks_shape,  # this chunk shape is for physical chunks
+                                                    dtype="float16")
         else:
-            arr = get_dask_array_from_hdf5(file_path)
-        return arr
+            raise ValueError("File format not supported yet.")"""
+        raise Exception("A problem occured while attempting to create the array")
 
+    file_path = config.array_filepath
+    if not os.path.isfile(file_path):
+        create_file(file_path, shape, config.chunks_shape)
+    
+    # get the file and rechunk logically using a chosen chunk shape, or dask default
+    if config.chunks_shape:
+        arr = get_dask_array_from_hdf5(file_path, logic_chunks_shape=config.chunks_shape)
+    else:
+        arr = get_dask_array_from_hdf5(file_path) # TODO: see what happens
+    return arr
+
+
+def get_test_arr(config):
+
+    # create the dask array from input file path
     arr = get_or_create_array(config)
-    if config.chunks_shape and arr.chunks != config.chunks_shape:  # to be removed, normally should automatically get good schunk
-        arr = arr.rechunk(config.chunks_shape)
-
+    
+    # do dask arrays operations for the chosen test case
     case = getattr(config, 'test_case', None)
     if case:
         if case == 'sum':
             arr = sum_chunks(arr, config.nb_chunks)
         elif case == 'split':
-            arr = split_array(arr, config.out_file)
+            arr = split_array(arr, config.out_file, config.nb_blocks)
     return arr
 
 
-def split_array(arr, f):
+def split_array(arr, f, nb_blocks=None):
     """ Split an array given its chunk shape. Output is a hdf5 file with as many datasets as chunks.
     """
-    arr_list = get_arr_list(arr)
+    arr_list = get_arr_list(arr, nb_blocks)
     datasets = list()
     for i, a in enumerate(arr_list):
         datasets.append(f.create_dataset('/data' + str(i), shape=a.shape))
