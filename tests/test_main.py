@@ -98,7 +98,7 @@ def test_store():
     nb_blocks = 2
 
     for opti in [False, True]:
-        for chunk_shape in ['blocks_previous_exp']: 
+        for chunk_shape in list(CHUNK_SHAPES_EXP1.keys())]: 
             if opti:
                 for scheduler_opti in [False, True]:
                     print("\n------CONFIGURATION------")

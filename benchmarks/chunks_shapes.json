@@ -1,4 +1,12 @@
 {
+    "very_small":{
+       "blocks":[
+          [200,200,200]
+       ],
+       "slabs":[
+          [50, 400, 400]
+       ]
+   },
     "small":{
        "blocks":[
           "dask_default",

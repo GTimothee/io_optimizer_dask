@@ -81,18 +81,6 @@ class CaseConfig():
                 t,
                 out_file_path
             ]
-        elif self.test_case == 'split':
-            data = [
-                self.hardware, 
-                self.cube_ref,
-                self.chunk_type,
-                self.chunk_shape,
-                self.opti, 
-                self.scheduler_opti, 
-                self.buffer_size, 
-                t,
-                out_file_path
-            ]
         else:
             raise ValueError("Unsupported test case.")
         writer.writerow(data)
@@ -154,7 +142,7 @@ def sum_chunks(arr, nb_chunks):
     for a in arr_list:
         sum_arr = sum_arr + a
     return sum_arr
-    
+
 
 def get_or_create_array(config):
     """ Load or create Dask Array for tests. You can specify a test case too.
@@ -173,25 +161,9 @@ def get_or_create_array(config):
         split_file: for the test case 'split'
     """
 
-    def create_file(file_path): # TODO make it work again
-        """
-        ext = file_path.split('.')[-1]
-        if not config.shape: 
-            raise ValueError("No shape to create the array")
-
-        if ext == 'hdf5':
-            dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
-                                                    file_path=file_path,
-                                                    shape=None,  # TODO: change this to None or add physical rechunk to config
-                                                    chunks_shape=config.chunks_shape,  # this chunk shape is for physical chunks
-                                                    dtype="float16")
-        else:
-            raise ValueError("File format not supported yet.")"""
-        raise Exception("A problem occured while attempting to create the array")
-
     file_path = config.array_filepath
     if not os.path.isfile(file_path):
-        create_file(file_path, shape, config.chunks_shape)
+        raise FileNotFoundError()
     
     # get the file and rechunk logically using a chosen chunk shape, or dask default
     if config.chunks_shape:
