@@ -15,7 +15,7 @@ import tests_utils
 from tests_utils import *
 
 
-def _sum():
+def test_sum():
     """ Test if the sum of two blocks yields the good
     result usign our optimization function.
     """
@@ -23,7 +23,7 @@ def _sum():
     output_dir = os.environ.get('OUTPUT_DIR')
     key = 'data'
     for nb_arr_to_sum in [2]:
-        for chunk_shape in ['blocks_previous_exp']: # list(CHUNK_SHAPES_EXP1.keys()): 
+        for chunk_shape in list(CHUNK_SHAPES_EXP1.keys()): 
             print("chunk shape", chunk_shape)
             # prepare test case
             new_config = CaseConfig(array_filepath=data, chunks_shape=CHUNK_SHAPES_EXP1[chunk_shape])
