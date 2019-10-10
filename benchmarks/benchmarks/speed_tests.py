@@ -187,7 +187,11 @@ def create_tests_exp1(hardwares, cube_types, chunked_options, chunk_types, sched
     workspace = os.getenv('BENCHMARK_DIR')
     chunks_shapes = load_json(os.path.join(workspace, 'chunks_shapes.json'))
 
-    buffer_size = 5 * ONE_GIG
+    buffer_sizes = {
+        "very_small": ONE_GIG,
+        "small": 5.5*ONE_GIG,
+        "big": 15
+    }
 
     tests = list()
     for hardware in hardwares: 
@@ -231,7 +235,8 @@ def create_tests_exp1(hardwares, cube_types, chunked_options, chunk_types, sched
 
                                     # create config
                                     new_config = CaseConfig(input_file_path, chunks_shape)
-                                    new_config.optimization(opti, is_scheduler, buffer_size)
+                                    
+                                    new_config.optimization(opti, is_scheduler, buffer_sizes[cube_type])
 
                                     if test_type == "split":
                                         split_file_path = os.path.join(work_dir, "split.hdf5")
@@ -268,7 +273,7 @@ def experiment_1():
     """
     tests = create_tests_exp1(hardwares=["ssd"], 
                             cube_types=['very_small'], 
-                            chunked_options=['not_chunked'], 
+                            chunked_options=[False], 
                             chunk_types=['blocks', "slabs"], 
                             scheduler_options=[True, False], 
                             optimization_options=[True, False])

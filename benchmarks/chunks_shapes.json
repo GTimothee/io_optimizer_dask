@@ -9,7 +9,6 @@
    },
     "small":{
        "blocks":[
-          "dask_default",
           [
              700,
              700,
@@ -36,7 +35,6 @@
     },
     "big":{
        "blocks":[
-          "dask_default",
           [
              350,
              350,
