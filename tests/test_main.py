@@ -60,71 +60,101 @@ def test_sum():
             opti_arr.visualize(filename=output_path, optimize_graph=True)"""
 
 
-#TODO: WARNING: add chunk_shape to config!!!
-def test_store():
-    """ Test the storing procedure with optimization.
-    """
+#----------------------------------------------------------- SPLIT TESTING 
 
-    def verify_result(logical_chunks_shape, array_parts, split_file_path):
-        print("\n------VERIFICATION STEP------")
+def split(split_filepath, config, nb_blocks):
+    # overwrite if split file already exists
+    if os.path.isfile(split_filepath):
+        os.remove(split_filepath)
 
-        with h5py.File(split_file_path) as f:
-            for i, a in enumerate(array_parts):
-                stored_a = da.from_array(f['/data' + str(i)])
-                stored_a.rechunk(chunks=logical_chunks_shape)
-                test = da.allclose(stored_a, a)
-                assert test.compute()
-            print("passed.")
+    # compute the split
+    with h5py.File(split_filepath, 'w') as f:
+        # get array parts to be saved in different places
+        arr = get_or_create_array(config)
+        arr_list = get_arr_list(arr, nb_blocks)  # arr_list == splits to be saved
 
-    def run_store(config):
-        """ Main function of this test
-        """
-        # compute test case array
-        print("\n------COMPUTATION STEP------")
-        arr = get_test_arr(config)
-        arr.compute()  
-        
-        # case basic array 
-        config.test_case = None
-        arr_no_case = get_test_arr(config)
-        arr_list = get_arr_list(arr_no_case, config.nb_blocks)
-        logical_chunks_shape = get_dask_array_chunks_shape(arr_no_case)
+        datasets = list()
+        for i, a in enumerate(arr_list):
+            print("creating dataset in split file -> dataset path: ", '/data' + str(i))
+            print("storing data of shape", a.shape)
+            datasets.append(f.create_dataset('/data' + str(i), shape=a.shape))
 
-        verify_result(logical_chunks_shape, arr_list, config.out_filepath)
-        return
+        print("storing...")    
+        da.store(arr_list, datasets, compute=True)
+        print("stored with success.")
 
-    data = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
-    split_file_path = os.path.join(os.getenv('DATA_PATH'), "split_file.hdf5")
+    return 
+
+
+def stored_file(split_filepath):
+    print("Checking split file integrity...")
+    with h5py.File(split_filepath, 'r') as f:
+        print("file", f)
+        print("keys", list(f.keys()))
+        assert len(list(f.keys())) != 0
+    print("Integrity check passed.")
+
+
+def store_correct(split_filepath, arr_list, logical_chunks_shape):
+    print("Testing", len(arr_list), "matches...")
+    with h5py.File(split_filepath, 'r') as f:
+        for i, a in enumerate(arr_list):
+            stored_a = da.from_array(f['/data' + str(i)])
+            print("split shape:", stored_a.shape)
+            
+            stored_a.rechunk(chunks=logical_chunks_shape)
+            print("split rechunked to:", stored_a.shape)
+            print("will be compared to : ", a.shape)
+
+            print("Testing all close...")
+            test = da.allclose(stored_a, a)
+            assert test.compute()
+            print("Passed.")
+
+
+def create_arrays_for_comparison(config, nb_blocks):
+    arr = get_or_create_array(config)
+    arr_list = get_arr_list(arr, nb_blocks) 
+    return arr_list
+    
+
+def store_test(optimized):
+    # setup config
+    orig_arr_filepath = os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
+    split_filepath = os.path.join(os.getenv('DATA_PATH'), "split_file.hdf5")
     nb_blocks = 2
 
-    for opti in [False, True]:
-        for chunk_shape in list(CHUNK_SHAPES_EXP1.keys())]: 
-            if opti:
-                for scheduler_opti in [False, True]:
-                    print("\n------CONFIGURATION------")
-                    print("chunks shape:", chunk_shape)
-                    print("optimisation enabled:,", opti)
-                    print("scheduler optimisation enabled:", scheduler_opti)
-                    print("------------")
-                    new_config = CaseConfig(array_filepath=data, 
-                                            chunks_shape=CHUNK_SHAPES_EXP1[chunk_shape])
-                    new_config.split_case(in_filepath=None, out_filepath=split_file_path, nb_blocks=nb_blocks)
-                    new_config.optimization(opti=True, scheduler_opti=scheduler_opti, buffer_size=4 * ONE_GIG)
-                    configure_dask(new_config, optimize_func)
-                    run_store(new_config)       
-            else:
-                print("\n------CONFIGURATION------")
-                print("chunks shape:", chunk_shape)
-                print("optimisation disabled")
-                print("scheduler optimisation disabled")
-                print("------------")
-                new_config = CaseConfig(array_filepath=data, 
-                                        chunks_shape=CHUNK_SHAPES_EXP1[chunk_shape])
-                new_config.split_case(in_filepath=None, out_filepath=split_file_path, nb_blocks=nb_blocks)
-                new_config.optimization(opti=False, scheduler_opti=False, buffer_size=4 * ONE_GIG)
-                configure_dask(new_config, optimize_func)
-                run_store(new_config)   
+    for chunks_shape_name in list(CHUNK_SHAPES_EXP1.keys()): # ['slabs_dask_interpol']:
+        for scheduler_optimimzed in [True, False]:
+            # select chunk shape to use for the split (=split shape)
+            chunks_shape = CHUNK_SHAPES_EXP1[chunks_shape_name]
+
+            # configuration -> setup 
+            config = CaseConfig(array_filepath=orig_arr_filepath,
+                                chunks_shape=chunks_shape)
+            config.optimization(opti=optimized, 
+                                scheduler_opti=scheduler_optimimzed, 
+                                buffer_size=4 * ONE_GIG)
+            configure_dask(config, optimize_func)
+
+            # select what you want to do 
+            do_store, do_check = (True, True)
+
+            if do_store:
+                # split
+                split(split_filepath, config, nb_blocks)
+                # checker
+                stored_file(split_filepath)
+
+            if do_check:
+                # test output of split
+                arr_list = create_arrays_for_comparison(config, nb_blocks)
+                store_correct(split_filepath, arr_list, chunks_shape)
 
 
-if __name__ == "__main__":
-    test_store()
+def test_store_optimized():
+    store_test(True)
+
+
+def test_store_non_optimized():
+    store_test(False)    

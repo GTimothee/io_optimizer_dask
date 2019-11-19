@@ -18,7 +18,7 @@ def get_case_1():
     cs = get_dask_array_chunks_shape(arr)
     dask.config.set({
         'io-optimizer': {
-            'chunk_shape': cs,
+            'chunk_shape': (220, 240, 200),
             'memory_available': 4 * ONE_GIG
         }
     })
@@ -31,6 +31,7 @@ def get_case_1():
             (_3d_pos[2]+1) * chunks[2]]
     arr = arr[0:dims[0], 0:dims[1], 0:dims[2]]
     arr = arr + 1
+    
     return arr, config
 
 
@@ -55,7 +56,7 @@ def test_get_blocks_used():
 
     # routine to get the needed data
     # we assume those functions have been tested before get_blocks_used
-    dicts = get_used_proxies(arr.dask.dicts)
+    _, dicts = get_used_proxies(arr.dask.dicts)
 
     origarr_name = list(dicts['origarr_to_obj'].keys())[0]
     arr_obj = dicts['origarr_to_obj'][origarr_name]
@@ -64,7 +65,7 @@ def test_get_blocks_used():
                                                       config.chunks_shape) 
 
     # actual test of the function
-    blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj)
+    blocks_used, block_to_proxies = get_blocks_used(dicts, origarr_name, arr_obj, config.chunks_shape)
     expected = [0,1,4,5]
     assert blocks_used == expected
 
@@ -85,9 +86,9 @@ def test_create_buffers():
     # case 1 : continous blocks
     arr, config = get_case_1()
 
-    dicts = get_used_proxies(arr.dask.dicts)
+    _, dicts = get_used_proxies(arr.dask.dicts)
     origarr_name = list(dicts['origarr_to_obj'].keys())[0]
-    buffers = create_buffers(origarr_name, dicts)
+    buffers = create_buffers(origarr_name, dicts, config.chunks_shape)
     
     expected = [[0,1], [4,5]]
     
@@ -100,14 +101,14 @@ def test_create_buffer_node():
     # preparation
     arr, config = get_case_1()
     graph = arr.dask.dicts
-    dicts = get_used_proxies(graph)
+    _, dicts = get_used_proxies(graph)
     origarr_name = list(dicts['origarr_to_obj'].keys())[0]
-    buffers = create_buffers(origarr_name, dicts)
+    buffers = create_buffers(origarr_name, dicts, config.chunks_shape)
         
     # apply function
     keys = list()
     for buffer in buffers:            
-        key = create_buffer_node(graph, origarr_name, dicts, buffer)    
+        key = create_buffer_node(graph, origarr_name, dicts, buffer, config.chunks_shape)    
         keys.append(key)
 
     # test output

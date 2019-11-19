@@ -69,6 +69,9 @@ def run_test(writer, config, data):
     """ Wrapper around 'run' function
     """
     with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:
+        print(f'optimization enabled: {config.opti}')
+        print(f'Processing cube ref: {data["cube_ref"]}')
+
         res_dask, t = run(config)
 
         # get diagnostics with dask diagnotics
@@ -274,9 +277,9 @@ def experiment_1():
     tests = create_tests_exp1(hardwares=["ssd"], 
                             cube_types=['very_small'], 
                             chunked_options=[False], 
-                            chunk_types=['blocks', "slabs"], 
-                            scheduler_options=[True, False], 
-                            optimization_options=[True, False])
+                            chunk_types=['blocks'], 
+                            scheduler_options=[True], 
+                            optimization_options=[True])
     
     output_dir = os.getenv('OUTPUT_BENCHMARK_DIR')
     with open(os.path.join(output_dir, 'experience_1_split.csv'), mode='w+') as csv_out:

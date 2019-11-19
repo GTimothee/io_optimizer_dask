@@ -1,14 +1,18 @@
 """ A list of utility functions for the tests
+
+to be renamed "util.py"
 """
 import dask
 import dask.array as da
 import math
 import os
 import h5py
+import datetime
 import dask_utils_perso
 from dask_utils_perso.utils import (create_random_cube, load_array_parts,
     get_dask_array_from_hdf5)
 
+LOG_TIME = '{date:%Y-%m-%d_%H:%M:%S}'.format(date=datetime.datetime.now())
 
 # shapes used for the first experiment 
 CHUNK_SHAPES_EXP1 = {'slabs_dask_interpol': ('auto', (1210), (1400)), 
@@ -30,16 +34,20 @@ def get_dask_array_chunks_shape(dask_array):
 def configure_dask(config, optimize_func=None):
     """ Apply configuration to dask to parameterize the optimization function.
     """
+    if not optimize_func: 
+        print("No optimization function.")
+
     if not config:
         raise ValueError("Empty configuration object.")
 
-    opti_funcs = [] if config.opti else list()
+    opti_funcs = [optimize_func] if config.opti else list()
     scheduler_opti = config.scheduler_opti if config.opti else False
     dask.config.set({'optimizations': opti_funcs,
                      'io-optimizer': {
+                        # 'chunk_shape': config.chunk_shape, -> maybe for later
                         'memory_available': config.buffer_size,
                         'scheduler_opti': scheduler_opti}
-                    })
+    })
 
 
 class CaseConfig():
@@ -68,6 +76,7 @@ class CaseConfig():
         if os.path.isfile(out_filepath):
             os.remove(out_filepath)
         self.out_filepath = out_filepath
+        print("split file path stored in config:", self.out_filepath)
         self.out_file = h5py.File(self.out_filepath, 'w')
 
     def write_output(self, writer, out_file_path, t):
@@ -180,6 +189,7 @@ def get_test_arr(config):
     
     # do dask arrays operations for the chosen test case
     case = getattr(config, 'test_case', None)
+    print("case in config", case)
     if case:
         if case == 'sum':
             arr = sum_chunks(arr, config.nb_chunks)
@@ -194,6 +204,8 @@ def split_array(arr, f, nb_blocks=None):
     arr_list = get_arr_list(arr, nb_blocks)
     datasets = list()
     for i, a in enumerate(arr_list):
+        print("creating dataset in split file -> dataset path: ", '/data' + str(i))
+        print("storing data of shape", a.shape)
         datasets.append(f.create_dataset('/data' + str(i), shape=a.shape))
     return da.store(arr_list, datasets, compute=False)
 
