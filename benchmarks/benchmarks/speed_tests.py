@@ -278,8 +278,8 @@ def experiment_1():
                             cube_types=['very_small'], 
                             chunked_options=[False], 
                             chunk_types=['blocks'], 
-                            scheduler_options=[True], 
-                            optimization_options=[True])
+                            scheduler_options=[True, False], 
+                            optimization_options=[True, False])
     
     output_dir = os.getenv('OUTPUT_BENCHMARK_DIR')
     with open(os.path.join(output_dir, 'experience_1_split.csv'), mode='w+') as csv_out:
@@ -294,6 +294,7 @@ def experiment_1():
                          'processing_time',
                          'output_file_path'])
 
+        tests = tests + tests + tests + tests + tests
         shuffle(tests)
         for test in tests:
             config, data = test

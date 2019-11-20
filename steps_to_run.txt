@@ -1,0 +1,8 @@
+clone custom dask (for scheduler opti)
+clone dask_utilities_perso (todo: put useful functions direclty in io_optimizer)
+-install graphviz on linux
+-create tests/outputs
+-customize the bash file for launch (todo: remove it and use recommended way)
+-create random cube for tests (todo: create it automatically if does not exist)
+-create 'outputs' directory (todo: same as above)
+see if can automate run of tests when clone or just after
