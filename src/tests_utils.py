@@ -182,6 +182,15 @@ def get_or_create_array(config):
     return arr
 
 
+def create_random_array():
+    file_path = '../' + os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
+    create_random_cube(storage_type="hdf5",
+        file_path=file_path,
+        shape=(1540,1210,1400),
+        chunks_shape=None,
+        dtype="float16")
+
+
 def get_test_arr(config):
 
     # create the dask array from input file path

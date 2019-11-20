@@ -264,10 +264,10 @@ def create_input_arrays(input_file_path, cube_type, chunks_shape=None, dtype="fl
         chunks_shape: physical chunk shape
     """
     dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
-                                                file_path=input_file_path,
-                                                shape=cube_shapes[cube_type],  
-                                                chunks_shape=chunks_shape,  
-                                                dtype=dtype)
+        file_path=input_file_path,
+        shape=cube_shapes[cube_type],  
+        chunks_shape=None,   # chunks_shape
+        dtype=dtype)
 
 
 # TODO: add merge
