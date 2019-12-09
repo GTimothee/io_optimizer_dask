@@ -60,6 +60,17 @@ def create_random_cube(storage_type, file_path, shape, axis=0, physik_chunks_sha
     save_arr(arr, storage_type, file_path, key='/data', axis=axis, chunks_shape=physik_chunks_shape)
 
 
+def save_arr(arr, storage_type, file_path, key='/data', axis=0, chunks_shape=None):
+    """ Save dask array to hdf5 dataset or numpy file stack.
+    """
+    if storage_type == "hdf5":
+        if chunks_shape:
+            da.to_hdf5(file_path, key, arr, chunks=chunks_shape)
+        else:
+            da.to_hdf5(file_path, key, arr, chunks=None)
+    elif storage_type == "numpy":
+        da.to_npy_stack(os.path.join(file_path, "npy/"), arr, axis=axis)
+
 LOG_TIME = '{date:%Y-%m-%d_%H:%M:%S}'.format(date=datetime.datetime.now())
 
 # shapes used for the first experiment 
@@ -246,7 +257,7 @@ def get_test_arr(config):
     
     # do dask arrays operations for the chosen test case
     case = getattr(config, 'test_case', None)
-    print("case in config", case)
+    # print("case in config", case)
     if case:
         if case == 'sum':
             arr = sum_chunks(arr, config.nb_chunks)
@@ -261,8 +272,8 @@ def split_array(arr, f, nb_blocks=None):
     arr_list = get_arr_list(arr, nb_blocks)
     datasets = list()
     for i, a in enumerate(arr_list):
-        print("creating dataset in split file -> dataset path: ", '/data' + str(i))
-        print("storing data of shape", a.shape)
+        # print("creating dataset in split file -> dataset path: ", '/data' + str(i))
+        # print("storing data of shape", a.shape)
         datasets.append(f.create_dataset('/data' + str(i), shape=a.shape))
     return da.store(arr_list, datasets, compute=False)
 

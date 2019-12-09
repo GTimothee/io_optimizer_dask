@@ -59,31 +59,31 @@ def standard_BFS(root, graph):
     visited = [root]
 
     out_dir = os.environ.get('OUTPUT_DIR')
-    bfs_file_name = LOG_TIME + '_BFS_out.txt'.format(date=datetime.datetime.now())
-    with open(os.path.join(out_dir, bfs_file_name), 'w+') as f:
-        max_depth = 0
-        while len(queue) > 0:
-            node, depth = queue.pop(0)
-            f.write("\n\n\n-------------- current node" + str(node))
+    # bfs_file_name = LOG_TIME + '_BFS_out.txt'.format(date=datetime.datetime.now())
+    # with open(os.path.join(out_dir, bfs_file_name), 'w+') as f:
+    max_depth = 0
+    while len(queue) > 0:
+        node, depth = queue.pop(0)
+        # f.write("\n\n\n-------------- current node" + str(node))
 
-            # not related
-            if depth > max_depth:
-                max_depth = depth
+        # not related
+        if depth > max_depth:
+            max_depth = depth
 
-            # specific to our problem (because of remade graph)
-            if not isinstance(node, collections.Hashable) or not node in graph:  
-                continue
+        # specific to our problem (because of remade graph)
+        if not isinstance(node, collections.Hashable) or not node in graph:  
+            continue
 
-            # algorithm
-            neighbors = graph[node]
-            for n in neighbors:
-                f.write("\n\nvisited:")
-                if not n in visited:
-                    queue.append((n, depth + 1))
-                    visited.append(n)
-                    f.write("\n" + str(n))
-            """f.write("\nqueue:" + str(queue))
-            f.write("\nlen queue:" + str(len(queue)))"""
+        # algorithm
+        neighbors = graph[node]
+        for n in neighbors:
+            # f.write("\n\nvisited:")
+            if not n in visited:
+                queue.append((n, depth + 1))
+                visited.append(n)
+                # f.write("\n" + str(n))
+        """f.write("\nqueue:" + str(queue))
+        f.write("\nlen queue:" + str(len(queue)))"""
     
     return visited, max_depth
 
@@ -161,19 +161,19 @@ def get_graph_from_dask(graph, undirected=False):
 def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys, main_components=None):
     """ Search proxies in the remade graph and fill in dictionaries to store information.
     """
-    logging.debug(f'Keys in current subgraph: {list(graph.keys())}')
+    # logging.debug(f'Keys in current subgraph: {list(graph.keys())}')
 
     for key, v in graph.items():  
-        logging.debug(f'KEY PROCESSING - {key}')
+        # logging.debug(f'KEY PROCESSING - {key}')
 
         # if it is a subgraph, recurse
         if isinstance(v, dict):
-            logging.debug(f'\t {key} is graph, going in it...')
+            # logging.debug(f'\t {key} is graph, going in it...')
             search_dask_graph(v, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys, main_components)
 
         # if it is an original array, store it
         elif isinstance(key, str) and "array-original" in key: # TODO: support other formats
-            logging.debug(f'\t {key} is array original.')
+            # logging.debug(f'\t {key} is array original.')
 
             obj = v
             origarr_to_obj[key] = obj
@@ -189,7 +189,7 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
 
         # if it is a task, add its arguments
         elif is_task(v) and (key not in unused_keys): 
-            logging.debug(f'\t {key} not in unused keys.') 
+            # logging.debug(f'\t {key} not in unused keys.') 
             if main_components:
                 used_key = False
                 for main_comp in main_components:
@@ -203,7 +203,7 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
                     f, target, slices = v
                     # search for values that are array-original, meaning that key is proxy 
                     if "array-original" in target and all([isinstance(s, slice) for s in slices]):
-                        logging.debug(f'\t {target} used by {key}.')
+                        # logging.debug(f'\t {target} used by {key}.')
                         add_to_dict_of_lists(origarr_to_used_proxies, target, key, unique=True)
                         proxy_to_slices[key] = slices
                         proxy_to_dict[key] = graph
@@ -211,7 +211,8 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
                 except:
                     pass
         else:
-            logging.debug(f'\t {key} in unused keys or unsupported format.') 
+            # logging.debug(f'\t {key} in unused keys or unsupported format.') 
+            pass
 
     return 
 
@@ -269,10 +270,10 @@ def get_used_proxies(graph, use_BFS=True):
 
     out_dir = os.environ.get('OUTPUT_DIR')
     rgraph_file_name = LOG_TIME + '_remade_graph.txt'.format(date=datetime.datetime.now())
-    with open(os.path.join(out_dir, rgraph_file_name), "w+") as f:
+    """with open(os.path.join(out_dir, rgraph_file_name), "w+") as f:
         for k, v in remade_graph.items():
             f.write("\n\n" + str(k))
-            f.write("\n" + str(v))
+            f.write("\n" + str(v))"""
 
     proxy_to_slices = dict()
     origarr_to_used_proxies = dict()
@@ -304,7 +305,7 @@ def get_used_proxies(graph, use_BFS=True):
     # create the new dictionary (to be replaced)
     origarr_to_blocks_shape = dict()
     for key, obj in origarr_to_obj.items():
-        print("treating key:", key)
+        # print("treating key:", key)
         logging.debug(f'treating array {key}')
         logging.debug(f'ARRAY shape: {obj.shape}')
         logging.debug(f'array blocks dims: found from this shape: {get_array_block_dims(obj.shape, chunk_shape)}')

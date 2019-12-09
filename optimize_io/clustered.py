@@ -18,9 +18,9 @@ def apply_clustered_strategy(graph, dicts, chunk_shape):
         if not origarr_name in dicts['origarr_to_used_proxies']:
             continue
 
-        logging.debug("Creating buffers...")
+        print("Creating buffers...")
         buffers = create_buffers(origarr_name, dicts, chunk_shape)
-        logging.debug(f'Buffers scheduled: {buffers}')
+        print(f'Buffers scheduled: {buffers}')
         for buffer in buffers:            
             logging.debug("Creating new buffer node...")
             key = create_buffer_node(graph, origarr_name, dicts, buffer, chunk_shape)

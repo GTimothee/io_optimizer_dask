@@ -31,19 +31,18 @@ def run(dask_config):
     flush_cache()
     configure_dask(dask_config, optimize_func)
     arr = get_test_arr(dask_config)
-
     try:
         t = time.time()
         _ = arr.compute()
         t = time.time() - t
         return t
     except Exception as e:
-        print("An error occured during processing")
+        print("An error occured during processing.")
     return
     
 
 def run_test(writer, test, output_dir):
-    """ Wrapper around 'run' function
+    """ Wrapper around 'run' function for diagnostics.
     """
     with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:    
         t = run(getattr(test, 'dask_config'))
@@ -66,7 +65,7 @@ def run_test(writer, test, output_dir):
             ])
 
 
-def create_tests_exp1(options):
+def create_tests(options):
     """
     args:
         options: list of lists of configurations to try
@@ -96,7 +95,7 @@ def create_tests_exp1(options):
     return tests
         
 
-def experiment_1(debug_mode,
+def experiment(debug_mode,
     nb_repetitions,
     hardwares,
     cube_types,
@@ -126,7 +125,7 @@ def experiment_1(debug_mode,
     cs_filepath = os.path.join(workspace, 'chunks_shapes.json')
     out_filepath = os.path.join(output_dir, 'exp1_out.csv')
 
-    tests = create_tests_exp1([
+    tests = create_tests([
         hardwares,
         cube_types,
         physical_chunked_options,
@@ -151,13 +150,14 @@ def experiment_1(debug_mode,
 
     if not debug_mode: 
         tests *= nb_repetitions
-
-    shuffle(tests)
+        shuffle(tests)
+        
     for test in tests:
         # create array file if needed
-        if not debug_mode and not os.path.isfile(array_filepath):
+        if not os.path.isfile(getattr(test, "array_filepath")):
             try:
-                dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
+                print(f'Creating input array...')
+                create_random_cube(storage_type="hdf5",
                     file_path=getattr(test, 'array_filepath'),
                     shape=getattr(test, 'cube_shape'),  
                     physik_chunks_shape=getattr(test, 'physik_chunks_shape'), 
@@ -168,7 +168,7 @@ def experiment_1(debug_mode,
                 continue
 
         test.print_config()
-        # run_test(writer, test, output_dir)
+        run_test(writer, test, output_dir)
     csv_out.close()
 
 
@@ -201,11 +201,11 @@ if __name__ == "__main__":
         }
     }
 
-    experiment_1(debug_mode=True,
+    experiment(debug_mode=True,
         nb_repetitions=5,
         hardwares=["ssd"],
-        cube_types=['big', 'small'],
+        cube_types=['small'],
         physical_chunked_options=[False],
         chunk_types=['blocks', 'slabs'],
         scheduler_options=[True, False],
-        optimization_options=[True, False])
+        optimization_options=[True])

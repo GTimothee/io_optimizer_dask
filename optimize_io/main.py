@@ -17,10 +17,10 @@ def clustered_optimization(graph):
     """ Main function of the library. Applies clustered IO optimization on a Dask graph.
     graph : dark_array.dask.dicts
     """
-    logging.info("Finding proxies.")
+    print("Finding proxies.")
     chunk_shape, dicts = get_used_proxies(graph)
 
-    logging.info("Launching optimization algorithm.") 
+    print("Launching optimization algorithm.") 
     apply_clustered_strategy(graph, dicts, chunk_shape)
     return graph
 
@@ -30,4 +30,5 @@ def optimize_func(dsk, keys):
     dask_graph = dsk.dicts
     dask_graph = clustered_optimization(dask_graph)
     logging.info("Time spent to create the graph: {0:.2f} milliseconds.".format((time.time() - t) * 1000))
+    raise ValueError("stop here")
     return dsk

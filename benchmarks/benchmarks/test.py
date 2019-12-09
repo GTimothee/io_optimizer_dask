@@ -18,8 +18,7 @@ class Test():
         self.cube_ref = self.get_cube_ref()
         self.cube_shape = self.get_cube_shape()
         self.buffer_size = self.get_buffer_size()
-        if self.physik_chunked:
-            self.physik_chunks_shape = self.chunks_shape
+        self.physik_chunks_shape = self.chunks_shape if self.physik_chunked else None
 
         # create dask config
         self.array_filepath = os.path.join(self.get_hardware_path(), str(self.get_cube_ref()) + '.hdf5')
