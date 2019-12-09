@@ -9,8 +9,56 @@ import os
 import h5py
 import datetime
 import dask_utils_perso
-from dask_utils_perso.utils import (create_random_cube, load_array_parts,
+from dask_utils_perso.utils import (load_array_parts,
     get_dask_array_from_hdf5)
+
+
+import csv
+
+def create_csv_file(filepath, columns, delimiter=',', mode='w+'):
+    """
+    args:
+        file_path: path of the file to be created
+        columns: column names for the prefix
+        delimiter
+        mode
+
+    returns:
+        csv_out: file handler in order to close the file later in the program
+        writer: writer to write rows into the csv file
+    """
+    try:
+        csv_out = open(filepath, mode=mode)
+        writer = csv.writer(csv_out, delimiter=delimiter)
+        writer.writerow(columns)
+        return csv_out, writer
+    except OSError:
+        print("An error occured while attempting to create/write csv file.")
+        exit(1)
+
+def create_random_cube(storage_type, file_path, shape, axis=0, physik_chunks_shape=None, dtype=None):
+    """ Generate random cubic array from normal distribution and store it on disk.
+    Pass a dtype to cast the input dask array.
+
+    Arguments:
+        storage_type: string
+        shape: tuple or integer
+        file_path: has to contain the filename if hdf5 type, should not contain a filename if npy type.
+        axis: for numpy: splitting dimension because numpy store matrices
+        physik_chunks_shape: for hdf5 only (as far as i am concerned for the moment)
+
+    Example usage:
+    >> create_random_cube(storage_type="hdf5",
+                   file_path="tests/data/bbsamplesize.hdf5",
+                   shape=(1540,1210,1400),
+                   physik_chunks_shape=None,
+                   dtype="float16")
+    """
+    arr = da.random.normal(size=shape)
+    if dtype:
+        arr = arr.astype(dtype)
+    save_arr(arr, storage_type, file_path, key='/data', axis=axis, chunks_shape=physik_chunks_shape)
+
 
 LOG_TIME = '{date:%Y-%m-%d_%H:%M:%S}'.format(date=datetime.datetime.now())
 
@@ -76,7 +124,7 @@ class CaseConfig():
         if os.path.isfile(out_filepath):
             os.remove(out_filepath)
         self.out_filepath = out_filepath
-        print("split file path stored in config:", self.out_filepath)
+        # print("split file path stored in config:", self.out_filepath)
         self.out_file = h5py.File(self.out_filepath, 'w')
 
     def write_output(self, writer, out_file_path, t):
@@ -187,7 +235,7 @@ def create_random_array():
     create_random_cube(storage_type="hdf5",
         file_path=file_path,
         shape=(1540,1210,1400),
-        chunks_shape=None,
+        physik_chunks_shape=None,
         dtype="float16")
 
 

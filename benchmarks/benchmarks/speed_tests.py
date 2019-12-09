@@ -2,6 +2,7 @@ import sys
 import os
 import copy
 import time
+from time import gmtime, strftime
 import numpy as np
 import csv
 import h5py
@@ -9,21 +10,18 @@ import itertools
 import traceback
 from random import shuffle
 
-import dask
 import dask.array as da
 from dask.diagnostics import ResourceProfiler, Profiler, CacheProfiler, visualize
 from cachey import nbytes
 
-import optimize_io
 from optimize_io.main import optimize_func
-import tests_utils
 from tests_utils import *
 
 from test import Test
-from utils import create_csv_file
+import pdb
 
 
-def run(config):
+def run(dask_config):
     """ Execute a dask array with a given configuration.
     
     Arguments:
@@ -31,8 +29,8 @@ def run(config):
         prod: whether to run the computations or not
     """
     flush_cache()
-    configure_dask(config, optimize_func)
-    arr = get_test_arr(config)
+    configure_dask(dask_config, optimize_func)
+    arr = get_test_arr(dask_config)
 
     try:
         t = time.time()
@@ -40,34 +38,32 @@ def run(config):
         t = time.time() - t
         return t
     except Exception as e:
-        print(traceback.format_exc())
-    return None
+        print("An error occured during processing")
+    return
     
 
-
-def run_test(writer, test):
+def run_test(writer, test, output_dir):
     """ Wrapper around 'run' function
     """
-    with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:
-        print(f'optimization enabled: {test.opti}')
-        print(f'Processing cube ref: {test.cube_ref}')
-    
-        if run(config):
-            # create diagnostics file
-            opti_info = 'opti' if test.opti else 'non_opti'
-            out_file_path = os.path.join(data["output_path"], opti_info + '.html')
-            visualize([prof, rprof, cprof], out_file_path)
+    with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:    
+        t = run(getattr(test, 'dask_config'))
+        if t:
+            opti_info = 'opti' if getattr(test, 'opti') else 'non_opti'
+            out_file_path = os.path.join(output_dir, opti_info + '.html')
+            # visualize([prof, rprof, cprof], out_file_path)
 
-            # write output in csv file
-            writer.writerow([data["hardware"], 
-                data["cube_ref"],
-                data["chunk_type"],
-                data["chunks_shape"],
-                config.opti, 
-                config.scheduler_opti, 
-                config.buffer_size, 
+            writer.writerow([
+                getattr(test, 'hardware'), 
+                getattr(test, 'cube_ref'),
+                getattr(test, 'chunk_type'),
+                getattr(test, 'chunks_shape'),
+                getattr(test, 'opti'), 
+                getattr(test, 'scheduler_opti'), 
+                getattr(test, 'buffer_size'), 
                 t,
-                out_file_path])
+                out_file_path,
+                strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            ])
 
 
 def create_tests_exp1(options):
@@ -77,8 +73,23 @@ def create_tests_exp1(options):
     returns 
         A list of Test object containing the cartesian product of the combinations of "options"
     """
+    def create_possible_tests(params):
+        cube_type = params[1]
+        chunk_type = params[3]
+        test_list = list()
+        for shape in chunks_shapes[cube_type][chunk_type]:
+            if len(shape) != 3:
+                print("Bad shape.")
+                continue
+            test_list.append(Test((*params, shape)))
+        return test_list
+
     tests_params = [e for e in itertools.product(*options)]
-    tests = [Test(params) for params in tests_params if len(params) == 6]
+    tests = list()
+    for params in tests_params:
+        if len(params) == 6:
+            tests = tests + create_possible_tests(params)
+
     if not len(tests) > 0:
         print("Tests creation failed.")
         exit(1)
@@ -121,7 +132,7 @@ def experiment_1(debug_mode,
         physical_chunked_options,
         chunk_types,
         scheduler_options,
-        optimization_options
+        optimization_options,
     ])
 
     columns = ['hardware',
@@ -144,23 +155,52 @@ def experiment_1(debug_mode,
     shuffle(tests)
     for test in tests:
         # create array file if needed
-        if notn debug_mode and not os.path.isfile(array_filepath):
+        if not debug_mode and not os.path.isfile(array_filepath):
             try:
                 dask_utils_perso.utils.create_random_cube(storage_type="hdf5",
-                    file_path=test.array_file_path,
-                    shape=test.cube_shape,  
-                    chunks_shape=test.physik_chunked, 
+                    file_path=getattr(test, 'array_filepath'),
+                    shape=getattr(test, 'cube_shape'),  
+                    physik_chunks_shape=getattr(test, 'physik_chunks_shape'), 
                     dtype=np.float16)
-            except:
+            except Exception as e:
+                print(traceback.format_exc())
                 print("Input array creation failed.")
                 continue
 
-        # run_test(writer, test)
-
+        test.print_config()
+        # run_test(writer, test, output_dir)
     csv_out.close()
 
 
 if __name__ == "__main__":
+    chunks_shapes = {
+        "very_small":{
+            "blocks":[(200,200,200)],
+            "slabs":[(50, 400, 400)]
+        },
+        "small":{
+            "blocks":[
+                (700, 700, 700)],
+            "slabs":[
+                (1400, 1400, "auto"),
+                (1400, 1400, 5),
+                (1400, 1400, 175)]
+        },
+        "big":{
+            "blocks":[
+                (350, 350, 350),
+                (600, 600, 600),
+                (875, 875, 875),
+                (1750, 1750, 1750)],
+            "slabs":[
+                (3500, 3500, "auto"),
+                (3500, 3500, 1),
+                (3500, 3500, 28),
+                (3500, 3500, 50),
+                (3500, 3500, 500)]
+        }
+    }
+
     experiment_1(debug_mode=True,
         nb_repetitions=5,
         hardwares=["ssd"],
