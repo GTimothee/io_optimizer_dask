@@ -9,6 +9,7 @@ import h5py
 import itertools
 import traceback
 from random import shuffle
+import uuid 
 
 import dask.array as da
 from dask.diagnostics import ResourceProfiler, Profiler, CacheProfiler, visualize
@@ -37,8 +38,9 @@ def run(dask_config):
         t = time.time() - t
         return t
     except Exception as e:
+        print(traceback.format_exc())
         print("An error occured during processing.")
-    return
+        return 0
     
 
 def run_test(writer, test, output_dir):
@@ -46,23 +48,26 @@ def run_test(writer, test, output_dir):
     """
     with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:    
         t = run(getattr(test, 'dask_config'))
-        if t:
-            opti_info = 'opti' if getattr(test, 'opti') else 'non_opti'
-            out_file_path = os.path.join(output_dir, opti_info + '.html')
-            # visualize([prof, rprof, cprof], out_file_path)
+        uid = uuid.uuid4() 
+        # out_file_path = os.path.join(output_dir, str(uid) + '.html')
+        out_file_path = None
 
-            writer.writerow([
-                getattr(test, 'hardware'), 
-                getattr(test, 'cube_ref'),
-                getattr(test, 'chunk_type'),
-                getattr(test, 'chunks_shape'),
-                getattr(test, 'opti'), 
-                getattr(test, 'scheduler_opti'), 
-                getattr(test, 'buffer_size'), 
-                t,
-                out_file_path,
-                strftime("%Y-%m-%d %H:%M:%S", gmtime())
-            ])
+        if t:
+            # visualize([prof, rprof, cprof], out_file_path)
+            pass
+
+        writer.writerow([
+            getattr(test, 'hardware'), 
+            getattr(test, 'cube_ref'),
+            getattr(test, 'chunk_type'),
+            getattr(test, 'chunks_shape'),
+            getattr(test, 'opti'), 
+            getattr(test, 'scheduler_opti'), 
+            getattr(test, 'buffer_size'), 
+            t,
+            out_file_path,
+            uid 
+        ])
 
 
 def create_tests(options):
@@ -142,10 +147,9 @@ def experiment(debug_mode,
         'scheduler_opti',
         'buffer_size', 
         'processing_time',
-        'results_filepath',
-        'log_time'
+        'results_filepath'
     ]
-    csv_path = os.path.join(output_dir, 'exp1_out.csv')
+    csv_path = os.path.join(output_dir, 'exp1_' + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '_out.csv')
     csv_out, writer = create_csv_file(csv_path, columns, delimiter=',', mode='w+')
 
     if not debug_mode: 
@@ -189,22 +193,22 @@ if __name__ == "__main__":
         "big":{
             "blocks":[
                 (350, 350, 350),
-                (600, 600, 600),
-                (875, 875, 875),
-                (1750, 1750, 1750)],
+                (500, 500, 500),
+                (875, 875, 875),],
+                # (1750, 1750, 1750)], -> 1 block ne rentre pas en mémoire
             "slabs":[
-                (3500, 3500, "auto"),
-                (3500, 3500, 1),
+                # (3500, 3500, "auto"), -> dont know size
+                # (3500, 3500, 1), -> trop gros graph
                 (3500, 3500, 28),
-                (3500, 3500, 50),
-                (3500, 3500, 500)]
+                (3500, 3500, 50),]
+                # (3500, 3500, 500)] -> 1 block ne rentre pas en mémoire
         }
     }
 
     experiment(debug_mode=True,
         nb_repetitions=5,
-        hardwares=["ssd"],
-        cube_types=['small'],
+        hardwares=["hdd"],
+        cube_types=['small', 'big'],
         physical_chunked_options=[False],
         chunk_types=['blocks', 'slabs'],
         scheduler_options=[True, False],

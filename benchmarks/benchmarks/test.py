@@ -44,7 +44,7 @@ class Test():
         print(f'\nDask configuration:')
         print(f'\tOptimization function set: {self.opti}')
         print(f'\tScheduler optimization set: {self.scheduler_opti}')
-        print(f'\tBuffer size: {self.buffer_size} GB')
+        print(f'\tBuffer size: {self.buffer_size} bytes')
         print(f'\tHardware: {self.hardware}')
 
         print(f'\nCube infos:')
@@ -70,7 +70,7 @@ class Test():
         buffer_sizes = {
             "very_small": ONE_GIG,
             "small": 5.5 * ONE_GIG,
-            "big": 15
+            "big": 15 * ONE_GIG
         }
         return buffer_sizes[self.cube_type]
 
