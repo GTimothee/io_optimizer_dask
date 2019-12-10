@@ -79,7 +79,8 @@ def start_new_buffer(curr_buffer, b, prev_block, strategy, nb_blocks_per_row, ma
     if strategy == "blocks": # for the moment: blocks strategy only 
 
         # if it is a last element of row
-        if prev_block  != 0 and (prev_block + 1) % nb_blocks_per_row == 0: # because 0 % k = 0
+        if (prev_block + 1) % nb_blocks_per_row == 0: # because 0 % k = 0
+            logging.debug(f"prev block is last element of row. nb_blocks_per_row: {nb_blocks_per_row}. (prev_block + 1): {(prev_block + 1)}")
             # (prev_block + 1) because our block indices start at 0
             return True
 
@@ -239,6 +240,7 @@ def buffering(blocks, strategy, blocks_shape, max_nb_blocks_per_buffer, row_conc
         b = blocks.pop(0)
         logging.debug(f'Treating block {b}')
 
+        # prev_block >= 0 because remember 0 == False but we want to enter loop starting with second block (1st block index = 0)
         if prev_block >= 0 and start_new_buffer(curr_buff, b, prev_block, strategy, nb_blocks_per_row, max_nb_blocks_per_buffer):
             logging.debug("Starting a new buffer...")
             buffers.append(curr_buff.copy())
