@@ -22,6 +22,8 @@ def add_to_dict_of_lists(d, k, v, unique=False):
             d[k].append(v)
     return d
 
+
+# to be removed
 def get_config_chunk_shape():
     try:
         optimization = dask.config.get("io-optimizer")
@@ -59,12 +61,9 @@ def standard_BFS(root, graph):
     visited = [root]
 
     out_dir = os.environ.get('OUTPUT_DIR')
-    # bfs_file_name = LOG_TIME + '_BFS_out.txt'.format(date=datetime.datetime.now())
-    # with open(os.path.join(out_dir, bfs_file_name), 'w+') as f:
     max_depth = 0
     while len(queue) > 0:
         node, depth = queue.pop(0)
-        # f.write("\n\n\n-------------- current node" + str(node))
 
         # not related
         if depth > max_depth:
@@ -77,13 +76,9 @@ def standard_BFS(root, graph):
         # algorithm
         neighbors = graph[node]
         for n in neighbors:
-            # f.write("\n\nvisited:")
             if not n in visited:
                 queue.append((n, depth + 1))
                 visited.append(n)
-                # f.write("\n" + str(n))
-        """f.write("\nqueue:" + str(queue))
-        f.write("\nlen queue:" + str(len(queue)))"""
     
     return visited, max_depth
 
@@ -161,35 +156,23 @@ def get_graph_from_dask(graph, undirected=False):
 def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys, main_components=None):
     """ Search proxies in the remade graph and fill in dictionaries to store information.
     """
-    # logging.debug(f'Keys in current subgraph: {list(graph.keys())}')
 
     for key, v in graph.items():  
-        # logging.debug(f'KEY PROCESSING - {key}')
 
         # if it is a subgraph, recurse
         if isinstance(v, dict):
-            # logging.debug(f'\t {key} is graph, going in it...')
             search_dask_graph(v, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys, main_components)
 
         # if it is an original array, store it
         elif isinstance(key, str) and "array-original" in key: # TODO: support other formats
-            # logging.debug(f'\t {key} is array original.')
-
             obj = v
             origarr_to_obj[key] = obj
             if not obj.shape:
                 raise ValueError("Empty dataset!")
-
-            """
-            logging.debug(f'ARRAY shape: {obj.shape}')
-            logging.debug(f'found from this shape: {get_array_block_dims(obj.shape)}')
-            origarr_to_blocks_shape[key] = get_array_block_dims(obj.shape)
-            """
             continue
 
         # if it is a task, add its arguments
         elif is_task(v) and (key not in unused_keys): 
-            # logging.debug(f'\t {key} not in unused keys.') 
             if main_components:
                 used_key = False
                 for main_comp in main_components:
@@ -203,7 +186,6 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
                     f, target, slices = v
                     # search for values that are array-original, meaning that key is proxy 
                     if "array-original" in target and all([isinstance(s, slice) for s in slices]):
-                        # logging.debug(f'\t {target} used by {key}.')
                         add_to_dict_of_lists(origarr_to_used_proxies, target, key, unique=True)
                         proxy_to_slices[key] = slices
                         proxy_to_dict[key] = graph
@@ -211,7 +193,6 @@ def search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_pro
                 except:
                     pass
         else:
-            # logging.debug(f'\t {key} in unused keys or unsupported format.') 
             pass
 
     return 
@@ -248,14 +229,8 @@ def get_used_proxies(graph, use_BFS=True):
         unused_keys = get_unused_keys(remade_graph)
         main_components = None
     else:
-        logging.debug("\n---- ENTERING FUNCTION : get_graph_from_dask ----")
         remade_graph = get_graph_from_dask(graph, undirected=False)
-        logging.debug("\n---- EXITING FUNCTION : get_graph_from_dask ----\n")
-
-        logging.debug("\n---- ENTERING FUNCTION : get_unused_keys ----")
         root_nodes = get_unused_keys(remade_graph)
-        logging.debug(f'\t {root_nodes} have been found as being unused keys.') 
-        logging.debug("\n---- EXITING FUNCTION : get_unused_keys ----")
 
         main_components = list()
         max_depth = 0
@@ -269,29 +244,33 @@ def get_used_proxies(graph, use_BFS=True):
         unused_keys = list()
 
     out_dir = os.environ.get('OUTPUT_DIR')
+
+    # remade graph writing
+    """
     rgraph_file_name = LOG_TIME + '_remade_graph.txt'.format(date=datetime.datetime.now())
-    """with open(os.path.join(out_dir, rgraph_file_name), "w+") as f:
+    with open(os.path.join(out_dir, rgraph_file_name), "w+") as f:
         for k, v in remade_graph.items():
             f.write("\n\n" + str(k))
-            f.write("\n" + str(v))"""
+            f.write("\n" + str(v))
+    """
 
     proxy_to_slices = dict()
     origarr_to_used_proxies = dict()
     origarr_to_obj = dict()
     origarr_to_blocks_shape = dict()
     proxy_to_dict = dict()
-    logging.debug("\n---- ENTERING FUNCTION : search_dask_graph ----")
-    search_dask_graph(graph, proxy_to_slices, proxy_to_dict, origarr_to_used_proxies, origarr_to_obj, origarr_to_blocks_shape, unused_keys, main_components)
-    logging.debug("\n---- EXITING FUNCTION : search_dask_graph ----")
+    search_dask_graph(graph, 
+        proxy_to_slices, 
+        proxy_to_dict, 
+        origarr_to_used_proxies, 
+        origarr_to_obj, 
+        origarr_to_blocks_shape,
+        unused_keys, 
+        main_components)
+  
 
-    logging.debug(f'proxy_to_slices dictionary : \n {proxy_to_slices}')
-    logging.debug(f'origarr_to_used_proxies dictionary : \n {origarr_to_used_proxies}')
-    logging.debug(f'origarr_to_obj dictionary : \n {origarr_to_obj}')
-    logging.debug(f'origarr_to_blocks_shape dictionary : \n {origarr_to_blocks_shape}')
-    logging.debug(f'proxy_to_dict dictionary : \n {proxy_to_dict}')
-
-    #-------------------------------------------------------------
     # find chunk shape (to be replaced)
+    #-------------------------------------------------------------
     
     first_key = list(proxy_to_slices.keys())[0]
     sample_slices = proxy_to_slices[first_key]
@@ -305,12 +284,8 @@ def get_used_proxies(graph, use_BFS=True):
     # create the new dictionary (to be replaced)
     origarr_to_blocks_shape = dict()
     for key, obj in origarr_to_obj.items():
-        # print("treating key:", key)
-        logging.debug(f'treating array {key}')
-        logging.debug(f'ARRAY shape: {obj.shape}')
-        logging.debug(f'array blocks dims: found from this shape: {get_array_block_dims(obj.shape, chunk_shape)}')
         blocks_dims = get_array_block_dims(obj.shape, chunk_shape)
-        print("found blck dims: ", blocks_dims)
+        logging.debug(f'Found following block dimensions: {blocks_dims}')
         origarr_to_blocks_shape[key] = blocks_dims 
         # warning on above line: 
         # if more than one original array and different chunk shapes it will not work

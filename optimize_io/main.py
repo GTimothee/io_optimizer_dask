@@ -13,9 +13,14 @@ out_dir = os.environ.get('OUTPUT_DIR')
 logging.basicConfig(filename=os.path.join(out_dir, LOG_TIME + '.log'), level=logging.DEBUG) # to be set to WARNING
 
 
+DEBUG_MODE = True
+
 def clustered_optimization(graph):
-    """ Main function of the library. Applies clustered IO optimization on a Dask graph.
-    graph : dark_array.dask.dicts
+    """ Applies clustered IO optimization on a Dask graph.
+
+    Arguments:
+    ----------
+        graph : dark_array.dask.dicts
     """
     print("Finding proxies.")
     chunk_shape, dicts = get_used_proxies(graph)
@@ -26,9 +31,23 @@ def clustered_optimization(graph):
 
 
 def optimize_func(dsk, keys):
+    """ Apply an optimization on the dask graph.
+    Main function of the library. 
+
+    Arguments:
+    ----------
+        dsk: dask graph
+        keys: 
+
+    Returns: 
+    ----------
+        the optimized dask graph
+    """
     t = time.time()
     dask_graph = dsk.dicts
     dask_graph = clustered_optimization(dask_graph)
     logging.info("Time spent to create the graph: {0:.2f} milliseconds.".format((time.time() - t) * 1000))
-    raise ValueError("stop here")
+
+    if DEBUG_MODE:
+        raise ValueError("stop here")
     return dsk

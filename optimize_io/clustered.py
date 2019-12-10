@@ -22,9 +22,7 @@ def apply_clustered_strategy(graph, dicts, chunk_shape):
         buffers = create_buffers(origarr_name, dicts, chunk_shape)
         print(f'Buffers scheduled: {buffers}')
         for buffer in buffers:            
-            logging.debug("Creating new buffer node...")
             key = create_buffer_node(graph, origarr_name, dicts, buffer, chunk_shape)
-            logging.debug("Update dependencies for this buffer node...")
             update_io_tasks(graph, dicts, buffer, key, chunk_shape)
 
 
@@ -33,17 +31,18 @@ def get_load_strategy(
         cs,
         original_array_blocks_shape,
         nb=4):
-    """ get clustered writes best load strategy given 
-    the memory available for io optimization
+    """ Get clustered writes best load strategy given the memory available for io optimization.
 
     block_row_size = block_mem_size * original_array_blocks_shape[2]
     block_slice_size = block_row_size * original_array_blocks_shape[1]
 
-    arguments: 
+    Arguments: 
+    ---------
         cs = chunk_shape
         nb = nb_bytes_per_val
 
-    returns:
+    Returns:
+    ---------
         strategy, 
         max_blocks_per_load
     """
@@ -70,8 +69,10 @@ def start_new_buffer(curr_buffer, b, prev_block, strategy, nb_blocks_per_row, ma
     """
     # test basic stuff
     if len(curr_buffer) == max_nb_blocks_per_buffer:
+        logging.debug("max nb blocks per buffer reached")
         return True
     if prev_block and prev_block != b - 1:
+        logging.debug("blocks non contiguous")
         return True 
 
     # test for bad configurations

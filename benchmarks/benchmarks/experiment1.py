@@ -26,8 +26,8 @@ def run(dask_config):
     """ Execute a dask array with a given configuration.
     
     Arguments:
-        config: contains the test configuration
-        prod: whether to run the computations or not
+    ----------
+        dask_config: contains the test configuration
     """
     flush_cache()
     configure_dask(dask_config, optimize_func)
@@ -45,16 +45,22 @@ def run(dask_config):
 
 def run_test(writer, test, output_dir):
     """ Wrapper around 'run' function for diagnostics.
+
+    Arguments:
+    ----------
+        writer:
+        test:
+        output_dir:
     """
     with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:    
         t = run(getattr(test, 'dask_config'))
         uid = uuid.uuid4() 
-        # out_file_path = os.path.join(output_dir, str(uid) + '.html')
+        out_file_path = os.path.join(output_dir, 'output_imgs', str(uid) + '.html')
         out_file_path = None
 
         if t:
-            # visualize([prof, rprof, cprof], out_file_path)
-            pass
+            visualize([prof, rprof, cprof], out_file_path)
+            # pass
 
         writer.writerow([
             getattr(test, 'hardware'), 
@@ -71,10 +77,14 @@ def run_test(writer, test, output_dir):
 
 
 def create_tests(options):
-    """
-    args:
+    """ Create all possible tests from a list of possible options.
+
+    Arguments:
+    ----------
         options: list of lists of configurations to try
-    returns 
+    
+    Returns 
+    ----------
         A list of Test object containing the cartesian product of the combinations of "options"
     """
     def create_possible_tests(params):
@@ -109,9 +119,10 @@ def experiment(debug_mode,
     scheduler_options,
     optimization_options):
 
-    """ Applying the split algorithm using Dask arrays.
+    """ Apply the split algorithm using Dask arrays.
 
-    args:
+    Arguments:
+    ----------
         nb_repetitions,
         hardwares,
         cube_types,
@@ -156,7 +167,8 @@ def experiment(debug_mode,
         tests *= nb_repetitions
         shuffle(tests)
         
-    for test in tests:
+    nb_tests = len(tests)
+    for i, test in enumerate(tests):
         # create array file if needed
         if not os.path.isfile(getattr(test, "array_filepath")):
             try:
@@ -171,6 +183,7 @@ def experiment(debug_mode,
                 print("Input array creation failed.")
                 continue
 
+        print(f'\n\n[INFO] Processing test {i + 1}/{nb_tests} ~')
         test.print_config()
         run_test(writer, test, output_dir)
     csv_out.close()
@@ -179,16 +192,16 @@ def experiment(debug_mode,
 if __name__ == "__main__":
     chunks_shapes = {
         "very_small":{
-            "blocks":[(200,200,200)],
-            "slabs":[(50, 400, 400)]
+            "blocks":[(200, 200, 200)],
+            "slabs":[(400, 400, 50)]
         },
         "small":{
             "blocks":[
                 (700, 700, 700)],
             "slabs":[
-                (1400, 1400, "auto"),
-                (1400, 1400, 5),
-                (1400, 1400, 175)]
+                ("auto", 1400, 1400),]
+                # (5, 1400, 1400),
+                # (175, 1400, 1400)]
         },
         "big":{
             "blocks":[
@@ -199,17 +212,17 @@ if __name__ == "__main__":
             "slabs":[
                 # (3500, 3500, "auto"), -> dont know size
                 # (3500, 3500, 1), -> trop gros graph
-                (3500, 3500, 28),
-                (3500, 3500, 50),]
+                (28, 3500, 3500),
+                (50, 3500, 3500),]
                 # (3500, 3500, 500)] -> 1 block ne rentre pas en mémoire
         }
     }
 
-    experiment(debug_mode=True,
-        nb_repetitions=5,
+    experiment(debug_mode=False,
+        nb_repetitions=1,
         hardwares=["hdd"],
-        cube_types=['small', 'big'],
+        cube_types=['small'],
         physical_chunked_options=[False],
-        chunk_types=['blocks', 'slabs'],
-        scheduler_options=[True, False],
+        chunk_types=['slabs'],
+        scheduler_options=[True],
         optimization_options=[True])
