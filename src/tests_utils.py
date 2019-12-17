@@ -98,14 +98,17 @@ def configure_dask(config, optimize_func=None):
 
     if not config:
         raise ValueError("Empty configuration object.")
+    manual_config_dask(config.buffer_size, sched_opti=scheduler_opti)
 
+
+def manual_config_dask(buffer_size, sched_opti=True, optimize_func=None):
+    """ Apply configuration to dask to parameterize the optimization function.
+    """
     opti_funcs = [optimize_func] if config.opti else list()
-    scheduler_opti = config.scheduler_opti if config.opti else False
     dask.config.set({'optimizations': opti_funcs,
                      'io-optimizer': {
-                        # 'chunk_shape': config.chunk_shape, -> maybe for later
-                        'memory_available': config.buffer_size,
-                        'scheduler_opti': scheduler_opti}
+                        'memory_available': buffer_size,
+                        'scheduler_opti': sched_opti}
     })
 
 
