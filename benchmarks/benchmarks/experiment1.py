@@ -31,15 +31,18 @@ def run(dask_config):
     """
     flush_cache()
     configure_dask(dask_config, optimize_func)
-    arr = get_test_arr(dask_config)
+    # arr = get_test_arr(dask_config)
+    a, b, c = get_test_arr(dask_config)
     try:
         t = time.time()
-        _ = arr.compute()
+        with dask.config.set(scheduler='single-threaded'):
+            _ = dask.base.compute_as_if_collection(a, b, c)
+        # _ = arr.compute()
         t = time.time() - t
         return t
     except Exception as e:
-        print(traceback.format_exc())
-        print("An error occured during processing.")
+        # print(traceback.format_exc())
+        # print("An error occured during processing.")
         return 0
     
 
@@ -160,7 +163,9 @@ def experiment(debug_mode,
         'processing_time',
         'results_filepath'
     ]
-    csv_path = os.path.join(output_dir, 'exp1_' + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '_out.csv')
+
+    # csv_path = os.path.join(output_dir, 'exp1_' + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '_out.csv')
+    csv_path = os.path.join(output_dir, '_out.csv')
     csv_out, writer = create_csv_file(csv_path, columns, delimiter=',', mode='w+')
 
     if not debug_mode: 
@@ -189,6 +194,30 @@ def experiment(debug_mode,
     csv_out.close()
 
 
+def estimate_time():
+    """ estimate the time to write one of the two buffers of 2.5GB each 
+    in the experiment on 'small' array
+    """
+    import dask.array as da; 
+    import numpy as np; 
+
+    def setup():
+        x = da.random.random(size=(1400, 1400, 700))
+        x = x.astype(np.float16)
+        out_path = "/run/media/user/HDD 1TB/data/randomfile.hdf5"
+        return x, out_path
+
+    x, out_path = setup()
+    raw_arr = x.compute()
+    
+    t = time.time()
+    da.to_hdf5(out_path, 'data', raw_arr, chunks=None)
+    # np.save(out_path, raw_arr)
+    t = time.time() - t
+
+    # timeit statement 
+    print(f'time: {t}')
+
 if __name__ == "__main__":
     chunks_shapes = {
         "very_small":{
@@ -199,9 +228,9 @@ if __name__ == "__main__":
             "blocks":[
                 (700, 700, 700)],
             "slabs":[
-                ("auto", 1400, 1400),]
-                # (5, 1400, 1400),
-                # (175, 1400, 1400)]
+                ("auto", 1400, 1400), #,]
+                 (5, 1400, 1400),
+                 (175, 1400, 1400)]
         },
         "big":{
             "blocks":[
@@ -218,11 +247,15 @@ if __name__ == "__main__":
         }
     }
 
-    experiment(debug_mode=False,
+    """experiment(debug_mode=False,
         nb_repetitions=1,
         hardwares=["hdd"],
         cube_types=['small'],
         physical_chunked_options=[False],
-        chunk_types=['slabs'],
-        scheduler_options=[True],
-        optimization_options=[True])
+        chunk_types=['slabs', 'blocks'],
+        scheduler_options=[False],
+        optimization_options=[True])"""
+    estimate_time()
+
+
+

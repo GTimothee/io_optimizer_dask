@@ -13,7 +13,7 @@ out_dir = os.environ.get('OUTPUT_DIR')
 logging.basicConfig(filename=os.path.join(out_dir, LOG_TIME + '.log'), level=logging.DEBUG) # to be set to WARNING
 
 
-DEBUG_MODE = True
+DEBUG_MODE = 1
 
 def clustered_optimization(graph):
     """ Applies clustered IO optimization on a Dask graph.
@@ -48,6 +48,31 @@ def optimize_func(dsk, keys):
     dask_graph = clustered_optimization(dask_graph)
     logging.info("Time spent to create the graph: {0:.2f} milliseconds.".format((time.time() - t) * 1000))
 
+    def neat_print_graph(graph, log=True):
+        for k, v in graph.items():
+            if log: 
+                logging.debug(f"\nkey: {k}")
+            else:
+                print(f"\nkey: {k}")
+
+            if isinstance(v, dict):
+                for k2, v2 in v.items():
+                    if log: 
+                        logging.debug(f"\tk: {k2}")
+                        logging.debug(f"\t{v2} \n")
+                    else:
+                        print(f"\tk: {k2}")
+                        print(f"\t{v2} \n")
+
+            else:
+                if log: 
+                    logging.debug(f"\tv: {v}")
+                else:
+                    print(f"\tv: {v}")
+
+    neat_print_graph(dsk, log=True)
+
     if DEBUG_MODE:
         raise ValueError("stop here")
+
     return dsk

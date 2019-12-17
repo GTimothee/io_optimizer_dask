@@ -212,7 +212,7 @@ def sum_chunks(arr, nb_chunks):
     return sum_arr
 
 
-def get_or_create_array(config):
+def get_or_create_array(config, npy_stack_dir=None):
     """ Load or create Dask Array for tests. You can specify a test case too.
 
     If file exists the function returns the array.
@@ -234,10 +234,13 @@ def get_or_create_array(config):
         raise FileNotFoundError()
     
     # get the file and rechunk logically using a chosen chunk shape, or dask default
-    if config.chunks_shape:
-        arr = get_dask_array_from_hdf5(file_path, logic_chunks_shape=config.chunks_shape)
+    if npy_stack_dir:
+        arr = da.from_npy_stack(dirname=npy_stack_dir, mmap_mode=None)
     else:
-        arr = get_dask_array_from_hdf5(file_path) # TODO: see what happens
+        if config.chunks_shape:
+            arr = get_dask_array_from_hdf5(file_path, logic_chunks_shape=config.chunks_shape)
+        else:
+            arr = get_dask_array_from_hdf5(file_path) # TODO: see what happens
     return arr
 
 
@@ -245,15 +248,15 @@ def create_random_array():
     file_path = '../' + os.path.join(os.getenv('DATA_PATH'), 'sample_array_nochunk.hdf5')
     create_random_cube(storage_type="hdf5",
         file_path=file_path,
-        shape=(1540,1210,1400),
+        shape=(1540, 1210, 1400),
         physik_chunks_shape=None,
         dtype="float16")
 
 
-def get_test_arr(config):
+def get_test_arr(config, npy_stack_dir=None):
 
     # create the dask array from input file path
-    arr = get_or_create_array(config)
+    arr = get_or_create_array(config, npy_stack_dir=npy_stack_dir)
     
     # do dask arrays operations for the chosen test case
     case = getattr(config, 'test_case', None)
@@ -268,14 +271,22 @@ def get_test_arr(config):
 
 def split_array(arr, f, nb_blocks=None):
     """ Split an array given its chunk shape. Output is a hdf5 file with as many datasets as chunks.
+    Arguments:
+    ----------
+        nb_blocks: nb blocks we want to extract
     """
-    arr_list = get_arr_list(arr, nb_blocks)
+    # arr_list = get_arr_list(arr, nb_blocks)
     datasets = list()
-    for i, a in enumerate(arr_list):
+
+    # for hdf5:
+    """for i, a in enumerate(arr_list):
         # print("creating dataset in split file -> dataset path: ", '/data' + str(i))
         # print("storing data of shape", a.shape)
         datasets.append(f.create_dataset('/data' + str(i), shape=a.shape))
-    return da.store(arr_list, datasets, compute=False)
+    return da.store(arr_list, datasets, compute=False)"""
+
+    # for numpy storage
+    return da.to_npy_stack('data/numpy_data', arr, axis=0)
 
 
 def neat_print_graph(graph):
