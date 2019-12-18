@@ -13,7 +13,7 @@ out_dir = os.environ.get('OUTPUT_DIR')
 logging.basicConfig(filename=os.path.join(out_dir, LOG_TIME + '.log'), level=logging.DEBUG) # to be set to WARNING
 
 
-DEBUG_MODE = 1
+DEBUG_MODE = False
 
 def clustered_optimization(graph):
     """ Applies clustered IO optimization on a Dask graph.

@@ -8,12 +8,81 @@ import math
 import os
 import h5py
 import datetime
-import dask_utils_perso
-from dask_utils_perso.utils import (load_array_parts,
-    get_dask_array_from_hdf5)
-
-
 import csv
+
+import dask_utils_perso
+from dask_utils_perso.utils import get_random_slab, get_random_cubic_block, get_random_right_cuboid
+
+
+ONE_GIG = 1000000000
+SUB_BIGBRAIN_SHAPE = (1540, 1610, 1400)
+LOG_TIME = '{date:%Y-%m-%d_%H:%M:%S}'.format(date=datetime.datetime.now())
+CHUNK_SHAPES_EXP1 = {'slabs_dask_interpol': ('auto', (1210), (1400)), 
+                    'slabs_previous_exp': (7, (1210), (1400)),
+                    'blocks_dask_interpol': (220, 242, 200), 
+                    'blocks_previous_exp': (770, 605, 700)}
+
+
+def get_dask_array_from_hdf5(file_path="tests/data/sample.hdf5", cast=True, key='/data', logic_chunks_shape="auto"):
+    """
+    Arguments:
+    ----------
+        file path: path to hdf5 file (string)
+        key: key of the dictionary to retrieve data
+        cast: if you want to cast the dataset into a dask array.
+            If you want to do it yourself (ex for adjusting the chunks),
+            set this parameter to False.
+    """
+    f = h5py.File(file_path, 'r')
+    if len(list(f.keys())) > 0:
+        if not cast:
+            return f[key]
+        dataset = f[key]
+        if dataset.chunks:  # if dataset is chunked use the same logical chunks shape as physical chunks shape
+            return da.from_array(dataset, chunks=dataset.chunks)
+        else:  # if no physical chunked then should choose a chunks shape, "auto" is automatic ~100MB chunk size
+            return da.from_array(dataset, chunks=logic_chunks_shape)
+    else:
+        print('Key not found. Aborting.')
+
+
+def load_array_parts(arr, geometry="slabs", nb_elements=0, shape=None, axis=0, random=True, seed=0, upper_corner=(0,0,0), as_numpy=False):
+    """ Load part of array.
+    Load 1 (or more parts -> one for the moment) of a too-big-for-memory array from file into memory.
+    -given 1 or more parts (not necessarily close to each other)
+    -take into account geometry
+    -take into account storage type (unique_file or multiple_files) thanks to dask
+
+    Arguments:
+    ----------
+        geometry: name of geometry to use
+        nb_elements: nb elements wanted, not used for right_cuboid geometry
+        shape: shape to use for right_cuboid
+        axis: support axis for the slab
+        random: if random cut or at a precise position. If set to False, upper_corner should be set.
+        upper_corner: upper corner of the block/slab to be extracted (position from which to extract in the array).
+
+    Returns a numpy array
+    """
+    if geometry not in ["slabs", "cubic_blocks", "right_cuboid"]:
+        print("bad geometry type. Aborting.")
+        return
+
+    if geometry == "slabs":
+        if random == False and len(upper_corner) != 2:
+            print("Bad shape for upper corner: must be of dimension 2. Aborting.")
+            return
+        arr = get_random_slab(nb_elements, arr, axis, seed, random, pos=upper_corner)
+    elif geometry == "cubic_blocks":
+        arr = get_random_cubic_block(nb_elements, arr, seed, random, corner_index=upper_corner)
+    elif geometry == "right_cuboid":
+        arr = get_random_right_cuboid(arr, shape, seed, random, pos=upper_corner)
+
+    if as_numpy:
+        return arr.compute()
+    else:
+        return arr
+
 
 def create_csv_file(filepath, columns, delimiter=',', mode='w+'):
     """
@@ -35,6 +104,7 @@ def create_csv_file(filepath, columns, delimiter=',', mode='w+'):
     except OSError:
         print("An error occured while attempting to create/write csv file.")
         exit(1)
+
 
 def create_random_cube(storage_type, file_path, shape, axis=0, physik_chunks_shape=None, dtype=None):
     """ Generate random cubic array from normal distribution and store it on disk.
@@ -71,16 +141,6 @@ def save_arr(arr, storage_type, file_path, key='/data', axis=0, chunks_shape=Non
     elif storage_type == "numpy":
         da.to_npy_stack(os.path.join(file_path, "npy/"), arr, axis=axis)
 
-LOG_TIME = '{date:%Y-%m-%d_%H:%M:%S}'.format(date=datetime.datetime.now())
-
-# shapes used for the first experiment 
-CHUNK_SHAPES_EXP1 = {'slabs_dask_interpol': ('auto', (1210), (1400)), 
-                    'slabs_previous_exp': (7, (1210), (1400)),
-                    'blocks_dask_interpol': (220, 242, 200), 
-                    'blocks_previous_exp': (770, 605, 700)}
-ONE_GIG = 1000000000
-SUB_BIGBRAIN_SHAPE = (1540, 1610, 1400)
-
 
 def get_dask_array_chunks_shape(dask_array):
     t = dask_array.chunks
@@ -90,21 +150,20 @@ def get_dask_array_chunks_shape(dask_array):
     return tuple(cs)
 
 
-def configure_dask(config, optimize_func=None):
+def configure_dask(config):
     """ Apply configuration to dask to parameterize the optimization function.
     """
-    if not optimize_func: 
-        print("No optimization function.")
-
     if not config:
         raise ValueError("Empty configuration object.")
-    manual_config_dask(config.buffer_size, sched_opti=scheduler_opti)
+    manual_config_dask(config.buffer_size, config.opti, sched_opti=scheduler_opti)
 
 
-def manual_config_dask(buffer_size, sched_opti=True, optimize_func=None):
+def manual_config_dask(buffer_size=ONE_GIG, opti=True, sched_opti=True):
     """ Apply configuration to dask to parameterize the optimization function.
     """
-    opti_funcs = [optimize_func] if config.opti else list()
+    opti_funcs = [optimize_func] if opti else list()
+    print(f'opti_funcs: {opti_funcs} because opti:{opti}')
+    
     dask.config.set({'optimizations': opti_funcs,
                      'io-optimizer': {
                         'memory_available': buffer_size,
