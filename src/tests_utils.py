@@ -176,6 +176,12 @@ def configure_dask(config):
 
 def manual_config_dask(buffer_size=ONE_GIG, opti=True, sched_opti=True):
     """ Manual configuration of Dask as opposed to using CaseConfig object.
+
+    Arguments:
+    ----------
+        buffer_size:
+        opti:
+        sched_opti:
     """
 
     print('Task graph optimization enabled:', opti)
@@ -244,8 +250,11 @@ def get_arr_shapes(arr):
     """ Routine that returns shape information on from dask array.
 
     Arguments:
+    ----------
         arr: dask array
+
     Returns:
+    --------
         shape: shape of the dask array
         chunks: shape of one chunk
         chunk_dims: number of chunks in eah dimension
@@ -258,7 +267,9 @@ def get_arr_shapes(arr):
 
 def get_arr_list(arr, nb_chunks=None):
     """ Return a list of dask arrays. Each dask array being a block of the input array.
+
     Arguments:
+    ----------
         arr: dask array
         nb_chunks: if None then function returns all arrays, else function returns n=nb_chunks arrays
     """
@@ -283,6 +294,7 @@ def sum_chunks(arr, nb_chunks):
     """ Sum chunks together.
 
     Arguments:
+    ----------
         arr: array from which blocks will be sum
         nb_chunks: number of chunks to sum
     """
@@ -302,6 +314,7 @@ def get_or_create_array(config, npy_stack_dir=None):
     If file does not exist it will be created using "shape" parameter.
 
     Arguments (from config object):
+    ----------
         file_path: File containing the array, will be created if does not exist.
         chunk_shape: 
         shape: Shape of the array to create if does not exist.
@@ -353,6 +366,7 @@ def get_test_arr(config, npy_stack_dir=None):
 
 def split_array(arr, f, nb_blocks=None):
     """ Split an array given its chunk shape. Output is a hdf5 file with as many datasets as chunks.
+    
     Arguments:
     ----------
         nb_blocks: nb blocks we want to extract

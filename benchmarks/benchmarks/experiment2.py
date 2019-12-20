@@ -43,21 +43,13 @@ a4 = {
 test_arrays = [a1, a2, a3, a4]
 
 
-def write_npy_stack(file_path):
-    flush_cache()
+def onthefly_to_nps():
+    print('Writing to npy stack file without loading raw data in RAM.')
 
     out_dir = 'data/out_3_numpy'
     out_file_path = "outputs/write_npy_stack.html"
 
-    # loading raw data if needed
-    
-    # load compressed data
-    t = time.time()
-    arr = get_arr(file_path)
-    print(f'time to load compressed file in cache: {time.time() - t}')
-
     # write to numpy stack
-    
     with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof:    
         t = time.time()
 
@@ -67,13 +59,8 @@ def write_npy_stack(file_path):
         visualize([prof, rprof, cprof], out_file_path)
 
 
-def write_hdf5(file_path):
-    flush_cache()
-
-    # load compressed data
-    t = time.time()
-    arr = get_arr(file_path)
-    print(f'time to load compressed file in cache: {time.time() - t}')
+def onthefly_to_hdf5():
+    print('Writing to hdf5 file without loading raw data in RAM.')
 
     # write to numpy stack
     out_filepath = 'data/out.hdf5'
@@ -83,25 +70,17 @@ def write_hdf5(file_path):
     out_file_path = "outputs/write_hdf5.html"
     with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof: 
         t = time.time()
+
         da.to_hdf5(out_filepath, 'data', arr, chunks=(1400,1400,350), compression="gzip")
+
         print(f'time to save the array to hdf5 with compression: {time.time() - t}')
         visualize([prof, rprof, cprof], out_file_path)
 
 
-
-def load_raw_write_hdf5(file_path):
-    print('Writing to numpy stack after loading raw data in RAM.')
-    flush_cache()
-
-    # load compressed data
-    t = time.time()
-    arr = get_arr(file_path)
-    print(f'time to load compressed file in cache: {time.time() - t}')
+def uncompress_to_hdf5():
+    print('Writing to hdf5 file after loading raw data in RAM.')
     
-    # load data in RAM      
-    t = time.time()
-    raw_arr = arr.compute()
-    print(f'time to load data in RAM: {time.time() - t}')
+    raw_arr = uncompress()
 
     # create dask array from data in RAM
     arr = da.from_array(raw_arr, chunks=(1400, 1400, 350))
@@ -114,7 +93,9 @@ def load_raw_write_hdf5(file_path):
     out_file_path = "outputs/load_raw_write_hdf5_uncompressed.html"
     with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof: 
         t = time.time()
+
         da.to_hdf5(out_filepath, 'data', arr, chunks=None)
+
         print(f'time to save the array to hdf5 without compression: {time.time() - t}')
         visualize([prof, rprof, cprof], out_file_path)
 
@@ -125,26 +106,19 @@ def load_raw_write_hdf5(file_path):
     out_file_path = "outputs/load_raw_write_hdf5_commpressed.html"
     with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof: 
         t = time.time()
+
         da.to_hdf5(out_filepath, 'data', arr, chunks=None, compression="gzip")
+
         print(f'time to save the array to hdf5 with compression: {time.time() - t}')
         visualize([prof, rprof, cprof], out_file_path)
 
 
 
-def load_raw_write_npy_stack(file_path):
+def uncompress_to_nps():
     print('Writing to numpy stack after loading raw data in RAM.')
-
-    flush_cache()
-    
-    # load compressed data
-    t = time.time()
-    arr = get_arr(file_path)
-    print(f'time to load compressed file in cache: {time.time() - t}')
     
     # load data in RAM      
-    t = time.time()
-    raw_arr = arr.compute()
-    print(f'time to load data in RAM: {time.time() - t}')
+    raw_arr = uncompress()
 
     # create dask array from data in RAM
     arr = da.from_array(raw_arr, chunks=(1400, 1400, 350))
@@ -155,41 +129,32 @@ def load_raw_write_npy_stack(file_path):
     out_file_path = "outputs/load_raw_write_npy_stack.html"
     with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof: 
         t = time.time()
-        a__, b__, c__ = da.to_npy_stack(out_dir, arr, axis=0)
-        _ = dask.base.compute_as_if_collection(a__, b__, c__)
+
+        write_to_npy_stack(out_dir, arr)
+
         print(f'time to save the array to numpy stack: {time.time() - t}')
         visualize([prof, rprof, cprof], out_file_path)
 
 
-def load_raw_write_npy_file(file_path):
+def uncompress_to_npy():
     print('Writing to numpy file after loading raw data in RAM.')
-    flush_cache()
+    out_filepath = 'data/out_1.npy'
+    diagnostics_filepath = "outputs/load_raw_write_npy_file.html"
 
-    # load compressed data
-    t = time.time()
-    arr = get_arr(file_path)
-    print(f'time to load compressed file in cache: {time.time() - t}')
-    
-    # load data in RAM
-    t = time.time()
-    raw_arr = arr.compute()
-    print(f'time to load data in RAM: {time.time() - t}')
+    raw_arr = uncompress()
         
     # write to numpy file
-    out_filepath = 'data/out_1.npy'
     if os.path.isfile(out_filepath):
         os.remove(out_filepath)
 
-    out_file_path = "outputs/load_raw_write_npy_file.html"
     with Profiler() as prof, ResourceProfiler() as rprof, CacheProfiler(metric=nbytes) as cprof: 
         t = time.time()
-        np.save(out_filepath, raw_arr)
-        print(f'time to save the array to numpy file: {time.time() - t}')
-        visualize([prof, rprof, cprof], out_file_path)
 
-    buffer_size = 5.5 * ONE_GIG
+        np.save(out_filepath, raw_arr)
+
+        print(f'time to save the array to numpy file: {time.time() - t}')
+        visualize([prof, rprof, cprof], diagnostics_filepath)
         
-            
 
 def time_to_write_buffer_to_npy_files():
     """ create random array of 2.5GB 
@@ -217,13 +182,15 @@ def create_arrays():
     for array_config in test_arrays:
         file_path = get_file_path(array_config)
 
-        create_random_cube(storage_type="hdf5",
+        create_random_cube(
+            storage_type="hdf5",
             file_path=file_path,
             shape=(1400, 1400, 1400),  
             physik_chunks_shape=array_config['physik_cs'], 
             dtype=np.float16, 
             distrib=array_config['distrib'], 
-            compression=array_config['compression'])
+            compression=array_config['compression']
+        )
 
         try: # sanity check 
             with h5py.File(file_path, 'r') as f:
@@ -235,14 +202,6 @@ def create_arrays():
         except Exception as e:
             print(traceback.format_exc())
             print('Sanity check failed.')
-
-
-def get_arr(file_path):
-    """ get dask array from file
-    """
-    arr = get_dask_array_from_hdf5(file_path, logic_chunks_shape=chunks_shape)
-    arr = arr[:chunks_shape[0], :chunks_shape[1], :chunks_shape[2]]
-    return arr
 
 
 def write_to_npy_stack(out_dir, arr):
@@ -268,25 +227,46 @@ def experiment2(data_dir, buffer_size, chunks_shape):
 
     Arguments:
     ----------
+        data_dir: Directory in which to create and store input/output arrays.
+        buffer_size: size of buffer for clustered strategy.
         chunks_shape: Shape of block to extract and save.
     """
 
+    def get_array():
+        """ Get a block of input array from hdf5 file.
+        """
+        t = time.time() 
+        arr = get_dask_array_from_hdf5(file_path, logic_chunks_shape=chunks_shape)
+        arr = arr[:chunks_shape[0], :chunks_shape[1], :chunks_shape[2]]
+        print(f'time to load compressed file in cache: {time.time() - t}') 
+        return arr
+
+    def uncompress():
+        """ Get data from hdf5 compressed file.
+        """
+        t = time.time()
+        raw_arr = arr.compute()
+        print(f'time to load data in RAM: {time.time() - t}')
+        return raw_arr
+
     functions = [
-        load_raw_write_npy_file,
-        write_npy_stack,
-        load_raw_write_hdf5,
-        write_hdf5
+        uncompress_to_npy,
+        uncompress_to_nps,
+        uncompress_to_hdf5,
+        onthefly_to_nps,
+        onthefly_to_hdf5
     ]    
 
     for array_config in test_arrays:
-        
         file_path = get_file_path(array_config)
         print(f"Processing file: {file_path}...")
 
         with dask.config.set(scheduler='single-threaded'):
             for F in functions:
+                flush_cache()
+                arr = get_array(file_path)
                 enable_optimization()
-                F(file_path)
+                F()
                 disable_optimization()
     return
 
