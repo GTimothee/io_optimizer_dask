@@ -121,6 +121,8 @@ def merge_rows(buffers, blocks_shape, nb_blocks_per_row, max_blocks_per_load):
     for buff in buffers:
         logging.debug(f'Treating buff {buff}')
         if not is_complete_row(buff, nb_blocks_per_row):
+            merged_buffers.append(curr_buff) # just modified
+            curr_buff = list()
             merged_buffers.append(buff) # dont process
         else:
             start_new_buffer = False 

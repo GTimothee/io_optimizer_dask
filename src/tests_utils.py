@@ -106,7 +106,7 @@ def create_csv_file(filepath, columns, delimiter=',', mode='w+'):
         exit(1)
 
 
-def create_random_cube(storage_type, file_path, shape, axis=0, physik_chunks_shape=None, dtype=None):
+def create_random_cube(storage_type, file_path, shape, axis=0, physik_chunks_shape=None, dtype=None, distrib='uniform', compression=None):
     """ Generate random cubic array from normal distribution and store it on disk.
     Pass a dtype to cast the input dask array.
 
@@ -124,20 +124,32 @@ def create_random_cube(storage_type, file_path, shape, axis=0, physik_chunks_sha
                    physik_chunks_shape=None,
                    dtype="float16")
     """
-    arr = da.random.normal(size=shape)
+    if distrib == 'normal':
+        print('Drawing from normal distribution')
+        arr = da.random.normal(size=shape)
+    else:
+        print('Drawing from uniform distribution')
+        arr = da.random.random(size=shape)
     if dtype:
         arr = arr.astype(dtype)
-    save_arr(arr, storage_type, file_path, key='/data', axis=axis, chunks_shape=physik_chunks_shape)
+    save_arr(arr, storage_type, file_path, key='/data', axis=axis, chunks_shape=physik_chunks_shape, compression=compression)
 
 
-def save_arr(arr, storage_type, file_path, key='/data', axis=0, chunks_shape=None):
+def save_arr(arr, storage_type, file_path, key='/data', axis=0, chunks_shape=None, compression=None):
     """ Save dask array to hdf5 dataset or numpy file stack.
     """
+
     if storage_type == "hdf5":
         if chunks_shape:
+            print(f'Using chunk shape {chunks_shape}')
             da.to_hdf5(file_path, key, arr, chunks=chunks_shape)
         else:
-            da.to_hdf5(file_path, key, arr, chunks=None)
+            if compression == "gzip":
+                print('Using gzip compression')
+                da.to_hdf5(file_path, key, arr, chunks=None, compression="gzip")
+            else:
+                print('Without compression')
+                da.to_hdf5(file_path, key, arr, chunks=None)
     elif storage_type == "numpy":
         da.to_npy_stack(os.path.join(file_path, "npy/"), arr, axis=axis)
 
@@ -152,6 +164,10 @@ def get_dask_array_chunks_shape(dask_array):
 
 def configure_dask(config):
     """ Apply configuration to dask to parameterize the optimization function.
+
+    Arguments:
+    ---------
+        config: A CaseConfig object.
     """
     if not config:
         raise ValueError("Empty configuration object.")
@@ -159,15 +175,19 @@ def configure_dask(config):
 
 
 def manual_config_dask(buffer_size=ONE_GIG, opti=True, sched_opti=True):
-    """ Apply configuration to dask to parameterize the optimization function.
+    """ Manual configuration of Dask as opposed to using CaseConfig object.
     """
+
+    print('Task graph optimization enabled:', opti)
+    print('Scheduler optimization enabled:', sched_opti)
+
     opti_funcs = [optimize_func] if opti else list()
-    print(f'opti_funcs: {opti_funcs} because opti:{opti}')
-    
-    dask.config.set({'optimizations': opti_funcs,
-                     'io-optimizer': {
-                        'memory_available': buffer_size,
-                        'scheduler_opti': sched_opti}
+    dask.config.set({
+        'optimizations': opti_funcs,
+        'io-optimizer': {
+            'memory_available': buffer_size,
+            'scheduler_opti': sched_opti
+        }
     })
 
 

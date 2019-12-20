@@ -144,6 +144,7 @@ def experiment(debug_mode,
     cs_filepath = os.path.join(workspace, 'chunks_shapes.json')
     out_filepath = os.path.join(output_dir, 'exp1_out.csv')
 
+    print(f'Loading tests...')
     tests = create_tests([
         hardwares,
         cube_types,
@@ -152,6 +153,7 @@ def experiment(debug_mode,
         scheduler_options,
         optimization_options,
     ])
+    print(f'Done.')
 
     columns = ['hardware',
         'ref',
@@ -182,7 +184,8 @@ def experiment(debug_mode,
                     file_path=getattr(test, 'array_filepath'),
                     shape=getattr(test, 'cube_shape'),  
                     physik_chunks_shape=getattr(test, 'physik_chunks_shape'), 
-                    dtype=np.float16)
+                    dtype=np.float16,
+                    distrib='normal')
             except Exception as e:
                 print(traceback.format_exc())
                 print("Input array creation failed.")
