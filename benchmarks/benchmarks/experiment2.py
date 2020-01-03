@@ -113,7 +113,6 @@ def uncompress_to_hdf5():
         visualize([prof, rprof, cprof], out_file_path)
 
 
-
 def uncompress_to_nps():
     print('Writing to numpy stack after loading raw data in RAM.')
     
@@ -157,9 +156,15 @@ def uncompress_to_npy():
         
 
 def time_to_write_buffer_to_npy_files():
-    """ create random array of 2.5GB 
-    2.5GB = size of 1 buffer in experiment `small`
-    measure time to write it to disk
+    """ 
+    Notebook #NAME: experiment2 
+    Experiment #ID: 2.1
+
+    Methodology:
+    ------------
+    - create a random array of 2.5GB 
+    - 2.5GB = size of 1 buffer in experiment `small`
+    - measure time to write it to disk
     """
     def setup():
         x = da.random.random(size=(1400, 1400, 700))
