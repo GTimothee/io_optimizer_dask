@@ -9,7 +9,7 @@ dask==2.2.0
 decorator==4.4.0
 defusedxml==0.6.0
 dill==0.3.0
-distributed==2.2.0
+distributed==2021.10.0
 entrypoints==0.3
 fsspec==0.4.1
 graphviz==0.11.1
