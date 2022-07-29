@@ -29,7 +29,7 @@ jupyter-console==6.0.0
 jupyter-core==4.5.0
 locket==0.2.0
 MarkupSafe==1.1.1
-mistune==0.8.4
+mistune==2.0.3
 more-itertools==7.2.0
 msgpack==0.6.1
 nbconvert==5.6.0
